@@ -5,6 +5,16 @@
 <title>AWS Email Dashboard</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+/* STANDALONE BUILD GUARD - do not remove.
+   dc-runtime re-fetches location.href and re-parses it, replacing the template with
+   whatever parseDcText() finds. Over file:// that fetch fails and the inline template
+   survives, which is why this file works locally. Over http(s) the fetch succeeds and
+   the runtime mis-parses this self-contained file (the inlined runtime source ends up
+   rendered as the template), so the page shows code instead of the dashboard.
+   Defining __resources makes the runtime skip that re-fetch entirely. */
+window.__resources = window.__resources || {};
+</script>
 <script>// GENERATED from dc-runtime/src/*.ts — do not edit. Rebuild with `cd dc-runtime && bun run build`.
 "use strict";
 (() => {
