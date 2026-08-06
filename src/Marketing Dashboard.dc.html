@@ -17,6 +17,41 @@
   .hdln { font-family: "Helvetica Neue Condensed", "HelveticaNeue-CondensedBold", "Helvetica Neue", "Arial Narrow", Arial, sans-serif; font-stretch: condensed; letter-spacing: 0; }
   a { color: #0074E2; text-decoration: none; }
   a:hover { color: #003767; text-decoration: underline; }
+
+  /* ── MOBILE ──────────────────────────────────────────────────────────────
+     Desktop is untouched: every rule here sits inside a media query.
+     Measured 2026-08-06 at 390px wide, the page laid out 793px, so roughly
+     half of it sat off-screen and you had to pan sideways to read anything.
+     Two causes, both handled here:
+       1. KPI rows were locked to repeat(N,1fr), so five cards fought over
+          390px. They now stack two-up, then one-up on small phones.
+       2. Data tables use fixed pixel columns totalling 450-900px and cannot
+          shrink to fit. Rather than hide columns (a phone would then show
+          different numbers than a laptop) each table scrolls sideways inside
+          its own card, so the page itself never overflows.
+     Charts already scale and the nav already wraps; neither is touched.      */
+  @media (max-width: 820px) {
+    .kpis { grid-template-columns: 1fr 1fr !important; }
+    .ctl  { flex-wrap: wrap !important; }
+    .tw   { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    /* side-by-side card pairs (a chart next to a panel) stack instead */
+    .cols { grid-template-columns: 1fr !important; }
+    /* prose rows (Priority Actions) read better stacked than scrolled sideways */
+    .stack { grid-template-columns: 1fr !important; gap: 5px 0 !important; }
+    /* card headers pair a nowrap title with a nowrap scope label; together they
+       exceed a phone's width, so let them wrap onto two lines instead */
+    .chd { flex-wrap: wrap !important; }
+    .chd > div, .chd > div > span { white-space: normal !important; }
+    .stack > div:last-child { text-align: left !important; }
+    .tw > div { min-width: max-content; }
+  }
+  @media (max-width: 480px) {
+    .kpis { grid-template-columns: 1fr !important; }
+    .ttl  { font-size: 18px !important; white-space: normal !important; }
+    /* masthead: stack the date under the title rather than crowding beside it */
+    .mast { flex-direction: column; align-items: flex-start !important; gap: 9px !important; }
+    .mast > div:last-child { text-align: left !important; }
+  }
 </style>
 <script src="../data/email-data.js"></script>
 <script src="../data/ga4-data.js"></script>
@@ -43,10 +78,10 @@
     <!-- IDENTITY + NAV -->
     <div style="border:1px solid #E3E5E6; border-radius:6px; overflow:hidden; display:flex; flex-direction:column;">
 
-      <div style="background:#001527; padding:19px 24px 17px; display:flex; align-items:flex-end; justify-content:space-between; gap:24px;">
+      <div class="mast" style="background:#001527; padding:19px 24px 17px; display:flex; align-items:flex-end; justify-content:space-between; gap:24px;">
         <div style="display:flex; flex-direction:column; gap:5px;">
           <div class="hdln" style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2.4px; color:#B6BABC;">American Welding Society</div>
-          <div class="hdln" style="font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:#fff; line-height:1; white-space:nowrap;">Marketing Performance</div>
+          <div class="hdln ttl" style="font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:#fff; line-height:1; white-space:nowrap;">Marketing Performance</div>
         </div>
         <div style="display:flex; flex-direction:column; gap:4px; text-align:right;">
           <div class="hdln num" style="font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#fff; line-height:1;">{{ dataThrough }}</div>
@@ -78,7 +113,7 @@
     <sc-if value="{{ isMktPeriod }}" hint-placeholder-val="{{ true }}">
 
     <!-- CONTROLS -->
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+    <div class="ctl" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
       <div style="position:relative;">
         <div style="font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase; color:#6E7274; margin-bottom:4px;">Period</div>
         <div onClick="{{ togglePicker }}" style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #CFD2D4; border-radius:4px; padding:9px 14px; font-size:13.5px; font-weight:600; cursor:pointer; min-width:230px; justify-content:space-between;">
@@ -123,7 +158,7 @@
     </div>
 
     <!-- KPI CARDS -->
-    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px;">
+    <div class="kpis" style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px;">
 
       <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:10px;">
         <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">Click Rate</div>
@@ -185,9 +220,9 @@
     </sc-if>
 
     <!-- TRENDS -->
-    <div style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
+    <div class="cols" style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
       <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:6px;">
-        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+        <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
           <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Click rate vs. volume</div>
           <div style="display:flex; gap:13px; font-size:10.5px; color:#6E7274;">
             <span style="display:flex; align-items:center; gap:5px;"><span style="width:18px; height:3px; background:#0074E2; display:inline-block; border-radius:2px;"></span>Click Rate</span>
@@ -206,11 +241,11 @@
 
     <!-- TABLE -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Every email sent</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ emailNote }}</div>
       </div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:minmax(200px,1fr) 84px 66px 74px 66px 82px 74px 88px; gap:0 4px;">
           <sc-for list="{{ emailCols }}" as="c" hint-placeholder-count="8">
             <div onClick="{{ c.onClick }}" style="font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:700; {{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -233,9 +268,9 @@
     </div>
 
     <!-- SUBSCRIPTION -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+    <div class="cols" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:14px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Click rate by list</div>
         <div style="font-size:11px; color:#6E7274;">{{ periodShort }}</div>
       </div>
@@ -250,7 +285,7 @@
       </div>
     </div>
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:14px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Revenue by list</div>
         <div style="font-size:11px; color:#6E7274;">GA4, emails sent in period</div>
       </div>
@@ -270,11 +305,11 @@
     <!-- WEBSITE & REVENUE -->
     <sc-if value="{{ hasWeb }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:13px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">What happened on aws.org</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ webPeriodRange }}</div>
       </div>
-<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+<div class="kpis" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
       <sc-for list="{{ webCards }}" as="w" hint-placeholder-count="3">
         <div style="background:#FAFAFA; border:1px solid #EDEEEF; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:8px;">
           <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ w.label }}</div>
@@ -288,7 +323,7 @@
       </sc-for>
     </div>
       <sc-if value="{{ hasWebCarry }}" hint-placeholder-val="{{ true }}">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; border-top:1px solid #EDEEEF; padding-top:10px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; border-top:1px solid #EDEEEF; padding-top:10px;">
         <div style="font-size:11px; color:#6E7274;">{{ webCarryLabel }}</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ webCarryBreak }}</div>
       </div>
@@ -299,12 +334,12 @@
 
     <!-- ============ MARKETING EMAIL: HISTORIC ============ -->
     <sc-if value="{{ isMktHist }}" hint-placeholder-val="{{ false }}">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+    <div class="ctl" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
       
       <div style="font-size:11px; color:#6E7274;">{{ lifetimeSends }} sends</div>
     </div>
 
-    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px;">
+    <div class="kpis" style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px;">
       <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:6px;">
         <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">Emails Sent</div>
         <div class="num hdln" style="font-size:29px; font-weight:700;">{{ lifetimeSends }}</div>
@@ -334,11 +369,11 @@
 
     <!-- MOMENTUM -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:14px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Last 3 months vs. prior 3</div>
         <div style="font-size:11px; color:#6E7274;">Last 3 months vs prior 3 months</div>
       </div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:1fr 120px 120px 120px; gap:0 10px; font-size:10px; color:#6E7274; text-transform:uppercase; letter-spacing:0.8px; font-weight:700; padding-bottom:6px;">
           <sc-for list="{{ momCols }}" as="c" hint-placeholder-count="4">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -358,7 +393,7 @@
     <!-- YEARLY -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
       <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Year by year</div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:1fr 100px 110px 100px 100px 100px; gap:0 8px; font-size:10px; color:#6E7274; text-transform:uppercase; letter-spacing:0.8px; font-weight:700; padding:8px 0;">
           <sc-for list="{{ yearCols }}" as="c" hint-placeholder-count="6">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -379,7 +414,7 @@
 
     <!-- LONG TREND: CLICK -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:6px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Click rate, all time</div>
         <div style="font-size:11px; color:#6E7274;">Dashed line = the {{ goalClickLabel }} goal</div>
       </div>
@@ -388,7 +423,7 @@
 
     <!-- LONG TREND: UNSUB -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:6px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Unsubscribe rate, all time</div>
         <div style="font-size:11px; color:#6E7274;">Shaded band = at or below the {{ goalUnsubLabel }} goal</div>
       </div>
@@ -398,11 +433,11 @@
     <!-- WEBSITE & REVENUE -->
     <sc-if value="{{ hasHistWeb }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:13px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">What happened on aws.org</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ webRange }}</div>
       </div>
-<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+<div class="kpis" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
       <sc-for list="{{ histWebCards }}" as="w" hint-placeholder-count="3">
         <div style="background:#FAFAFA; border:1px solid #EDEEEF; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:8px;">
           <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ w.label }}</div>
@@ -411,9 +446,9 @@
         </div>
       </sc-for>
     </div>
-    <div style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
+    <div class="cols" style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
       <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:5px;">
-        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;">
+        <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;">
           <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Revenue and sessions from email</div>
           <div style="display:flex; gap:14px; font-size:10.5px; color:#6E7274; flex-wrap:wrap;">
           <span style="display:flex; align-items:center; gap:5px;"><span style="width:11px; height:11px; background:#CBD8E4; display:inline-block; border-radius:2px;"></span>Revenue, left axis</span>
@@ -475,7 +510,7 @@
 
     <!-- CHANNEL PERFORMANCE -->
     <sc-if value="{{ histHas }}" hint-placeholder-val="{{ true }}">
-    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px;">
+    <div class="kpis" style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px;">
         <sc-for list="{{ hist.kpis }}" as="k" hint-placeholder-count="4">
           <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:6px;">
             <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ k.label }}</div>
@@ -501,7 +536,7 @@
 
     <!-- VOLUME AND ENGAGEMENT TREND -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:7px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">Volume and engagement</div>
         <div style="display:flex; gap:14px; font-size:10.5px; color:#6E7274;">
           <span style="display:flex; align-items:center; gap:5px;"><span style="width:11px; height:11px; background:#CBD8E4; display:inline-block; border-radius:2px;"></span>Delivered</span>
@@ -518,11 +553,11 @@
 
     <!-- MONTH-OVER-MONTH MOVEMENT -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:12px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:16px; font-weight:700; white-space:nowrap;">Month-over-Month Movement</div>
       </div>
       <sc-if value="{{ hist.hasMoved }}" hint-placeholder-val="{{ true }}">
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:minmax(180px,1fr) 80px 62px 82px 84px 118px minmax(150px,1fr); gap:0 10px; font-size:10px; color:#6E7274; text-transform:uppercase; letter-spacing:0.8px; font-weight:700; padding-bottom:7px;">
           <sc-for list="{{ hist.movedCols }}" as="c" hint-placeholder-count="7">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -555,7 +590,7 @@
 
     <!-- EFFORT PRIORITIZATION -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:8px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">Where to spend effort</div>
         <div style="display:flex; gap:14px; font-size:10.5px; color:#6E7274;">
           <span style="display:flex; align-items:center; gap:5px;"><span style="width:9px; height:9px; border-radius:50%; background:#F56A00; display:inline-block;"></span>On the Action List</span>
@@ -570,13 +605,13 @@
     <!-- PRIORITY ACTIONS -->
     <sc-if value="{{ auto.hasActions }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:16px; font-weight:700; white-space:nowrap;">Priority Actions</div>
         <div style="font-size:11px; color:#6E7274; white-space:nowrap;">Ranked by impact = severity &times; log&#8321;&#8320;(reach)</div>
       </div>
       
       <sc-for list="{{ auto.actions }}" as="a" hint-placeholder-count="4">
-        <div style="display:grid; grid-template-columns:28px minmax(180px,1.1fr) 1.5fr 140px; gap:0 14px; align-items:start; padding:13px 0; border-top:1px solid #EDEEEF;">
+        <div class="stack" style="display:grid; grid-template-columns:28px minmax(180px,1.1fr) 1.5fr 140px; gap:0 14px; align-items:start; padding:13px 0; border-top:1px solid #EDEEEF;">
           <div class="num hdln" style="font-size:17px; font-weight:700; color:#A7ABAD;">{{ a.rank }}</div>
           <div style="display:flex; flex-direction:column; gap:3px;">
             <div style="font-size:12.5px; font-weight:700; line-height:1.35;"><a href="{{ a.url }}" target="_blank" rel="noopener" style="color:#0074E2; text-decoration:none;">{{ a.name }}</a></div>
@@ -602,11 +637,11 @@
     <!-- WEBSITE & REVENUE -->
     <sc-if value="{{ agHas }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:13px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">What happened on aws.org</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ ag.span }}</div>
       </div>
-<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+<div class="kpis" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
       <sc-for list="{{ ag.kpis }}" as="k" hint-placeholder-count="3">
         <div style="background:#FAFAFA; border:1px solid #EDEEEF; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:8px;">
           <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ k.label }}</div>
@@ -631,11 +666,11 @@
     
 
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">All automated emails</div>
         
       </div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:minmax(200px,1fr) 120px 90px 80px 80px 80px 90px; gap:0 8px; font-size:10px; color:#6E7274; text-transform:uppercase; letter-spacing:0.8px; font-weight:700; padding-bottom:6px;">
           <sc-for list="{{ auto.dirCols }}" as="c" hint-placeholder-count="7">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -668,7 +703,7 @@
     
 
     <!-- CONTROLS -->
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+    <div class="ctl" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
       <div style="position:relative;">
         <div style="font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase; color:#6E7274; margin-bottom:4px;">Period</div>
         <div onClick="{{ tw.togglePicker }}" style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #CFD2D4; border-radius:4px; padding:9px 14px; font-size:13.5px; font-weight:600; cursor:pointer; min-width:230px; justify-content:space-between;">
@@ -699,7 +734,7 @@
     </div>
 
     <!-- KPI CARDS -->
-    <div style="display:grid; grid-template-columns:{{ tw.kpiCols }}; gap:12px;">
+    <div class="kpis" style="display:grid; grid-template-columns:{{ tw.kpiCols }}; gap:12px;">
       <sc-for list="{{ tw.kpis }}" as="k" hint-placeholder-count="5">
         <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:10px;">
           <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ k.label }}</div>
@@ -717,7 +752,7 @@
 
     <!-- TRENDS -->
     <sc-if value="{{ tw.hasUnsubChart }}" hint-placeholder-val="{{ true }}">
-    <div style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
+    <div class="cols" style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
       <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:6px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Click rate vs. volume</div>
         <div style="font-size:11px; color:#6E7274; margin-top:-2px;">Selected months are highlighted.</div>
@@ -732,11 +767,11 @@
 
     <!-- TABLE -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Every issue</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ tw.note }}</div>
       </div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:92px minmax(210px,1fr) 78px 66px 68px 62px 60px 74px 74px 88px; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:700; font-weight:600; padding-bottom:6px;">
           <sc-for list="{{ tw.rowCols }}" as="c" hint-placeholder-count="10">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -761,11 +796,11 @@
     <!-- WEBSITE & REVENUE -->
     <sc-if value="{{ twPeriodWebHas }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:13px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">What happened on aws.org</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ twPeriodWeb.range }}</div>
       </div>
-<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+<div class="kpis" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
       <sc-for list="{{ twPeriodWeb.cards }}" as="w" hint-placeholder-count="3">
         <div style="background:#FAFAFA; border:1px solid #EDEEEF; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:8px;">
           <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ w.label }}</div>
@@ -779,7 +814,7 @@
       </sc-for>
     </div>
       <sc-if value="{{ twCarryHas }}" hint-placeholder-val="{{ true }}">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; border-top:1px solid #EDEEEF; padding-top:10px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; border-top:1px solid #EDEEEF; padding-top:10px;">
         <div style="font-size:11px; color:#6E7274;">{{ twCarryLabel }}</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ twCarryBreak }}</div>
       </div>
@@ -792,10 +827,10 @@
     <sc-if value="{{ isTwiwHist }}" hint-placeholder-val="{{ false }}">
 
     <!-- LIFETIME SUMMARY -->
-    <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+    <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
       <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">Since we started</div>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:12px;">
+    <div class="kpis" style="display:grid; grid-template-columns:repeat(6,1fr); gap:12px;">
       <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:6px;">
         <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">Sends</div>
         <div class="num hdln" style="font-size:24px; font-weight:700;">{{ tw.lifeSends }}</div>
@@ -828,11 +863,11 @@
 
     <!-- MOMENTUM -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:14px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Last 3 months vs. prior 3</div>
         <div style="font-size:11px; color:#6E7274;">Last 3 months vs prior 3 months</div>
       </div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:1fr 120px 120px 120px; gap:0 10px; font-size:10px; color:#6E7274; text-transform:uppercase; letter-spacing:0.8px; font-weight:700; padding-bottom:6px;">
           <sc-for list="{{ tw.momCols }}" as="c" hint-placeholder-count="4">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -852,7 +887,7 @@
     <!-- YEARLY -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:14px;">
       <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Year by year</div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:1fr 90px 110px 100px 100px 100px; gap:0 10px; font-size:10px; color:#6E7274; text-transform:uppercase; letter-spacing:0.8px; font-weight:700; padding-bottom:6px;">
           <sc-for list="{{ tw.yearCols }}" as="c" hint-placeholder-count="6">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -886,11 +921,11 @@
     <!-- WEBSITE & REVENUE -->
     <sc-if value="{{ hasTwiwWeb }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:13px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">What happened on aws.org</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ twiwWebRange }}</div>
       </div>
-<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+<div class="kpis" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
       <sc-for list="{{ twiwWebCards }}" as="w" hint-placeholder-count="3">
         <div style="background:#FAFAFA; border:1px solid #EDEEEF; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:8px;">
           <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ w.label }}</div>
@@ -900,7 +935,7 @@
       </sc-for>
     </div>
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:5px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Revenue and sessions from the newsletter</div>
         <div style="display:flex; gap:14px; font-size:10.5px; color:#6E7274; flex-wrap:wrap;">
           <span style="display:flex; align-items:center; gap:5px;"><span style="width:11px; height:11px; background:#CBD8E4; display:inline-block; border-radius:2px;"></span>Revenue, left axis</span>
@@ -921,7 +956,7 @@
     
 
     <!-- CONTROLS -->
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+    <div class="ctl" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
       <div style="position:relative;">
         <div style="font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase; color:#6E7274; margin-bottom:4px;">Period</div>
         <div onClick="{{ sms.togglePicker }}" style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #CFD2D4; border-radius:4px; padding:9px 14px; font-size:13.5px; font-weight:600; cursor:pointer; min-width:230px; justify-content:space-between;">
@@ -952,7 +987,7 @@
     </div>
 
     <!-- KPI CARDS -->
-    <div style="display:grid; grid-template-columns:{{ sms.kpiCols }}; gap:12px;">
+    <div class="kpis" style="display:grid; grid-template-columns:{{ sms.kpiCols }}; gap:12px;">
       <sc-for list="{{ sms.kpis }}" as="k" hint-placeholder-count="5">
         <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:10px;">
           <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ k.label }}</div>
@@ -975,7 +1010,7 @@
     </div>
     </sc-if>
     <sc-if value="{{ sms.hasUnsubChart }}" hint-placeholder-val="{{ true }}">
-    <div style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
+    <div class="cols" style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
       <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:6px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Click rate vs. volume</div>
         <div style="font-size:11px; color:#6E7274; margin-top:-2px;">Selected months are highlighted.</div>
@@ -990,11 +1025,11 @@
 
     <!-- TABLE -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Every send</div>
         
       </div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:96px minmax(200px,1fr) 92px 84px 96px; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:700; font-weight:600; padding-bottom:6px;">
           <sc-for list="{{ sms.rowCols }}" as="c" hint-placeholder-count="5">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -1015,11 +1050,11 @@
     <!-- WEBSITE & REVENUE -->
     <sc-if value="{{ smsWebHas }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:13px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">What happened on aws.org</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ smsWeb.span }}</div>
       </div>
-<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+<div class="kpis" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
       <sc-for list="{{ smsWeb.cards }}" as="c" hint-placeholder-count="3">
         <div style="background:#FAFAFA; border:1px solid #EDEEEF; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:8px;">
           <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ c.label }}</div>
@@ -1041,10 +1076,10 @@
     <sc-if value="{{ isSmsHist }}" hint-placeholder-val="{{ false }}">
 
     <!-- LIFETIME SUMMARY -->
-    <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+    <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
       <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">Since we started</div>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:12px;">
+    <div class="kpis" style="display:grid; grid-template-columns:repeat(6,1fr); gap:12px;">
       <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:6px;">
         <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">Sends</div>
         <div class="num hdln" style="font-size:24px; font-weight:700;">{{ sms.lifeSends }}</div>
@@ -1069,11 +1104,11 @@
 
     <!-- MOMENTUM -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:14px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Last 3 months vs. prior 3</div>
         <div style="font-size:11px; color:#6E7274;">Last 3 months vs prior 3 months</div>
       </div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:1fr 120px 120px 120px; gap:0 10px; font-size:10px; color:#6E7274; text-transform:uppercase; letter-spacing:0.8px; font-weight:700; padding-bottom:6px;">
           <sc-for list="{{ sms.momCols }}" as="c" hint-placeholder-count="4">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -1093,7 +1128,7 @@
     <!-- YEARLY -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:18px 20px; display:flex; flex-direction:column; gap:14px;">
       <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Year by year</div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:1fr 90px 110px 100px; gap:0 10px; font-size:10px; color:#6E7274; text-transform:uppercase; letter-spacing:0.8px; font-weight:700; padding-bottom:6px;">
           <sc-for list="{{ sms.yearCols }}" as="c" hint-placeholder-count="4">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -1129,7 +1164,7 @@
     <sc-if value="{{ websHas }}" hint-placeholder-val="{{ true }}">
 
     <!-- CONTROLS -->
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+    <div class="ctl" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
       <div style="position:relative;">
         <div style="font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase; color:#6E7274; margin-bottom:4px;">Period</div>
         <div onClick="{{ webs.togglePicker }}" style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #CFD2D4; border-radius:4px; padding:9px 14px; font-size:13.5px; font-weight:600; cursor:pointer; min-width:230px; justify-content:space-between;">
@@ -1174,7 +1209,7 @@
     </div>
 
     <!-- KPI CARDS -->
-    <div style="display:grid; grid-template-columns:{{ webs.kpiCols }}; gap:12px;">
+    <div class="kpis" style="display:grid; grid-template-columns:{{ webs.kpiCols }}; gap:12px;">
       <sc-for list="{{ webs.kpis }}" as="k" hint-placeholder-count="5">
         <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:10px;">
           <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ k.label }}</div>
@@ -1190,7 +1225,7 @@
 
     <!-- TREND -->
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:6px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Sessions vs. engagement rate</div>
         <div style="display:flex; gap:14px; font-size:11px; color:#6E7274;">
           <div style="display:flex; align-items:center; gap:6px;"><span style="width:14px;height:0;border-top:1.6px dashed #6E7274;display:inline-block;"></span>{{ webs.sessionGoalLabel }}</div>
@@ -1203,7 +1238,7 @@
     <!-- TRAFFIC TABLE -->
     <sc-if value="{{ webs.hasTraf }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">Traffic and revenue by {{ webs.activeDim }}</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ webs.trafSpan }}</div>
       </div>
@@ -1215,7 +1250,7 @@
       <sc-if value="{{ webs.hasTrafNote }}" hint-placeholder-val="{{ false }}">
       <div style="font-size:11px; color:#6E7274; line-height:1.5;">{{ webs.trafNote }}</div>
       </sc-if>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:{{ webs.trafGrid }}; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:700; font-weight:600; padding-bottom:6px;">
           <sc-for list="{{ webs.trafCols }}" as="c" hint-placeholder-count="6">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -1239,11 +1274,11 @@
     <!-- TOP PAGES -->
     <sc-if value="{{ webs.hasPages }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">Top Pages</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ webs.pageSpan }}</div>
       </div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:minmax(240px,1fr) 100px 108px; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:700; font-weight:600; padding-bottom:6px;">
           <sc-for list="{{ webs.pageCols }}" as="c" hint-placeholder-count="3">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -1268,7 +1303,7 @@
     <sc-if value="{{ isWebSearch }}" hint-placeholder-val="{{ false }}">
     <sc-if value="{{ webqHas }}" hint-placeholder-val="{{ true }}">
 
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+    <div class="ctl" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
       <div style="position:relative;">
         <div style="font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase; color:#6E7274; margin-bottom:4px;">Period</div>
         <div onClick="{{ webq.togglePicker }}" style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #CFD2D4; border-radius:4px; padding:9px 14px; font-size:13.5px; font-weight:600; cursor:pointer; min-width:230px; justify-content:space-between;">
@@ -1298,7 +1333,7 @@
       <div style="font-size:11.5px; color:#6E7274;">www.aws.org, Google Search Console</div>
     </div>
 
-    <div style="display:grid; grid-template-columns:{{ webq.kpiCols }}; gap:12px;">
+    <div class="kpis" style="display:grid; grid-template-columns:{{ webq.kpiCols }}; gap:12px;">
       <sc-for list="{{ webq.kpis }}" as="k" hint-placeholder-count="4">
         <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:10px;">
           <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ k.label }}</div>
@@ -1312,13 +1347,13 @@
       </sc-for>
     </div>
 
-    <div style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
+    <div class="cols" style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
       <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:6px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Impressions vs. clicks</div>
         {{ webq.trend }}
       </div>
       <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:6px;">
-        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+        <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
           <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Average Position</div>
           <div class="num" style="font-size:11px; color:#6E7274;">{{ webq.posRange }}</div>
         </div>
@@ -1328,11 +1363,11 @@
 
     <sc-if value="{{ webq.hasQ }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">Top search queries</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ webq.qSpan }}</div>
       </div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:minmax(220px,1fr) 112px 88px 76px 88px; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:700; font-weight:600; padding-bottom:6px;">
           <sc-for list="{{ webq.qCols }}" as="c" hint-placeholder-count="5">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -1358,7 +1393,7 @@
     <sc-if value="{{ isWebEcom }}" hint-placeholder-val="{{ false }}">
     <sc-if value="{{ webeHas }}" hint-placeholder-val="{{ true }}">
 
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+    <div class="ctl" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
       <div style="position:relative;">
         <div style="font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase; color:#6E7274; margin-bottom:4px;">Period</div>
         <div onClick="{{ webe.togglePicker }}" style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #CFD2D4; border-radius:4px; padding:9px 14px; font-size:13.5px; font-weight:600; cursor:pointer; min-width:230px; justify-content:space-between;">
@@ -1388,7 +1423,7 @@
       <div style="font-size:11.5px; color:#6E7274;">All aws.org hosts, checkout completes on my1.aws.org</div>
     </div>
 
-    <div style="display:grid; grid-template-columns:{{ webe.kpiCols }}; gap:12px;">
+    <div class="kpis" style="display:grid; grid-template-columns:{{ webe.kpiCols }}; gap:12px;">
       <sc-for list="{{ webe.kpis }}" as="k" hint-placeholder-count="4">
         <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:10px;">
           <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;">{{ k.label }}</div>
@@ -1409,11 +1444,11 @@
 
     <sc-if value="{{ webe.hasChan }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">Revenue by Channel</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ webe.chSpan }}</div>
       </div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:minmax(180px,1fr) 116px 72px 88px 96px 96px; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:700; font-weight:600; padding-bottom:6px;">
           <sc-for list="{{ webe.chCols }}" as="c" hint-placeholder-count="6">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
@@ -1435,11 +1470,11 @@
 
     <sc-if value="{{ webe.hasProd }}" hint-placeholder-val="{{ true }}">
     <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
         <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; white-space:nowrap;">Top products</div>
         <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ webe.pSpan }}</div>
       </div>
-      <div style="display:flex; flex-direction:column;">
+      <div class="tw" style="display:flex; flex-direction:column;">
         <div style="display:grid; grid-template-columns:minmax(240px,1fr) 96px 116px 104px; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:700; font-weight:600; padding-bottom:6px;">
           <sc-for list="{{ webe.pCols }}" as="c" hint-placeholder-count="4">
             <div onClick="{{ c.onClick }}" style="{{ c.thStyle }}">{{ c.label }}{{ c.arrow }}</div>
