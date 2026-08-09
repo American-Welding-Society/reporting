@@ -65,7 +65,17 @@
 <script src="../data/auto-email-data.js"></script>
 <script src="../data/auto-history-data.js"></script>
 <script src="../data/auto-ga4-data.js"></script>
-<script src="../data/web-data.js"></script>
+<!-- web-data.js is deliberately not loaded while SHOW_WEB is false, and the tag is
+     DELETED rather than commented out. GH_build inlines with a plain
+     /<script src="([^"]+)"><\/script>/g over the raw template and does not know what
+     an HTML comment is, so a commented tag is still inlined - and inlined INSIDE the
+     comment, where the data's own characters can close it early. Hiding the tab alone
+     would also leave every website figure sitting in index.html for anyone who views
+     source. buildWebSite, buildWebSearch, buildWebEcom and the ecommerce summary all
+     guard on window.WEB_DATA, so its absence is handled rather than merely tolerated.
+     To restore, put this line back next to the other data tags and flip SHOW_WEB:
+       script src="../data/web-data.js"  (as a normal script tag)
+-->
 <!-- geo-data.js is still produced monthly by GEO_writeDataFile and still holds all 51
      states, but nothing renders it since 2026-08-06. Geography is answered by the
      Country / US State tabs on the traffic table, which follow the period picker.
@@ -89,7 +99,9 @@
       </div>
 
       <div style="background:#fff; display:flex; align-items:stretch; gap:0; padding:0 24px; flex-wrap:wrap;">
+        <sc-if value="{{ hasCh5 }}" hint-placeholder-val="{{ false }}">
         <div onClick="{{ goCh5 }}" style="{{ ch5Style }}">Website</div>
+        </sc-if>
         <div onClick="{{ goCh1 }}" style="{{ ch1Style }}">Marketing Email</div>
         <div onClick="{{ goCh3 }}" style="{{ ch3Style }}">This Week in Welding</div>
         <div onClick="{{ goCh4 }}" style="{{ ch4Style }}">SMS</div>
@@ -3422,7 +3434,19 @@ class Component extends DCLogic {
         span: (use.length ? (this.mLabel(use[0]) + ' to ' + this.mLabel(use[use.length - 1])) : '') + ' \u00b7 all aws.org hosts' };
     }
 
-    const ch = S.ch === 0 ? 0 : (S.ch || 1), view = S.view || 1;
+    // ── WEBSITE TAB VISIBILITY ──────────────────────────────────────────────
+    // The Website page is finished and every line of it stays in this file exactly as
+    // it is. This one flag decides whether it is reachable. Set it back to true and the
+    // tab, its three views and all three sections return with no rebuild work: nothing
+    // below has been deleted, commented out, or moved.
+    //
+    // The clamp matters as much as the flag. Without it, a state carrying ch === 5 would
+    // hide the tab and then render an empty page with no way back, which looks like a
+    // broken build rather than a hidden section.
+    const SHOW_WEB = false;
+
+    const chRaw = S.ch === 0 ? 0 : (S.ch || 1);
+    const ch = (!SHOW_WEB && chRaw === 5) ? 1 : chRaw, view = S.view || 1;
     const tabBase = 'padding:14px 0 11px; margin-right:26px; font-size:12.5px; cursor:pointer; white-space:nowrap; text-transform:uppercase; letter-spacing:1px; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif;';
     const activeTab = tabBase + ' font-weight:700; color:#003767; border-bottom:3px solid #F56A00;';
     const idleTab = tabBase + ' font-weight:600; color:#6E7274; border-bottom:3px solid transparent;';
@@ -3458,7 +3482,8 @@ class Component extends DCLogic {
       ch5Style: ch === 5 ? activeTab : idleTab,
       view1Style: view === 1 ? activeView : idleView, view2Style: view === 2 ? activeView : idleView,
       view3Style: view === 3 ? activeView : idleView,
-      hasView3: ch === 5,
+      hasCh5: SHOW_WEB,
+      hasView3: SHOW_WEB && ch === 5,
       view1Label: ch === 5 ? 'Traffic' : 'Snapshot',
       view2Label: ch === 2 ? 'Every email' : (ch === 5 ? 'Search' : 'Over time'),
       view3Label: 'Ecommerce',
