@@ -80,8 +80,6 @@
      states, but nothing renders it since 2026-08-06. Geography is answered by the
      Country / US State tabs on the traffic table, which follow the period picker.
      Deliberately not loaded; do not "fix" this by adding a script tag. -->
-<script src="../data/web-data.js"></script>
-<script src="../data/paid-data.js"></script>
 </helmet>
 
 <div style="min-height:100vh; padding: 26px 24px 56px; display:flex; justify-content:center;">
@@ -103,7 +101,6 @@
       <div style="background:#fff; display:flex; align-items:stretch; gap:0; padding:0 24px; flex-wrap:wrap;">
         <sc-if value="{{ hasCh5 }}" hint-placeholder-val="{{ false }}">
         <div onClick="{{ goCh5 }}" style="{{ ch5Style }}">Website</div>
-        <div onClick="{{ goCh6 }}" style="{{ ch6Style }}">Paid Media</div>
         </sc-if>
         <div onClick="{{ goCh1 }}" style="{{ ch1Style }}">Marketing Email</div>
         <div onClick="{{ goCh3 }}" style="{{ ch3Style }}">This Week in Welding</div>
@@ -1510,159 +1507,6 @@
     </sc-if>
     </sc-if>
 
-
-    <!-- ============ PAID MEDIA: SNAPSHOT ============ -->
-    <sc-if value="{{ isPaidPeriod }}" hint-placeholder-val="{{ false }}">
-    <sc-if value="{{ paidHas }}" hint-placeholder-val="{{ true }}">
-
-    <!-- CONTROLS -->
-    <div class="ctl" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
-      <div style="position:relative;">
-        <div style="font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase; color:#6E7274; margin-bottom:4px;">Period</div>
-        <div onClick="{{ paid.togglePicker }}" style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #CFD2D4; border-radius:4px; padding:9px 14px; font-size:13.5px; font-weight:600; cursor:pointer; min-width:230px; justify-content:space-between;">
-          <span>{{ paid.pickerLabel }}</span>
-          <span style="color:#6E7274;">&#9662;</span>
-        </div>
-        <sc-if value="{{ paid.pickerOpen }}" hint-placeholder-val="{{ false }}">
-          <div onClick="{{ paid.closePicker }}" style="position:fixed; inset:0; z-index:40;"></div>
-          <div style="position:absolute; top:64px; left:0; z-index:50; width:300px; background:#fff; border:1px solid #CFD2D4; border-radius:6px; box-shadow:0 12px 40px rgba(20,30,45,0.18); overflow:hidden;">
-            <div style="display:flex; flex-wrap:wrap; gap:6px; padding:12px; border-bottom:1px solid #EDEEEF;">
-              <sc-for list="{{ paid.presets }}" as="p" hint-placeholder-count="5">
-                <div onClick="{{ p.apply }}" style="font-size:11px; font-weight:600; padding:5px 10px; border-radius:3px; background:#F2F3F4; color:#393B3B; cursor:pointer;">{{ p.label }}</div>
-              </sc-for>
-            </div>
-            <div style="max-height:280px; overflow-y:auto;">
-              <sc-for list="{{ paid.monthOptions }}" as="o" hint-placeholder-count="8">
-                <div onClick="{{ o.toggle }}" style="display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; border-bottom:1px solid #F2F3F4;">
-                  <div style="{{ o.boxStyle }}">{{ o.check }}</div>
-                  <div style="font-size:13px; font-weight:600; flex:1;">{{ o.label }}</div>
-                  <div class="num" style="font-size:11px; color:#6E7274;">{{ o.sub }}</div>
-                </div>
-              </sc-for>
-            </div>
-          </div>
-        </sc-if>
-      </div>
-    </div>
-
-    <!-- KPI CARDS -->
-    <div class="kpis" style="display:grid; grid-template-columns:{{ paid.kpiCols }}; gap:12px;">
-      <sc-for list="{{ paid.kpis }}" as="k" hint-placeholder-count="5">
-        <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:10px;">
-          <div style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700;">{{ k.label }}</div>
-          <div class="num hdln" style="font-size:32px; font-weight:700; color:{{ k.valColor }};">{{ k.val }}</div>
-          <div style="font-size:10.5px; color:#6E7274;">{{ k.sub }}</div>
-          <div style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
-            <div style="display:flex; align-items:baseline; gap:8px;"><span style="color:#6E7274; font-size:9.5px; text-transform:uppercase; letter-spacing:0.6px; min-width:34px; flex-shrink:0;">{{ paid.momLabel }}</span><span class="num" style="white-space:nowrap; {{ k.mom.style }}">{{ k.mom.text }}</span></div>
-            <div style="display:flex; align-items:baseline; gap:8px;"><span style="color:#6E7274; font-size:9.5px; text-transform:uppercase; letter-spacing:0.6px; min-width:34px; flex-shrink:0;">YoY</span><span class="num" style="white-space:nowrap; {{ k.yoy.style }}">{{ k.yoy.text }}</span></div>
-          </div>
-        </div>
-      </sc-for>
-    </div>
-
-    <!-- EVIDENCE -->
-    <div class="cols" style="display:grid; grid-template-columns:340px 1fr; gap:12px;">
-      <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-        <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527;">How the campaign was identified</div>
-        <div class="tw" style="display:flex; flex-direction:column;">
-          <div style="display:grid; grid-template-columns:minmax(110px,1fr) 86px 62px; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:600; padding-bottom:6px;">
-            <div style="text-align:left;">Evidence</div>
-            <div style="text-align:right;">Sessions</div>
-            <div style="text-align:right;">Share</div>
-          </div>
-          <sc-for list="{{ paid.tierRows }}" as="t" hint-placeholder-count="4">
-            <div class="num" style="display:grid; grid-template-columns:minmax(110px,1fr) 86px 62px; gap:0 4px; border-top:1px solid #EDEEEF; align-items:center; font-size:12.5px;">
-              <div style="text-align:left; padding:9px 8px 9px 0;"><span style="{{ t.chipStyle }}">{{ t.label }}</span></div>
-              <div style="padding:9px 8px; text-align:right; font-weight:600;">{{ t.sessions }}</div>
-              <div style="padding:9px 0 9px 8px; text-align:right; color:#393B3B;">{{ t.share }}</div>
-            </div>
-          </sc-for>
-        </div>
-        <div style="font-size:11px; color:#6E7274; line-height:1.55;">Unresolved is {{ paid.unresLabel }}.</div>
-      </div>
-      <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:9px;">
-        <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527;">Reading these numbers</div>
-        <div style="font-size:11.5px; color:#393B3B; line-height:1.6;">{{ paid.costNote }}</div>
-        <div style="font-size:11.5px; color:#6E7274; line-height:1.6;">{{ paid.evidenceNote }}</div>
-        <div style="font-size:11.5px; color:#6E7274; line-height:1.6;">{{ paid.spendNote }}</div>
-      </div>
-    </div>
-
-    <!-- CAMPAIGN TABLE -->
-    <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
-        <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Campaigns</div>
-        <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ paid.campSpan }}</div>
-      </div>
-      <sc-if value="{{ paid.hasCapNote }}" hint-placeholder-val="{{ false }}">
-      <div style="font-size:11px; color:#6E7274; line-height:1.5;">{{ paid.capNote }}</div>
-      </sc-if>
-      <div class="tw" style="display:flex; flex-direction:column;">
-        <div style="display:grid; grid-template-columns:minmax(230px,1fr) 108px 108px 86px 86px 100px 96px; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:600; padding-bottom:6px;">
-          <div style="text-align:left;">Campaign</div>
-          <div style="text-align:left;">Platform</div>
-          <div style="text-align:left;">Evidence</div>
-          <div style="text-align:right;">Sessions</div>
-          <div style="text-align:right;">Purchases</div>
-          <div style="text-align:right;">Revenue</div>
-          <div style="text-align:right;">Cost</div>
-        </div>
-        <sc-for list="{{ paid.campRows }}" as="r" hint-placeholder-count="0">
-          <div class="num" style="display:grid; grid-template-columns:minmax(230px,1fr) 108px 108px 86px 86px 100px 96px; gap:0 4px; border-top:1px solid #EDEEEF; align-items:center; font-size:12.5px;">
-            <div style="text-align:left; padding:9px 8px 9px 0; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.name }}</div>
-            <div style="padding:9px 8px; text-align:left; color:#393B3B;">{{ r.platform }}</div>
-            <div style="padding:9px 8px; text-align:left;"><span style="{{ r.chipStyle }}">{{ r.tier }}</span></div>
-            <div style="padding:9px 8px; text-align:right; font-weight:600;">{{ r.sessions }}</div>
-            <div style="padding:9px 8px; text-align:right; color:#393B3B;">{{ r.purchases }}</div>
-            <div style="padding:9px 8px; text-align:right; color:#393B3B;">{{ r.rev }}</div>
-            <div style="padding:9px 0 9px 8px; text-align:right; color:#393B3B;">{{ r.cost }}</div>
-          </div>
-        </sc-for>
-      </div>
-    </div>
-
-    </sc-if>
-    <sc-if value="{{ paidHasNo }}" hint-placeholder-val="{{ false }}">
-    <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:22px; font-size:12.5px; color:#6E7274;">Paid media data has not been built yet. Run PAID_run() in the Marketing Dashboard Pipeline until it publishes paid-data.js, then rebuild.</div>
-    </sc-if>
-    </sc-if>
-
-    <!-- ============ PAID MEDIA: OVER TIME ============ -->
-    <sc-if value="{{ isPaidHist }}" hint-placeholder-val="{{ false }}">
-    <sc-if value="{{ paidHas }}" hint-placeholder-val="{{ true }}">
-
-    <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
-      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
-        <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Every month</div>
-        <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ paid.platformNote }}</div>
-      </div>
-      <div class="tw" style="display:flex; flex-direction:column;">
-        <div style="display:grid; grid-template-columns:minmax(150px,1fr) 110px 100px 96px 116px 118px; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:600; padding-bottom:6px;">
-          <div style="text-align:left;">Month</div>
-          <div style="text-align:right;">Cash spend</div>
-          <div style="text-align:right;">Sessions</div>
-          <div style="text-align:right;">Purchases</div>
-          <div style="text-align:right;">Revenue</div>
-          <div style="text-align:right;">Unresolved</div>
-        </div>
-        <sc-for list="{{ paid.monthRows }}" as="r" hint-placeholder-count="0">
-          <div class="num" style="display:grid; grid-template-columns:minmax(150px,1fr) 110px 100px 96px 116px 118px; gap:0 4px; border-top:1px solid #EDEEEF; align-items:center; font-size:12.5px;">
-            <div style="text-align:left; padding:9px 8px 9px 0; font-weight:600; white-space:nowrap;">{{ r.month }}</div>
-            <div style="padding:9px 8px; text-align:right; font-weight:600;">{{ r.cost }}</div>
-            <div style="padding:9px 8px; text-align:right; color:#393B3B;">{{ r.sessions }}</div>
-            <div style="padding:9px 8px; text-align:right; color:#393B3B;">{{ r.purchases }}</div>
-            <div style="padding:9px 8px; text-align:right; color:#393B3B;">{{ r.rev }}</div>
-            <div style="{{ r.unresStyle }}">{{ r.unres }}</div>
-          </div>
-        </sc-for>
-      </div>
-      <div style="font-size:11px; color:#6E7274; line-height:1.55;">{{ paid.evidenceNote }}</div>
-      <div style="font-size:11px; color:#6E7274; line-height:1.55;">{{ paid.spendNote }}</div>
-    </div>
-
-    </sc-if>
-    </sc-if>
-
   </div>
 </div>
 </x-dc>
@@ -3058,178 +2902,6 @@ class Component extends DCLogic {
     ]);
   }
 
-  /* PAID MEDIA panel. Reads paid-data.js. Every row carries an evidenceTier and this
-     panel is required to show it. Observed and Exact are measurement. Recovered means the
-     name came from the Campaign ID Map by joining a numeric id found in the landing URL,
-     not from Analytics. Unresolved is paid traffic with no recoverable identifier.
-
-     The asymmetry that misleads if it is not labelled: cost always has a campaign, because
-     it comes from the Google Ads export. Sessions and revenue are what go missing. So an
-     Unresolved row shows sessions and revenue against no cost, and named campaigns show
-     full cost against fewer sessions than they really drove. Cost per session by campaign
-     is therefore overstated while the Unresolved bucket is large. Stated on the panel. */
-  buildPaid() {
-    const D = (typeof window !== 'undefined' && window.PAID_DATA) || null;
-    if (!D || !D.rows || !D.rows.length) return { has: false };
-
-    const C = {};
-    (D.cols || []).forEach((c, i) => { C[c] = i; });
-    const need = ['month', 'platform', 'campaign', 'evidenceTier', 'sessions',
-                  'purchases', 'revenue', 'cost'];
-    for (let i = 0; i < need.length; i++) if (C[need[i]] === undefined) return { has: false };
-    const iGrant = C.grantCost, iClicks = C.clicks, iEng = C.engaged;
-
-    const rows = D.rows;
-    const byMonth = {};
-    for (let i = 0; i < rows.length; i++) {
-      const m = String(rows[i][C.month]);
-      (byMonth[m] || (byMonth[m] = [])).push(rows[i]);
-    }
-    const months = Object.keys(byMonth).sort();
-    if (!months.length) return { has: false };
-
-    const spendOf = ms => ms.reduce((a, m) => a + (byMonth[m] || [])
-      .reduce((b, r) => b + (Number(r[C.cost]) || 0), 0), 0);
-
-    const P = this.webPicker(months, 'paidSel', k => '$' + this.kf(spendOf([k])));
-    const sel = P.sel;
-
-    const agg = ms => {
-      const t = { cost: 0, grant: 0, sessions: 0, engaged: 0, purchases: 0, revenue: 0,
-                  clicks: 0, tiers: {} };
-      ms.forEach(m => (byMonth[m] || []).forEach(r => {
-        const s = Number(r[C.sessions]) || 0;
-        t.cost      += Number(r[C.cost]) || 0;
-        t.grant     += iGrant  === undefined ? 0 : (Number(r[iGrant])  || 0);
-        t.clicks    += iClicks === undefined ? 0 : (Number(r[iClicks]) || 0);
-        t.engaged   += iEng    === undefined ? 0 : (Number(r[iEng])    || 0);
-        t.sessions  += s;
-        t.purchases += Number(r[C.purchases]) || 0;
-        t.revenue   += Number(r[C.revenue])   || 0;
-        const tier = String(r[C.evidenceTier] || 'Observed');
-        t.tiers[tier] = (t.tiers[tier] || 0) + s;
-      }));
-      return t;
-    };
-
-    const cur   = agg(sel);
-    const prevP = P.contig ? agg(sel.map(m => this.addMonths(m, -sel.length)).filter(m => byMonth[m]))
-                           : { cost: 0, sessions: 0, purchases: 0, revenue: 0, tiers: {} };
-    const prevYms = sel.map(m => this.addMonths(m, -12)).filter(m => byMonth[m]);
-    const prevY = agg(prevYms);
-    const pAvail = P.contig && sel.map(m => this.addMonths(m, -sel.length)).some(m => byMonth[m]);
-    const yAvail = prevYms.length === sel.length && prevYms.length > 0;
-
-    const tierOrder = ['Observed', 'Exact', 'Recovered', 'Unresolved'];
-    const tierColor = { Observed:   { bg: '#F2F3F4', fg: '#3A3D3E' },
-                        Exact:      { bg: '#E8F1FB', fg: '#0B4E93' },
-                        Recovered:  { bg: '#FDF1E3', fg: '#8A4B00' },
-                        Unresolved: { bg: '#FBEAE8', fg: '#A32A20' } };
-    const chip = t => {
-      const c = tierColor[t] || tierColor.Observed;
-      return 'display:inline-block; padding:2px 7px; border-radius:3px; font-size:10px; ' +
-             'font-weight:700; letter-spacing:0.4px; text-transform:uppercase; ' +
-             'background:' + c.bg + '; color:' + c.fg + ';';
-    };
-
-    const unresolved = cur.tiers.Unresolved || 0;
-    const unresShare = cur.sessions ? 100 * unresolved / cur.sessions : 0;
-    const tierRows = tierOrder.filter(t => cur.tiers[t]).map(t => ({
-      label: t, chipStyle: chip(t),
-      sessions: this.nf(cur.tiers[t]),
-      share: (cur.sessions ? (100 * cur.tiers[t] / cur.sessions).toFixed(1) : '0.0') + '%',
-    }));
-
-    const roas = c => c.cost ? c.revenue / c.cost : 0;
-    const kpis = [
-      this.webKpi('Cash Spend', '$' + this.nf(cur.cost), cur.cost, prevP.cost, prevY.cost,
-        'pct', (cur.grant ? '$' + this.nf(cur.grant) + ' Ad Grants credit, not included' : 'Google Ads and Meta'), pAvail, yAvail),
-      this.webKpi('Sessions', this.nf(cur.sessions), cur.sessions, prevP.sessions, prevY.sessions,
-        'pct', 'paid sessions on www.aws.org', pAvail, yAvail),
-      this.webKpi('Purchases', this.nf(cur.purchases), cur.purchases, prevP.purchases, prevY.purchases,
-        'abs', 'transactions, every product', pAvail, yAvail),
-      this.webKpi('Revenue', '$' + this.nf(cur.revenue), cur.revenue, prevP.revenue, prevY.revenue,
-        'pct', 'all aws.org hosts', pAvail, yAvail),
-      this.webKpi('Revenue per $ spent', cur.cost ? '$' + roas(cur).toFixed(2) : '—',
-        roas(cur), roas(prevP), roas(prevY), 'pct', 'cash spend only', pAvail, yAvail),
-    ];
-
-    /* Capped, but the cap is stated and the remainder is a real summed row, so the column
-       still adds to the cards above. A silent top-N is how the Geography panel hid its
-       highest earning state. */
-    const CAP = 30;
-    const bag = {};
-    sel.forEach(m => (byMonth[m] || []).forEach(r => {
-      const k = r[C.campaign] + '|' + r[C.platform] + '|' + r[C.evidenceTier];
-      const b = bag[k] || (bag[k] = { name: String(r[C.campaign]), platform: String(r[C.platform]),
-        tier: String(r[C.evidenceTier] || 'Observed'), s: 0, p: 0, rev: 0, cost: 0 });
-      b.s    += Number(r[C.sessions])  || 0;
-      b.p    += Number(r[C.purchases]) || 0;
-      b.rev  += Number(r[C.revenue])   || 0;
-      b.cost += Number(r[C.cost])      || 0;
-    }));
-    const all = Object.keys(bag).map(k => bag[k]).sort((a, b) => (b.s - a.s) || (b.cost - a.cost));
-    const shown = all.slice(0, CAP), rest = all.slice(CAP);
-    const campRows = shown.map(b => ({
-      name: b.name, platform: b.platform, tier: b.tier, chipStyle: chip(b.tier),
-      sessions: this.nf(b.s), purchases: this.nf(b.p),
-      rev: '$' + this.nf(b.rev), cost: b.cost ? '$' + this.nf(b.cost) : '—',
-    }));
-    if (rest.length) {
-      const t = rest.reduce((a, b) => { a.s += b.s; a.p += b.p; a.rev += b.rev; a.cost += b.cost; return a; },
-        { s: 0, p: 0, rev: 0, cost: 0 });
-      campRows.push({ name: 'All other campaigns (' + rest.length + ')', platform: '—',
-        tier: 'Observed', chipStyle: chip('Observed'),
-        sessions: this.nf(t.s), purchases: this.nf(t.p),
-        rev: '$' + this.nf(t.rev), cost: t.cost ? '$' + this.nf(t.cost) : '—' });
-    }
-
-    const monthRows = months.slice().reverse().map(m => {
-      const a = agg([m]);
-      const u = a.tiers.Unresolved || 0;
-      const sh = a.sessions ? 100 * u / a.sessions : 0;
-      return { month: this.mLabel(m),
-        cost: a.cost ? '$' + this.nf(a.cost) : '—',
-        sessions: this.nf(a.sessions), purchases: this.nf(a.purchases),
-        rev: '$' + this.nf(a.revenue),
-        unres: sh.toFixed(1) + '%',
-        unresStyle: 'padding:9px 0 9px 8px; text-align:right; font-weight:600; color:' +
-          (sh >= 20 ? '#A32A20' : '#6E7274') + ';' };
-    });
-
-    const platforms = {};
-    sel.forEach(m => (byMonth[m] || []).forEach(r => { platforms[String(r[C.platform])] = 1; }));
-    const complete = (D.spendComplete || []).join(', ');
-    const span = sel.length
-      ? this.mLabel(sel[0]) + (sel.length > 1 ? ' to ' + this.mLabel(sel[sel.length - 1]) : '') : '';
-
-    return {
-      has: true, ...P,
-      kpis, kpiCols: 'repeat(5, 1fr)',
-      tierRows, campRows, monthRows, span,
-      campSpan: span + ' · ' + (shown.length + (rest.length ? 1 : 0)) + ' of ' + all.length + ' rows',
-      hasCapNote: rest.length > 0,
-      capNote: rest.length ? 'Showing the top ' + CAP + ' campaigns by sessions. The remaining ' +
-        rest.length + ' are summed into the final row, so the columns still add up to the cards above.' : '',
-      unresLabel: this.nf(unresolved) + ' of ' + this.nf(cur.sessions) + ' paid sessions (' +
-        unresShare.toFixed(1) + '%)',
-      evidenceNote: 'Campaign names are not always recoverable. Google Tag Manager was lowercasing ' +
-        'the whole page URL, which invalidated the case sensitive gclid and stopped Analytics ' +
-        'attributing the click. Fixed in container version 393 on 12 August 2026, so months from ' +
-        'August onward should read Observed or Exact. Earlier months carry the gap.',
-      costNote: 'Cost always carries a campaign name because it comes from the Google Ads export. ' +
-        'Sessions and revenue are what go missing. So an Unresolved row shows sessions and revenue ' +
-        'against no cost, and named campaigns show their full cost against fewer sessions than they ' +
-        'actually drove. Do not read cost per session by campaign as exact while the Unresolved ' +
-        'share is large.',
-      spendNote: complete ? 'Cost, clicks and impressions are complete for ' + complete + ' only. ' +
-        'Meta spend is present where exported. Microsoft Advertising, LinkedIn, Reddit and Spotify ' +
-        'are not connected, so any spend there is missing from these totals.' : '',
-      platformNote: Object.keys(platforms).sort().join(', '),
-      note: D.note || '',
-    };
-  }
-
   buildSummary(goCh) {
     const pct = (a, b) => b ? 100 * a / b : 0;
     const agg = (list, ckey) => {
@@ -3576,7 +3248,6 @@ class Component extends DCLogic {
     const twiwWebChart = this.webCombo(tgMonths.map(m => ({ month: m, rev: TG[m].total_revenue, sess: TG[m].sessions, er: TG[m].engagement_rate * 100 })), 'twiwweb');
 
     const HIST = this.buildHist({ open: cur.d ? cur.or : 0, click: cur.d ? cur.cr : 0, unsub: cur.d ? cur.ur : 0 });
-    const PAID = this.buildPaid();
     const WEBS = this.buildWebSite(), WEBQ = this.buildWebSearch(), WEBE = this.buildWebEcom();
     const AUTO = this.buildAuto({ open: cur.d ? cur.or : 0, click: cur.d ? cur.cr : 0, unsub: cur.d ? cur.ur : 0 });
 
@@ -3772,7 +3443,7 @@ class Component extends DCLogic {
     // The clamp matters as much as the flag. Without it, a state carrying ch === 5 would
     // hide the tab and then render an empty page with no way back, which looks like a
     // broken build rather than a hidden section.
-    const SHOW_WEB = true;
+    const SHOW_WEB = false;
 
     const chRaw = S.ch === 0 ? 0 : (S.ch || 1);
     const ch = (!SHOW_WEB && chRaw === 5) ? 1 : chRaw, view = S.view || 1;
@@ -3786,7 +3457,7 @@ class Component extends DCLogic {
     // > 2 rather than === 3 so adding a fourth view later cannot silently strand it.
     const goCh = n => () => this.setState(st => ({ ch: n, view: (n !== 5 && st.view > 2) ? 1 : (st.view || 1) }));
 
-    const chNames = { 1: 'Marketing Email', 2: 'Automated Email', 3: 'This Week in Welding', 4: 'SMS', 5: 'Website', 6: 'Paid Media' };
+    const chNames = { 1: 'Marketing Email', 2: 'Automated Email', 3: 'This Week in Welding', 4: 'SMS', 5: 'Website' };
     const emAll = window.EMAIL_MONTHS || [];
 
     return {
@@ -3800,17 +3471,15 @@ class Component extends DCLogic {
       isTwiwHist:   ch === 3 && view === 2,
       isSmsPeriod:  ch === 4 && view === 1,
       isSmsHist:    ch === 4 && view === 2,
-      isPaidPeriod: ch === 6 && view === 1,
-      isPaidHist:   ch === 6 && view === 2,
       isWebSite:    ch === 5 && view === 1,
       isWebSearch:  ch === 5 && view === 2,
       isWebEcom:    ch === 5 && view === 3,
-      goCh1: goCh(1), goCh2: goCh(2), goCh3: goCh(3), goCh4: goCh(4), goCh5: goCh(5), goCh6: goCh(6),
+      goCh1: goCh(1), goCh2: goCh(2), goCh3: goCh(3), goCh4: goCh(4), goCh5: goCh(5),
       goView1: () => this.setState({ view: 1 }), goView2: () => this.setState({ view: 2 }),
       goView3: () => this.setState({ view: 3 }),
       ch1Style: ch === 1 ? activeTab : idleTab, ch2Style: ch === 2 ? activeTab : idleTab,
       ch3Style: ch === 3 ? activeTab : idleTab, ch4Style: ch === 4 ? activeTab : idleTab,
-      ch5Style: ch === 5 ? activeTab : idleTab, ch6Style: ch === 6 ? activeTab : idleTab,
+      ch5Style: ch === 5 ? activeTab : idleTab,
       view1Style: view === 1 ? activeView : idleView, view2Style: view === 2 ? activeView : idleView,
       view3Style: view === 3 ? activeView : idleView,
       hasCh5: SHOW_WEB,
@@ -3829,7 +3498,6 @@ class Component extends DCLogic {
       tw: TW, sms: SMSC, smsHas, smsHasNo: !smsHas,
       cov, covHas: cov.has,
       smsWeb, smsWebHas: smsWeb.has,
-      paid: PAID, paidHas: PAID.has, paidHasNo: !PAID.has,
       webs: WEBS, websHas: WEBS.has,
       webq: WEBQ, webqHas: WEBQ.has,
       webe: WEBE, webeHas: WEBE.has,
