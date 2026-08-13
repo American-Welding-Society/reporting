@@ -3651,6 +3651,33 @@ window.PAID_DATA = {
 
       <div style="border-top:1px solid #EDEEEF;"></div>
 
+      <sc-if cond="{{ paid.hasAd }}">
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+          <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Performance by ad type</div>
+          <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ paid.scope }}</div>
+        </div>
+        <div class="tw" style="display:flex; flex-direction:column;">
+          <div style="display:grid; grid-template-columns:{{ paid.grid }}; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:600; padding-bottom:6px;">
+            <div style="text-align:left;">Ad type</div><div style="text-align:right;">Spend</div><div style="text-align:right;">Link clicks</div><div style="text-align:right;">Sessions</div><div style="text-align:right;">Purchases</div><div style="text-align:right;">Revenue</div>
+          </div>
+          <sc-for list="{{ paid.adRows }}" as="r" hint-placeholder-count="0">
+            <div class="num" style="display:grid; grid-template-columns:{{ paid.grid }}; gap:0 4px; border-top:1px solid #EDEEEF; align-items:center; font-size:12.5px;">
+              <div style="text-align:left; padding:9px 8px 9px 0; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.name }}</div>
+              <div style="padding:9px 8px; text-align:right; font-weight:600;">{{ r.spend }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.clicks }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.sessions }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.purchases }}</div>
+              <div style="padding:9px 0 9px 8px; text-align:right;">{{ r.rev }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid #EDEEEF;"></div>
+
+      </sc-if>
+
       <div style="display:flex; flex-direction:column; gap:10px;">
         <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
           <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">{{ paid.prodTitle }}</div>
@@ -5255,6 +5282,10 @@ class Component extends DCLogic {
       return out;
     };
     const deptRows = cut(shown, r => String(r[C.area] || 'Unclassified'), 0);
+    /* Ad type comes from the campaign's own channel type on the advertising export, so a
+       row reading Not reported is a platform with no spend export connected, not a gap in
+       the classification. It carries sessions and revenue against no cost, which is true. */
+    const adRows = C.adType === undefined ? [] : cut(shown, r => String(r[C.adType] || 'Not reported'), 0);
     const prodRows = cut(shown, r => String(r[C.product] || r[C.campaign] || 'Unclassified'), 20);
 
     const span = sel.length ? (this.mLabel(sel[0]) + (sel.length > 1 ? ' to ' + this.mLabel(sel[sel.length - 1]) : '')) : '';
@@ -5292,6 +5323,7 @@ class Component extends DCLogic {
       hasGrant: all.grant > 0,
       grantNote: grantStar + ' Google Ad Grants is nonprofit advertising credit, not money spent. ' +
         'It is shown separately and is never added into any spend total.',
+      adRows, hasAd: adRows.length > 0,
       prodTitle: 'Performance by product and campaign',
       prodNote: prodRows.length > 20 ? 'Top 20 by sessions. Everything below is summed into the final row, so the columns still add up.' : '',
       hasProdNote: prodRows.length > 20,
