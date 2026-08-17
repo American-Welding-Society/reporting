@@ -5335,10 +5335,11 @@ class Component extends DCLogic {
         'the case sensitive gclid and stopped Analytics attributing the click. Fixed in ' +
         'container version 393 on 12 August 2026, so months from August onward should read ' +
         'Observed or Exact. Earlier months carry the gap.',
-      spendNote: 'Cost, clicks and impressions are connected for Google Ads and Meta. ' +
-        'Microsoft Advertising, LinkedIn, Reddit and Spotify contribute sessions and revenue ' +
+      spendNote: 'Cost, clicks and impressions are connected for Google Ads, Microsoft ' +
+        'Advertising and Meta. LinkedIn, Reddit and Spotify contribute sessions and revenue ' +
         'with no cost, so return on ad spend is calculated only over the platforms that have ' +
-        'spend connected.',
+        'spend connected. The sessions figure above counts every paid platform, including ' +
+        'those three, so it is not a denominator for the spend figure beside it.',
       monthRows,
     };
   }
