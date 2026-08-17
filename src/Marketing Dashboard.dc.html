@@ -80,6 +80,8 @@
      states, but nothing renders it since 2026-08-06. Geography is answered by the
      Country / US State tabs on the traffic table, which follow the period picker.
      Deliberately not loaded; do not "fix" this by adding a script tag. -->
+<script src="../data/web-data.js"></script>
+<script src="../data/paid-data.js"></script>
 </helmet>
 
 <div style="min-height:100vh; padding: 26px 24px 56px; display:flex; justify-content:center;">
@@ -105,6 +107,7 @@
         <div onClick="{{ goCh1 }}" style="{{ ch1Style }}">Marketing Email</div>
         <div onClick="{{ goCh3 }}" style="{{ ch3Style }}">This Week in Welding</div>
         <div onClick="{{ goCh4 }}" style="{{ ch4Style }}">SMS</div>
+        <div onClick="{{ goCh6 }}" style="{{ ch6Style }}">Paid Media</div>
         <div onClick="{{ goCh2 }}" style="{{ ch2Style }}">Automated Email</div>
       </div>
 
@@ -1507,6 +1510,223 @@
     </sc-if>
     </sc-if>
 
+
+    <!-- ============ PAID MEDIA: SNAPSHOT ============ -->
+    <sc-if value="{{ isPaidPeriod }}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{ paidHas }}" hint-placeholder-val="{{ true }}">
+
+    <div class="ctl" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="position:relative;">
+        <div style="font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase; color:#6E7274; margin-bottom:4px;">Period</div>
+        <div onClick="{{ paid.togglePicker }}" style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #CFD2D4; border-radius:4px; padding:9px 14px; font-size:13.5px; font-weight:600; cursor:pointer; min-width:230px; justify-content:space-between;">
+          <span>{{ paid.pickerLabel }}</span>
+          <span style="color:#6E7274;">&#9662;</span>
+        </div>
+        <sc-if value="{{ paid.pickerOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ paid.closePicker }}" style="position:fixed; inset:0; z-index:40;"></div>
+          <div style="position:absolute; top:64px; left:0; z-index:50; width:300px; background:#fff; border:1px solid #CFD2D4; border-radius:6px; box-shadow:0 12px 40px rgba(20,30,45,0.18); overflow:hidden;">
+            <div style="display:flex; flex-wrap:wrap; gap:6px; padding:12px; border-bottom:1px solid #EDEEEF;">
+              <sc-for list="{{ paid.presets }}" as="p" hint-placeholder-count="5">
+                <div onClick="{{ p.apply }}" style="font-size:11px; font-weight:600; padding:5px 10px; border-radius:3px; background:#F2F3F4; color:#393B3B; cursor:pointer;">{{ p.label }}</div>
+              </sc-for>
+            </div>
+            <div style="max-height:280px; overflow-y:auto;">
+              <sc-for list="{{ paid.monthOptions }}" as="o" hint-placeholder-count="8">
+                <div onClick="{{ o.toggle }}" style="display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; border-bottom:1px solid #F2F3F4;">
+                  <div style="{{ o.boxStyle }}">{{ o.check }}</div>
+                  <div style="font-size:13px; font-weight:600; flex:1;">{{ o.label }}</div>
+                  <div class="num" style="font-size:11px; color:#6E7274;">{{ o.sub }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div class="kpis" style="display:grid; grid-template-columns:{{ paid.kpiCols }}; gap:12px;">
+      <sc-for list="{{ paid.kpis }}" as="k" hint-placeholder-count="6">
+        <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:10px;">
+          <div class="hdln" style="font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700;">{{ k.label }}</div>
+          <div class="num hdln" style="font-size:30px; font-weight:700; color:#003767;">{{ k.val }}</div>
+          <div style="font-size:10.5px; color:#6E7274;">{{ k.sub }}</div>
+          <div style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
+            <div style="display:flex; align-items:baseline; gap:8px;"><span style="color:#6E7274; font-size:9.5px; text-transform:uppercase; letter-spacing:0.6px; min-width:34px; flex-shrink:0;">{{ paid.momLabel }}</span><span class="num" style="white-space:nowrap; {{ k.mom.style }}">{{ k.mom.text }}</span></div>
+            <div style="display:flex; align-items:baseline; gap:8px;"><span style="color:#6E7274; font-size:9.5px; text-transform:uppercase; letter-spacing:0.6px; min-width:34px; flex-shrink:0;">YoY</span><span class="num" style="white-space:nowrap; {{ k.yoy.style }}">{{ k.yoy.text }}</span></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+        <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Performance by platform</div>
+        <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ paid.span }}</div>
+      </div>
+      <div class="tw" style="display:flex; flex-direction:column;">
+        <div style="display:grid; grid-template-columns:{{ paid.grid }}; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:600; padding-bottom:6px;">
+          <div style="text-align:left;">Platform</div><div style="text-align:right;">Spend</div><div style="text-align:right;">Link clicks</div><div style="text-align:right;">Sessions</div><div style="text-align:right;">Purchases</div><div style="text-align:right;">Revenue</div>
+        </div>
+        <sc-for list="{{ paid.platRows }}" as="r" hint-placeholder-count="0">
+          <div class="num" style="display:grid; grid-template-columns:{{ paid.grid }}; gap:0 4px; border-top:1px solid #EDEEEF; align-items:center; font-size:12.5px; {{ r.style }}">
+            <div style="text-align:left; padding:9px 8px 9px 0; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.name }}</div>
+            <div style="padding:9px 8px; text-align:right; font-weight:600;">{{ r.spend }}</div>
+            <div style="padding:9px 8px; text-align:right;">{{ r.clicks }}</div>
+            <div style="padding:9px 8px; text-align:right;">{{ r.sessions }}</div>
+            <div style="padding:9px 8px; text-align:right;">{{ r.purchases }}</div>
+            <div style="padding:9px 0 9px 8px; text-align:right;">{{ r.rev }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{ paid.hasGrant }}" hint-placeholder-val="{{ false }}">
+      <div style="font-size:10.5px; color:#6E7274; line-height:1.5;">{{ paid.grantNote }}</div>
+      </sc-if>
+    </div>
+
+    <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">
+        <sc-for list="{{ paid.chips }}" as="c" hint-placeholder-count="4">
+          <div onClick="{{ c.apply }}" style="{{ c.style }}">{{ c.label }}</div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+          <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Performance by department</div>
+          <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ paid.scope }}</div>
+        </div>
+        <div class="tw" style="display:flex; flex-direction:column;">
+          <div style="display:grid; grid-template-columns:{{ paid.grid }}; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:600; padding-bottom:6px;">
+            <div style="text-align:left;">Department</div><div style="text-align:right;">Spend</div><div style="text-align:right;">Link clicks</div><div style="text-align:right;">Sessions</div><div style="text-align:right;">Purchases</div><div style="text-align:right;">Revenue</div>
+          </div>
+          <sc-for list="{{ paid.deptRows }}" as="r" hint-placeholder-count="0">
+            <div class="num" style="display:grid; grid-template-columns:{{ paid.grid }}; gap:0 4px; border-top:1px solid #EDEEEF; align-items:center; font-size:12.5px;">
+              <div style="text-align:left; padding:9px 8px 9px 0; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.name }}</div>
+              <div style="padding:9px 8px; text-align:right; font-weight:600;">{{ r.spend }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.clicks }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.sessions }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.purchases }}</div>
+              <div style="padding:9px 0 9px 8px; text-align:right;">{{ r.rev }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid #EDEEEF;"></div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+          <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Performance by ad type</div>
+          <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ paid.scope }}</div>
+        </div>
+        <div class="tw" style="display:flex; flex-direction:column;">
+          <div style="display:grid; grid-template-columns:{{ paid.grid }}; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:600; padding-bottom:6px;">
+            <div style="text-align:left;">Ad type</div><div style="text-align:right;">Spend</div><div style="text-align:right;">Link clicks</div><div style="text-align:right;">Sessions</div><div style="text-align:right;">Purchases</div><div style="text-align:right;">Revenue</div>
+          </div>
+          <sc-for list="{{ paid.adRows }}" as="r" hint-placeholder-count="0">
+            <div class="num" style="display:grid; grid-template-columns:{{ paid.grid }}; gap:0 4px; border-top:1px solid #EDEEEF; align-items:center; font-size:12.5px;">
+              <div style="text-align:left; padding:9px 8px 9px 0; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.name }}</div>
+              <div style="padding:9px 8px; text-align:right; font-weight:600;">{{ r.spend }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.clicks }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.sessions }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.purchases }}</div>
+              <div style="padding:9px 0 9px 8px; text-align:right;">{{ r.rev }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid #EDEEEF;"></div>
+
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+          <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">{{ paid.prodTitle }}</div>
+          <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">{{ paid.scope }}</div>
+        </div>
+        <sc-if value="{{ paid.hasProdNote }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:11px; color:#6E7274; line-height:1.5;">{{ paid.prodNote }}</div>
+        </sc-if>
+        <div class="tw" style="display:flex; flex-direction:column;">
+          <div style="display:grid; grid-template-columns:{{ paid.grid }}; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:600; padding-bottom:6px;">
+            <div style="text-align:left;">Product or campaign</div><div style="text-align:right;">Spend</div><div style="text-align:right;">Link clicks</div><div style="text-align:right;">Sessions</div><div style="text-align:right;">Purchases</div><div style="text-align:right;">Revenue</div>
+          </div>
+          <sc-for list="{{ paid.prodRows }}" as="r" hint-placeholder-count="0">
+            <div class="num" style="display:grid; grid-template-columns:{{ paid.grid }}; gap:0 4px; border-top:1px solid #EDEEEF; align-items:center; font-size:12.5px;">
+              <div style="text-align:left; padding:9px 8px 9px 0; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.name }}</div>
+              <div style="padding:9px 8px; text-align:right; font-weight:600;">{{ r.spend }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.clicks }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.sessions }}</div>
+              <div style="padding:9px 8px; text-align:right;">{{ r.purchases }}</div>
+              <div style="padding:9px 0 9px 8px; text-align:right;">{{ r.rev }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div class="cols" style="display:grid; grid-template-columns:340px 1fr; gap:12px;">
+      <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
+        <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527;">How the campaign was identified</div>
+        <div class="tw" style="display:flex; flex-direction:column;">
+          <div style="display:grid; grid-template-columns:minmax(110px,1fr) 86px 62px; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:600; padding-bottom:6px;">
+            <div style="text-align:left;">Evidence</div><div style="text-align:right;">Sessions</div><div style="text-align:right;">Share</div>
+          </div>
+          <sc-for list="{{ paid.tierRows }}" as="t" hint-placeholder-count="4">
+            <div class="num" style="display:grid; grid-template-columns:minmax(110px,1fr) 86px 62px; gap:0 4px; border-top:1px solid #EDEEEF; align-items:center; font-size:12.5px;">
+              <div style="text-align:left; padding:9px 8px 9px 0;"><span style="{{ t.chipStyle }}">{{ t.label }}</span></div>
+              <div style="padding:9px 8px; text-align:right; font-weight:600;">{{ t.sessions }}</div>
+              <div style="padding:9px 0 9px 8px; text-align:right;">{{ t.share }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:11px; color:#6E7274; line-height:1.55;">Unresolved is {{ paid.unresLabel }}.</div>
+      </div>
+      <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:9px;">
+        <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527;">Reading these numbers</div>
+        <div style="font-size:11.5px; color:#393B3B; line-height:1.6;">{{ paid.costNote }}</div>
+        <div style="font-size:11.5px; color:#6E7274; line-height:1.6;">{{ paid.evidenceNote }}</div>
+        <div style="font-size:11.5px; color:#6E7274; line-height:1.6;">{{ paid.spendNote }}</div>
+      </div>
+    </div>
+
+    </sc-if>
+    <sc-if value="{{ paidHasNo }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:22px; font-size:12.5px; color:#6E7274;">Paid media data has not been built yet. Run PAID_run() until it publishes paid-data.js, then rebuild.</div>
+    </sc-if>
+    </sc-if>
+
+    <!-- ============ PAID MEDIA: HISTORIC ============ -->
+    <sc-if value="{{ isPaidHist }}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{ paidHas }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
+      <div class="chd" style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+        <div class="hdln" style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap;">Every month</div>
+        <div class="num" style="font-size:11px; color:#6E7274; white-space:nowrap;">every platform</div>
+      </div>
+      <div class="tw" style="display:flex; flex-direction:column;">
+        <div style="display:grid; grid-template-columns:minmax(120px,1fr) 96px 92px 90px 82px 110px 70px 92px; gap:0 4px; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:#6E7274; font-weight:600; padding-bottom:6px;">
+          <div style="text-align:left;">Month</div><div style="text-align:right;">Spend</div><div style="text-align:right;">Link clicks</div><div style="text-align:right;">Sessions</div><div style="text-align:right;">Purchases</div><div style="text-align:right;">Revenue</div><div style="text-align:right;">ROAS</div><div style="text-align:right;">Unresolved</div>
+        </div>
+        <sc-for list="{{ paid.monthRows }}" as="r" hint-placeholder-count="0">
+          <div class="num" style="display:grid; grid-template-columns:minmax(120px,1fr) 96px 92px 90px 82px 110px 70px 92px; gap:0 4px; border-top:1px solid #EDEEEF; align-items:center; font-size:12.5px;">
+            <div style="text-align:left; padding:9px 8px 9px 0; font-weight:600; white-space:nowrap;">{{ r.month }}</div>
+            <div style="padding:9px 8px; text-align:right; font-weight:600;">{{ r.spend }}</div>
+            <div style="padding:9px 8px; text-align:right;">{{ r.clicks }}</div>
+            <div style="padding:9px 8px; text-align:right;">{{ r.sessions }}</div>
+            <div style="padding:9px 8px; text-align:right;">{{ r.purchases }}</div>
+            <div style="padding:9px 8px; text-align:right;">{{ r.rev }}</div>
+            <div style="padding:9px 8px; text-align:right;">{{ r.roas }}</div>
+            <div style="{{ r.unresStyle }}">{{ r.unres }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size:11px; color:#6E7274; line-height:1.55;">{{ paid.spendNote }}</div>
+      <div style="font-size:11px; color:#6E7274; line-height:1.55;">{{ paid.evidenceNote }}</div>
+    </div>
+    </sc-if>
+    </sc-if>
+
   </div>
 </div>
 </x-dc>
@@ -2902,6 +3122,191 @@ class Component extends DCLogic {
     ]);
   }
 
+  /* PAID MEDIA. Reads paid-data.js.
+     Layout follows the v7 design: six tiles, a platform table, then ONE card holding the
+     platform chips, the department table and the product table. One control drives both
+     tables. Two filters that can disagree would let someone read a department table
+     filtered to Meta against a product table filtered to Google Ads.
+
+     Rules the data forces, none of which are cosmetic:
+     - Only Google Ads and Meta have spend connected. Microsoft, LinkedIn, Reddit and
+       Spotify contribute sessions and revenue against no cost. Return on ad spend is
+       therefore computed PER PLATFORM and never blended across them.
+     - Google Ad Grants is nonprofit credit, not money. Its own column, an asterisk, and
+       never added into any spend total.
+     - A dash means not connected or none. Both are correct and neither is an error.
+     - Revenue is last click GA4 and checkout completes on another host, so zero revenue
+       against thousands of paid social sessions may be attribution rather than
+       performance. Nothing here implies a verdict on a platform or a department. */
+  buildPaid() {
+    const D = (typeof window !== 'undefined' && window.PAID_DATA) || null;
+    if (!D || !D.rows || !D.rows.length) return { has: false };
+    const C = {}; (D.cols || []).forEach((c, i) => { C[c] = i; });
+    const need = ['month','platform','area','product','campaign','evidenceTier','sessions','purchases','revenue','cost'];
+    for (let i = 0; i < need.length; i++) if (C[need[i]] === undefined) return { has: false };
+    const iGrant = C.grantCost, iClicks = C.clicks;
+
+    const byMonth = {};
+    D.rows.forEach(r => { const m = String(r[C.month]); (byMonth[m] || (byMonth[m] = [])).push(r); });
+    const months = Object.keys(byMonth).sort();
+    if (!months.length) return { has: false };
+
+    const P = this.webPicker(months, 'paidSel', k =>
+      '$' + this.kf((byMonth[k] || []).reduce((a, r) => a + (Number(r[C.cost]) || 0), 0)));
+    const sel = P.sel;
+    const S = this.state || {};
+    const active = S.paidPlat || 'All platforms';
+
+    const rowsIn = ms => { const out = []; ms.forEach(m => (byMonth[m] || []).forEach(r => out.push(r))); return out; };
+    const cur = rowsIn(sel);
+
+    /* Google Ad Grants is not a platform in the data, it is a cost column. Treat it as one
+       here so the reader can filter to it, and keep its money out of every spend total. */
+    const platOf = r => ((iGrant !== undefined && (Number(r[iGrant]) || 0) > 0) ? 'Google Ad Grants' : String(r[C.platform] || 'Other'));
+    const money = r => (iGrant !== undefined && (Number(r[iGrant]) || 0) > 0) ? 0 : (Number(r[C.cost]) || 0);
+    const grant = r => (iGrant === undefined ? 0 : (Number(r[iGrant]) || 0));
+    const clicks = r => (iClicks === undefined ? 0 : (Number(r[iClicks]) || 0));
+
+    const blank = () => ({ spend: 0, grant: 0, clicks: 0, sessions: 0, purchases: 0, revenue: 0 });
+    const addTo = (t, r) => { t.spend += money(r); t.grant += grant(r); t.clicks += clicks(r);
+      t.sessions += Number(r[C.sessions]) || 0; t.purchases += Number(r[C.purchases]) || 0;
+      t.revenue += Number(r[C.revenue]) || 0; return t; };
+    const total = rows => rows.reduce((t, r) => addTo(t, r), blank());
+
+    const nf = v => this.nf(v);
+    const dash = '—';
+    const m0 = v => v ? '$' + nf(v) : dash;
+    const n0 = v => v ? nf(v) : dash;
+
+    const all = total(cur);
+    const prevMs = P.contig ? sel.map(m => this.addMonths(m, -sel.length)).filter(m => byMonth[m]) : [];
+    const yoyMs = sel.map(m => this.addMonths(m, -12)).filter(m => byMonth[m]);
+    const prevP = total(rowsIn(prevMs)), prevY = total(rowsIn(yoyMs));
+    const pAvail = prevMs.length > 0, yAvail = yoyMs.length === sel.length && yoyMs.length > 0;
+
+    /* Return on ad spend, computed only over the platforms that actually have cost
+       connected. Dividing six platforms of revenue by two platforms of cost is the single
+       easiest way to publish a number nobody can defend. */
+    const roasOf = rows => { const byP = {}; rows.forEach(r => { const k = platOf(r); const b = byP[k] || (byP[k] = { c: 0, rev: 0 }); b.c += money(r); b.rev += Number(r[C.revenue]) || 0; }); let c = 0, rev = 0; Object.keys(byP).forEach(k => { if (byP[k].c > 0) { c += byP[k].c; rev += byP[k].rev; } }); return c ? rev / c : 0; };
+    const roas = roasOf(cur), roasP = roasOf(rowsIn(prevMs)), roasY = roasOf(rowsIn(yoyMs));
+
+    const kpis = [
+      this.webKpi('Spend', m0(all.spend), all.spend, prevP.spend, prevY.spend, 'pct',
+        all.grant ? '$' + nf(all.grant) + ' Ad Grants credit, not included' : 'cash, Google Ads and Meta only', pAvail, yAvail),
+      this.webKpi('Link clicks', n0(all.clicks), all.clicks, prevP.clicks, prevY.clicks, 'pct',
+        'clicks on paid placements', pAvail, yAvail),
+      this.webKpi('Sessions', n0(all.sessions), all.sessions, prevP.sessions, prevY.sessions, 'pct',
+        'paid sessions on www.aws.org', pAvail, yAvail),
+      this.webKpi('Purchases', n0(all.purchases), all.purchases, prevP.purchases, prevY.purchases, 'abs',
+        'transactions, every product', pAvail, yAvail),
+      this.webKpi('Revenue', m0(all.revenue), all.revenue, prevP.revenue, prevY.revenue, 'pct',
+        'all aws.org hosts', pAvail, yAvail),
+      this.webKpi('Return on ad spend', roas ? roas.toFixed(1) + 'x' : dash, roas, roasP, roasY, 'pct',
+        'platforms with spend connected only', pAvail, yAvail),
+    ];
+
+    /* Platform table. */
+    const pBag = {};
+    cur.forEach(r => { const k = platOf(r); addTo(pBag[k] || (pBag[k] = blank()), r); });
+    const platOrder = Object.keys(pBag).sort((a, b) => (pBag[b].spend - pBag[a].spend) || (pBag[b].sessions - pBag[a].sessions));
+    const grantStar = '*';
+    const platRows = platOrder.map(k => ({
+      name: k + (k === 'Google Ad Grants' ? ' ' + grantStar : ''),
+      spend: k === 'Google Ad Grants' ? (pBag[k].grant ? '$' + nf(pBag[k].grant) + ' ' + grantStar : dash) : m0(pBag[k].spend),
+      clicks: n0(pBag[k].clicks), sessions: n0(pBag[k].sessions),
+      purchases: n0(pBag[k].purchases), rev: m0(pBag[k].revenue),
+      style: k === 'Google Ad Grants' ? 'color:#6E7274;' : '',
+    }));
+
+    /* One chip row, two tables. */
+    const chipOn = 'padding:5px 11px; border-radius:3px; font-size:11px; font-weight:700; cursor:pointer; background:#003767; color:#fff; white-space:nowrap;';
+    const chipOff = 'padding:5px 11px; border-radius:3px; font-size:11px; font-weight:600; cursor:pointer; background:#F2F3F4; color:#393B3B; white-space:nowrap;';
+    const chipNames = ['All platforms'].concat(platOrder);
+    const chips = chipNames.map(k => ({ label: k, style: k === active ? chipOn : chipOff,
+      apply: () => this.setState({ paidPlat: k }) }));
+    const shown = active === 'All platforms' ? cur : cur.filter(r => platOf(r) === active);
+
+    const cut = (rows, keyOf, cap) => {
+      const bag = {};
+      rows.forEach(r => { const k = keyOf(r) || 'Unclassified'; addTo(bag[k] || (bag[k] = blank()), r); });
+      const keys = Object.keys(bag).sort((a, b) => (bag[b].sessions - bag[a].sessions) || (bag[b].revenue - bag[a].revenue));
+      const use = cap ? keys.slice(0, cap) : keys;
+      const rest = cap ? keys.slice(cap) : [];
+      const out = use.map(k => ({ name: k, spend: m0(bag[k].spend), clicks: n0(bag[k].clicks),
+        sessions: n0(bag[k].sessions), purchases: n0(bag[k].purchases), rev: m0(bag[k].revenue) }));
+      if (rest.length) {
+        const t = rest.reduce((a, k) => { a.spend += bag[k].spend; a.clicks += bag[k].clicks;
+          a.sessions += bag[k].sessions; a.purchases += bag[k].purchases; a.revenue += bag[k].revenue; return a; }, blank());
+        out.push({ name: 'All other (' + rest.length + ')', spend: m0(t.spend), clicks: n0(t.clicks),
+          sessions: n0(t.sessions), purchases: n0(t.purchases), rev: m0(t.revenue) });
+      }
+      return out;
+    };
+    const deptRows = cut(shown, r => String(r[C.area] || 'Unclassified'), 0);
+    /* Ad type comes from the campaign's own channel type on the advertising export, so a
+       row reading Not reported is a platform with no spend export connected, not a gap in
+       the classification. It carries sessions and revenue against no cost, which is true. */
+    const adRows = C.adType === undefined ? [] : cut(shown, r => String(r[C.adType] || 'Not reported'), 0);
+    const prodRows = cut(shown, r => String(r[C.product] || r[C.campaign] || 'Unclassified'), 20);
+
+    const span = sel.length ? (this.mLabel(sel[0]) + (sel.length > 1 ? ' to ' + this.mLabel(sel[sel.length - 1]) : '')) : '';
+    const scope = span + ', ' + (active === 'All platforms' ? 'every platform' : active + ' only');
+
+    /* Evidence tiers. Not part of v7, kept because a Recovered row must never read as a
+       measured one. */
+    const tierOrder = ['Observed', 'Exact', 'Recovered', 'Unresolved'];
+    const tierColor = { Observed: { bg: '#F2F3F4', fg: '#3A3D3E' }, Exact: { bg: '#E8F1FB', fg: '#0B4E93' },
+                        Recovered: { bg: '#FDF1E3', fg: '#8A4B00' }, Unresolved: { bg: '#FBEAE8', fg: '#A32A20' } };
+    const chip = t => { const c = tierColor[t] || tierColor.Observed;
+      return 'display:inline-block; padding:2px 7px; border-radius:3px; font-size:10px; font-weight:700; letter-spacing:0.4px; text-transform:uppercase; background:' + c.bg + '; color:' + c.fg + ';'; };
+    const tiers = {};
+    cur.forEach(r => { const t = String(r[C.evidenceTier] || 'Observed'); tiers[t] = (tiers[t] || 0) + (Number(r[C.sessions]) || 0); });
+    const tierRows = tierOrder.filter(t => tiers[t]).map(t => ({ label: t, chipStyle: chip(t),
+      sessions: nf(tiers[t]), share: (all.sessions ? (100 * tiers[t] / all.sessions).toFixed(1) : '0.0') + '%' }));
+    const unres = tiers.Unresolved || 0;
+
+    const monthRows = months.slice().reverse().map(m => {
+      const t = total(byMonth[m] || []);
+      const u = (byMonth[m] || []).reduce((a, r) => a + (String(r[C.evidenceTier]) === 'Unresolved' ? (Number(r[C.sessions]) || 0) : 0), 0);
+      const sh = t.sessions ? 100 * u / t.sessions : 0;
+      const rr = roasOf(byMonth[m] || []);
+      return { month: this.mLabel(m), spend: m0(t.spend), clicks: n0(t.clicks), sessions: n0(t.sessions),
+        purchases: n0(t.purchases), rev: m0(t.revenue), roas: rr ? rr.toFixed(1) + 'x' : dash,
+        unres: sh.toFixed(1) + '%',
+        unresStyle: 'padding:9px 0 9px 8px; text-align:right; font-weight:600; color:' + (sh >= 20 ? '#A32A20' : '#6E7274') + ';' };
+    });
+
+    return {
+      has: true, ...P,
+      kpis, kpiCols: 'repeat(6, 1fr)',
+      grid: 'minmax(190px,1fr) 96px 92px 90px 82px 110px',
+      platRows, chips, deptRows, prodRows, scope, span,
+      hasGrant: all.grant > 0,
+      grantNote: grantStar + ' Google Ad Grants is nonprofit advertising credit, not money spent. ' +
+        'It is shown separately and is never added into any spend total.',
+      adRows, hasAd: adRows.length > 0,
+      prodTitle: 'Performance by product and campaign',
+      prodNote: prodRows.length > 20 ? 'Top 20 by sessions. Everything below is summed into the final row, so the columns still add up.' : '',
+      hasProdNote: prodRows.length > 20,
+      tierRows, unresLabel: nf(unres) + ' of ' + nf(all.sessions) + ' paid sessions (' +
+        (all.sessions ? (100 * unres / all.sessions).toFixed(1) : '0.0') + '%)',
+      costNote: 'Cost always carries a campaign name because it comes from the advertising ' +
+        'export. Sessions and revenue are what go missing. So an Unresolved row shows ' +
+        'sessions and revenue against no cost, and named campaigns show their full cost ' +
+        'against fewer sessions than they actually drove.',
+      evidenceNote: 'Google Tag Manager was lowercasing the whole page URL, which invalidated ' +
+        'the case sensitive gclid and stopped Analytics attributing the click. Fixed in ' +
+        'container version 393 on 12 August 2026, so months from August onward should read ' +
+        'Observed or Exact. Earlier months carry the gap.',
+      spendNote: 'Cost, clicks and impressions are connected for Google Ads, Microsoft ' +
+        'Advertising and Meta. LinkedIn, Reddit and Spotify contribute sessions and revenue ' +
+        'with no cost, so return on ad spend is calculated only over the platforms that have ' +
+        'spend connected. The sessions figure above counts every paid platform, including ' +
+        'those three, so it is not a denominator for the spend figure beside it.',
+      monthRows,
+    };
+  }
+
   buildSummary(goCh) {
     const pct = (a, b) => b ? 100 * a / b : 0;
     const agg = (list, ckey) => {
@@ -3248,6 +3653,7 @@ class Component extends DCLogic {
     const twiwWebChart = this.webCombo(tgMonths.map(m => ({ month: m, rev: TG[m].total_revenue, sess: TG[m].sessions, er: TG[m].engagement_rate * 100 })), 'twiwweb');
 
     const HIST = this.buildHist({ open: cur.d ? cur.or : 0, click: cur.d ? cur.cr : 0, unsub: cur.d ? cur.ur : 0 });
+    const PAID = this.buildPaid();
     const WEBS = this.buildWebSite(), WEBQ = this.buildWebSearch(), WEBE = this.buildWebEcom();
     const AUTO = this.buildAuto({ open: cur.d ? cur.or : 0, click: cur.d ? cur.cr : 0, unsub: cur.d ? cur.ur : 0 });
 
@@ -3443,7 +3849,7 @@ class Component extends DCLogic {
     // The clamp matters as much as the flag. Without it, a state carrying ch === 5 would
     // hide the tab and then render an empty page with no way back, which looks like a
     // broken build rather than a hidden section.
-    const SHOW_WEB = false;
+    const SHOW_WEB = true;
 
     const chRaw = S.ch === 0 ? 0 : (S.ch || 1);
     const ch = (!SHOW_WEB && chRaw === 5) ? 1 : chRaw, view = S.view || 1;
@@ -3457,7 +3863,7 @@ class Component extends DCLogic {
     // > 2 rather than === 3 so adding a fourth view later cannot silently strand it.
     const goCh = n => () => this.setState(st => ({ ch: n, view: (n !== 5 && st.view > 2) ? 1 : (st.view || 1) }));
 
-    const chNames = { 1: 'Marketing Email', 2: 'Automated Email', 3: 'This Week in Welding', 4: 'SMS', 5: 'Website' };
+    const chNames = { 1: 'Marketing Email', 2: 'Automated Email', 3: 'This Week in Welding', 4: 'SMS', 5: 'Website', 6: 'Paid Media' };
     const emAll = window.EMAIL_MONTHS || [];
 
     return {
@@ -3471,15 +3877,17 @@ class Component extends DCLogic {
       isTwiwHist:   ch === 3 && view === 2,
       isSmsPeriod:  ch === 4 && view === 1,
       isSmsHist:    ch === 4 && view === 2,
+      isPaidPeriod: ch === 6 && view === 1,
+      isPaidHist:   ch === 6 && view === 2,
       isWebSite:    ch === 5 && view === 1,
       isWebSearch:  ch === 5 && view === 2,
       isWebEcom:    ch === 5 && view === 3,
-      goCh1: goCh(1), goCh2: goCh(2), goCh3: goCh(3), goCh4: goCh(4), goCh5: goCh(5),
+      goCh1: goCh(1), goCh2: goCh(2), goCh3: goCh(3), goCh4: goCh(4), goCh5: goCh(5), goCh6: goCh(6),
       goView1: () => this.setState({ view: 1 }), goView2: () => this.setState({ view: 2 }),
       goView3: () => this.setState({ view: 3 }),
       ch1Style: ch === 1 ? activeTab : idleTab, ch2Style: ch === 2 ? activeTab : idleTab,
       ch3Style: ch === 3 ? activeTab : idleTab, ch4Style: ch === 4 ? activeTab : idleTab,
-      ch5Style: ch === 5 ? activeTab : idleTab,
+      ch5Style: ch === 5 ? activeTab : idleTab, ch6Style: ch === 6 ? activeTab : idleTab,
       view1Style: view === 1 ? activeView : idleView, view2Style: view === 2 ? activeView : idleView,
       view3Style: view === 3 ? activeView : idleView,
       hasCh5: SHOW_WEB,
@@ -3498,6 +3906,7 @@ class Component extends DCLogic {
       tw: TW, sms: SMSC, smsHas, smsHasNo: !smsHas,
       cov, covHas: cov.has,
       smsWeb, smsWebHas: smsWeb.has,
+      paid: PAID, paidHas: PAID.has, paidHasNo: !PAID.has,
       webs: WEBS, websHas: WEBS.has,
       webq: WEBQ, webqHas: WEBQ.has,
       webe: WEBE, webeHas: WEBE.has,
