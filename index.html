@@ -1101,7 +1101,7 @@ window.__resources = window.__resources || {};
   var isCustomElementName = (n) => !n.includes(".") && n.includes("-");
   function isRenderableType(g) {
     if (typeof g === "function") return !isElementClass(g);
-    return typeof g === "object" && g !== null && typeof g.$$typeof === "symbol";
+    return typeof g === "object" && g !== null && typeof g.$typeof === "symbol";
   }
   function resolveDottedPath(root, name) {
     let cur = root;
