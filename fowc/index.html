@@ -1,503 +1,612 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="utf-8">
-<title>AWS FOWC Campaign Performance</title>
+<title>Campaign Performance | American Welding Society</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   * { box-sizing: border-box; }
-  body { margin:0; background:#F2F3F4; font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; -webkit-font-smoothing: antialiased; color:#393B3B; }
-  .num { font-variant-numeric: tabular-nums; }
-  .hdln { font-family:"Helvetica Neue Condensed","HelveticaNeue-CondensedBold","Helvetica Neue","Arial Narrow",Arial,sans-serif; font-stretch:condensed; letter-spacing:0; }
+  body { margin:0; background:#F2F3F4; font-family:Arial,"Helvetica Neue",Helvetica,sans-serif; -webkit-font-smoothing:antialiased; color:#393B3B; }
+  .num { font-variant-numeric:tabular-nums; }
+  .hdln { font-family:"Helvetica Neue Condensed","HelveticaNeue-CondensedBold","Arial Narrow","Helvetica Neue",Arial,sans-serif; font-stretch:condensed; }
   a { color:#0074E2; text-decoration:none; }
   a:hover { color:#003767; text-decoration:underline; }
 
   .wrap { min-height:100vh; padding:26px 24px 56px; display:flex; justify-content:center; }
-  .col  { width:1180px; max-width:100%; display:flex; flex-direction:column; gap:16px; }
+  .col { width:1180px; max-width:100%; display:flex; flex-direction:column; gap:16px; }
 
+  /* masthead */
+  .shell { border:1px solid #E3E5E6; border-radius:6px; overflow:hidden; display:flex; flex-direction:column; }
+  .mast { background:#001527; padding:19px 24px 17px; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; }
+  .org { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2.4px; color:#B6BABC; }
+  .ttl { font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:#fff; line-height:1.05; }
+  .through { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#fff; white-space:nowrap; }
+  .nav { background:#fff; display:flex; padding:0 24px; flex-wrap:wrap; gap:0 26px; }
+  .nav a { padding:14px 0 11px; font-size:12px; text-transform:uppercase; letter-spacing:1px; font-weight:600; color:#6E7274; border-bottom:3px solid transparent; white-space:nowrap; }
+  .nav a:hover { color:#003767; border-bottom-color:#F56A00; text-decoration:none; }
+  .scope { background:#FAFAFA; border-top:1px solid #EDEEEF; padding:11px 24px 12px; display:flex; align-items:flex-start; gap:0 30px; flex-wrap:wrap; row-gap:10px; }
+  .sc { display:flex; flex-direction:column; gap:3px; }
+  .sck { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1.4px; color:#A7ABAD; }
+  .scv { font-size:12px; font-weight:600; color:#393B3B; white-space:nowrap; }
+  .sclinks { margin-left:auto; display:flex; gap:16px; align-items:center; font-size:12px; font-weight:600; }
+
+  /* cards */
   .card { background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:13px; }
-  .chd  { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
-  .ctitle { font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; }
+  .chd { display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  .ctitle { font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; }
   .cscope { font-size:10.5px; color:#6E7274; }
+  .sub { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.1px; color:#A7ABAD; padding-top:3px; }
 
-  .kpis { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
-  .kpi  { background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:8px; }
-  .kch  { font-size:9px; letter-spacing:1.1px; text-transform:uppercase; color:#A7ABAD; font-weight:700; }
-  .klab { font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif; }
-  .kval { font-size:31px; font-weight:700; color:#001527; line-height:1; }
-  .ksub { font-size:10.5px; color:#6E7274; line-height:1.45; }
+  /* kpi strip */
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(178px,1fr)); gap:12px; }
+  .kpi { background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:15px 16px; display:flex; flex-direction:column; gap:7px; }
+  .kch { font-size:9px; letter-spacing:1.1px; text-transform:uppercase; color:#A7ABAD; font-weight:700; }
+  .klab { font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; }
+  .kval { font-size:29px; font-weight:700; color:#001527; line-height:1; margin-top:auto; }
+  .kpend { font-size:11px; font-weight:700; letter-spacing:0.9px; text-transform:uppercase; color:#A7ABAD; }
 
+  /* tables */
+  .tw { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
   table { border-collapse:collapse; width:100%; font-size:12.5px; }
   th { text-align:left; font-size:9.5px; letter-spacing:0.7px; text-transform:uppercase; color:#6E7274; font-weight:700; padding:0 10px 7px 0; border-bottom:1px solid #E3E5E6; white-space:nowrap; }
-  td { padding:9px 10px 9px 0; border-bottom:1px solid #F2F3F4; vertical-align:middle; }
-  tr:last-child td { border-bottom:none; }
-  td.r, th.r { text-align:right; }
-  tr.tot td { font-weight:700; border-top:1px solid #E3E5E6; }
-
-  .tier { display:inline-block; font-size:9px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; padding:2px 6px; border-radius:2px; white-space:nowrap; }
-  .t-observed     { background:#E8F3EC; color:#1F8A4C; }
-  .t-manual       { background:#E7F0FA; color:#0074E2; }
-  .t-notConnected { background:#F3EEE1; color:#B07A00; }
-  .t-noActivity   { background:#F2F3F4; color:#6E7274; }
-
-  .pill { display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:3px 8px; border-radius:2px; }
-  .p-done { background:#E8F3EC; color:#1F8A4C; }
-  .p-sched{ background:#F3EEE1; color:#B07A00; }
-  .p-not  { background:#F2F3F4; color:#6E7274; }
-
-  .blank { color:#A7ABAD; font-weight:700; }
+  td { padding:9px 10px 9px 0; border-bottom:1px solid #EDEEEF; vertical-align:middle; white-space:nowrap; }
+  tbody tr:last-child td { border-bottom:none; }
+  td.r, th.r { text-align:right; padding-right:0; }
+  th.r + th, td.r + td { padding-left:14px; }
+  tr.tot td { font-weight:700; color:#001527; border-top:1.5px solid #001527; border-bottom:none; }
+  .name { font-weight:600; }
+  .dim { color:#6E7274; }
+  .em { color:#A7ABAD; }
+  .id { font-size:11px; color:#A7ABAD; }
+  .note { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; }
 
   /* pacing */
-  .pace { display:flex; flex-direction:column; gap:9px; }
-  .pacerow { display:grid; grid-template-columns:118px 1fr 92px; align-items:center; gap:12px; font-size:11.5px; }
-  .pacetrack { display:block; background:#F2F3F4; border-radius:2px; height:20px; position:relative; overflow:hidden; }
-  .pacefill { display:block; height:100%; border-radius:2px; }
-  .pacemark { position:absolute; top:0; bottom:0; width:2px; background:#001527; z-index:2; }
-  .pacelab { font-size:10.5px; color:#6E7274; }
+  .pace { display:flex; flex-direction:column; gap:2px; }
+  .prow { display:grid; grid-template-columns:132px 1fr 150px; align-items:center; gap:16px; padding:11px 0; border-top:1px solid #EDEEEF; }
+  .prow:first-child { border-top:none; }
+  .plab { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#001527; }
+  .psub { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; padding-top:2px; }
+  .track { position:relative; height:22px; background:#F2F3F4; border-radius:2px; }
+  .fill { position:absolute; left:0; top:0; bottom:0; border-radius:2px; min-width:2px; }
+  .mark { position:absolute; top:-4px; bottom:-4px; width:2px; background:#001527; }
+  .marklab { position:absolute; top:-15px; font-size:8.5px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:#001527; transform:translateX(-50%); white-space:nowrap; }
+  .pval { text-align:right; }
+  .ppct { font-size:19px; font-weight:700; color:#001527; line-height:1; }
+  .pchip { display:inline-block; margin-top:5px; font-size:9.5px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:3px 7px; border-radius:2px; }
+  .ok { background:#E8F3EC; color:#1F8A4C; }
+  .warn { background:#F3EEE1; color:#B07A00; }
+  .flat { background:#F2F3F4; color:#6E7274; }
+  .bad { background:#FBEDEA; color:#C0402B; }
+  .rlab { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6E7274; }
+  .rval { font-size:17px; font-weight:700; color:#001527; padding-top:3px; }
 
-  /* combo chart */
-  .chart { position:relative; height:250px; display:grid; grid-template-columns:repeat(8,1fr); gap:10px; align-items:end; padding:14px 0 0; }
-  .ccol { display:flex; flex-direction:column; align-items:center; gap:5px; height:100%; justify-content:flex-end; }
-  .cbars { display:flex; align-items:flex-end; gap:3px; height:100%; width:100%; justify-content:center; }
-  .cbar { width:17px; border-radius:2px 2px 0 0; }
-  .b-sess { background:#0074E2; }
-  .b-spend{ background:#7FB2E8; }
-  .b-sub  { background:#001527; }
-  .cx { font-size:10px; color:#6E7274; white-space:nowrap; }
-  .cvals { display:flex; flex-direction:column; align-items:center; gap:1px; font-size:9px; font-variant-numeric:tabular-nums; line-height:1.25; }
-  .legend { display:flex; gap:16px; flex-wrap:wrap; font-size:10.5px; color:#6E7274; align-items:center; }
-  .lg { display:inline-flex; align-items:center; gap:6px; }
-  .sw { width:10px; height:10px; border-radius:2px; display:inline-block; }
+  /* share bars in channel table */
+  .sbar { display:block; width:100%; min-width:110px; height:8px; background:#F2F3F4; border-radius:1px; }
+  .sbar i { display:block; height:100%; background:#7FB2E8; border-radius:1px; }
 
-  /* funnel */
-  .funnel { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-  .fstep { background:#FAFAFA; border:1px solid #EDEEEF; border-radius:4px; padding:13px 14px; display:flex; flex-direction:column; gap:6px; }
-  .fnum { font-size:25px; font-weight:700; color:#001527; line-height:1; }
-  .flab { font-size:10px; letter-spacing:0.8px; text-transform:uppercase; color:#6E7274; font-weight:700; }
-  .frate { font-size:10.5px; color:#0074E2; font-weight:700; }
+  /* timeline */
+  .tl { display:flex; flex-direction:column; gap:0; }
+  .tlcap { display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:2px 0 7px; }
+  .tlname { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.9px; color:#001527; }
+  .tlmax { font-size:10px; color:#6E7274; }
+  .tlgrid { display:grid; gap:0 8px; }
+  .tlcell { display:flex; flex-direction:column; gap:5px; }
+  .band { display:flex; align-items:flex-end; }
+  .bar { width:100%; border-radius:1px 1px 0 0; min-height:2px; }
+  .bval { font-size:10.5px; text-align:center; color:#393B3B; }
+  .ln { width:100%; height:auto; display:block; overflow:visible; }
+  .tlx { display:grid; gap:0 8px; border-top:1px solid #E3E5E6; padding-top:7px; }
+  .tlm { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#6E7274; text-align:center; }
+  .tlp { font-size:9px; color:#A7ABAD; text-align:center; }
 
-  .cols2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  /* social gallery */
+  .gal { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; }
+  .post { border:1px solid #E3E5E6; border-radius:3px; overflow:hidden; display:flex; flex-direction:column; }
+  .thumb { position:relative; aspect-ratio:4/3; background:#F2F3F4 repeating-linear-gradient(135deg,#EDEEEF 0 6px,#F6F7F7 6px 12px); display:flex; align-items:center; justify-content:center; }
+  .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .thlab { font-size:9px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:#A7ABAD; }
+  .quote { padding:14px; font-size:11.5px; line-height:1.5; color:#6E7274; align-self:center; }
+  .play { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:34px; height:34px; border-radius:50%; background:rgba(0,21,39,0.72); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; padding-left:3px; }
+  .dur { position:absolute; right:6px; bottom:6px; background:rgba(0,21,39,0.78); color:#fff; font-size:9.5px; font-weight:700; padding:2px 5px; border-radius:2px; }
+  .pmeta { padding:9px 10px 10px; display:flex; flex-direction:column; gap:7px; }
+  .pplat { display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#A7ABAD; }
+  .pcap { font-size:11.5px; line-height:1.4; color:#393B3B; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .pfig { display:flex; flex-wrap:wrap; gap:6px 10px; border-top:1px solid #EDEEEF; padding-top:7px; }
+  .pf { min-width:0; }
+  .pview { font-size:10px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; }
+  .pf { display:flex; flex-direction:column; gap:1px; }
+  .pfl { font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#A7ABAD; }
+  .pfv { font-size:13px; font-weight:700; color:#001527; }
+  .more { align-self:flex-start; background:#fff; border:1px solid #CFD2D4; border-radius:3px; padding:8px 14px; font:inherit; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.9px; color:#003767; cursor:pointer; }
+  .more:hover { border-color:#003767; }
+  .galsum { display:flex; gap:30px; flex-wrap:wrap; border-bottom:1px solid #EDEEEF; padding-bottom:11px; }
+
+  .pill { display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:3px 8px; border-radius:2px; }
+  .grant { display:flex; justify-content:space-between; align-items:center; gap:12px; background:#FAFAFA; border:1px solid #EDEEEF; border-radius:3px; padding:10px 12px; }
+  .grantl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.9px; color:#6E7274; }
+  .grantn { font-size:10.5px; color:#A7ABAD; }
+  .msp { display:grid; gap:0 8px; }
+  .mspc { display:flex; flex-direction:column; gap:4px; border-left:1px solid #EDEEEF; padding:0 0 0 9px; }
+  .mspm { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#A7ABAD; }
+  .mspv { font-size:12.5px; font-weight:600; color:#393B3B; }
+
+  .pnote { font-size:10.5px; color:#6E7274; line-height:1.5; border-top:1px solid #EDEEEF; padding-top:10px; }
+
+  #err { display:none; background:#fff; border:1px solid #E3E5E6; border-left:3px solid #B07A00; border-radius:4px; padding:16px 18px; font-size:12.5px; }
 
   @media (max-width:960px) {
-    .kpis { grid-template-columns:1fr 1fr; }
-    .cols2, .cols3 { grid-template-columns:1fr; }
-    .funnel { grid-template-columns:1fr 1fr; }
-    .tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-    .tw > table { min-width:600px; }
+    .prow { grid-template-columns:118px 1fr 120px; gap:12px; }
   }
   @media (max-width:520px) {
-    .kpis { grid-template-columns:1fr; }
-    .funnel { grid-template-columns:1fr; }
-    .mast { flex-direction:column; align-items:flex-start !important; gap:9px !important; }
-    .mast > div:last-child { text-align:left !important; }
-    .chart { gap:5px; }
-    .cbar { width:9px; }
+    .wrap { padding:14px 12px 40px; }
+    .ttl { font-size:19px; }
+    .mast { flex-direction:column; align-items:flex-start; gap:10px; }
+    .sclinks { margin-left:0; }
+    .prow { grid-template-columns:1fr; gap:7px; }
+    .pval { text-align:left; }
   }
 </style>
+
 </head>
 <body>
-
-<!--
-  ==========================================================================
-  AWS FOWC CAMPAIGN DASHBOARD | EDU_1045 | 2026
-  Built 19 August 2026.
-
-  Same visual system as the monthly Marketing Performance dashboard, but laid
-  out for a campaign rather than a period. Three things a campaign needs that a
-  monthly report does not, and which drive this layout:
-
-    PACING     A campaign has a fixed window and a fixed budget, so the useful
-               question is not "how much" but "how much, by now". Every pacing
-               bar carries a marker at elapsed time so consumed and elapsed can
-               be read against each other at a glance.
-    ONE TIMELINE
-               Sessions, spend and submissions share an x axis. A campaign is
-               judged on whether the money moved the outcome, and that is only
-               legible when the three series sit together.
-    FUNNEL     Impressions to clicks to sessions to submissions, with the
-               conversion rate between each pair stated rather than left to
-               mental arithmetic.
-
-  METRIC RULES
-  - Email sends go to the same audience, so delivered is never summed and no
-    campaign-level email rate is computed. Clicks and unsubscribes total.
-  - Paid clicks and landing page sessions are DIFFERENT SCOPES and are never
-    divided by one another. Paid clicks are platform-reported across the whole
-    campaign; landing page sessions are Google Analytics 4, all sources, for one
-    page. The funnel labels the scope of every step for that reason.
-  - Google Ad Grants credit is never counted as cash spend.
-  - Figures only. A value not measured renders as a dash, never a zero.
-  ==========================================================================
--->
-
 <div class="wrap"><div class="col">
 
-  <!-- IDENTITY -->
-  <div style="border:1px solid #E3E5E6; border-radius:6px; overflow:hidden; display:flex; flex-direction:column;">
-    <div class="mast" style="background:#001527; padding:19px 24px 17px; display:flex; align-items:flex-end; justify-content:space-between; gap:24px;">
+  <div class="shell">
+    <div class="mast">
       <div style="display:flex; flex-direction:column; gap:5px;">
-        <div class="hdln" style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2.4px; color:#B6BABC;">American Welding Society</div>
-        <div class="hdln" style="font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:#fff; line-height:1;">FOWC Campaign Performance</div>
+        <div class="org">American Welding Society</div>
+        <div class="ttl hdln" id="mTitle"></div>
       </div>
-      <div style="display:flex; flex-direction:column; gap:4px; text-align:right;">
-        <div class="hdln num" id="mastThrough" style="font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#fff; line-height:1;"></div>
-        <div class="hdln" id="mastCode" style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.4px; color:#B6BABC;"></div>
-      </div>
+      <div class="through hdln num" id="mThrough"></div>
     </div>
-    <div style="background:#fff; display:flex; padding:0 24px; flex-wrap:wrap;" id="nav"></div>
-    <div style="background:#FAFAFA; border-top:1px solid #EDEEEF; padding:9px 24px 10px; display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
-      <div class="hdln" style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#A7ABAD;">Scope</div>
-      <div id="scopeLine" style="font-size:11.5px; color:#6E7274;"></div>
-    </div>
+    <div class="nav" id="nav"></div>
+    <div class="scope" id="scope"></div>
   </div>
 
-  <!-- SUMMARY -->
-  <div id="summary">
-    <div style="display:flex; align-items:baseline; justify-content:space-between; margin:2px 2px 10px;">
-      <div class="hdln" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.6px; color:#6E7274;">Channel summary</div>
-      <div class="cscope">Campaign to date</div>
-    </div>
-    <div class="kpis" id="summaryCards"></div>
-  </div>
+  <div id="err">No data file loaded. This page renders from a generated <code>&lt;campaign&gt;-data.js</code> in the same directory.</div>
 
-  <!-- PACING -->
-  <div class="card" id="pacing">
-    <div class="chd">
-      <div class="ctitle">Pacing</div>
-      <div class="cscope" id="paceScope"></div>
-    </div>
-    <div class="pace" id="paceBars"></div>
-    <div class="ksub" id="paceNote"></div>
-  </div>
-
-  <!-- FUNNEL -->
-  <div class="card" id="funnel">
-    <div class="chd">
-      <div class="ctitle">Delivery funnel</div>
-      <div class="cscope">Each step labelled with its own scope</div>
-    </div>
-    <div class="funnel" id="funnelSteps"></div>
-    <div class="ksub">Paid impressions and clicks are platform-reported for the FOWC campaigns. Landing page sessions are Google Analytics 4, all sources, for the campaign landing page. Submissions are all submissions on that page. The steps are shown in sequence but the scopes differ, so a rate between two steps describes the pair only.</div>
-  </div>
-
-  <!-- TIMELINE -->
-  <div class="card" id="timeline">
-    <div class="chd">
-      <div class="ctitle">Sessions, spend and submissions by month</div>
-      <div class="cscope">2026</div>
-    </div>
-    <div class="chart" id="chart"></div>
-    <div class="legend">
-      <span class="lg"><span class="sw b-sess"></span>Landing page sessions</span>
-      <span class="lg"><span class="sw b-spend"></span>Paid spend</span>
-      <span class="lg"><span class="sw b-sub"></span>Page submissions</span>
-      <span class="lg" style="margin-left:auto;" id="chartScale"></span>
-    </div>
-    <div class="tw"><table id="monthTable"></table></div>
-  </div>
-
-  <!-- GOAL -->
-  <div class="card" id="goal">
-    <div class="chd">
-      <div class="ctitle">Campaign goal</div>
-      <div class="cscope" id="goalScope"></div>
-    </div>
-    <div class="cols2" style="align-items:start;">
-      <div class="tw"><table id="goalTable"></table></div>
-      <div class="ksub" id="goalNote" style="padding-top:22px;"></div>
-    </div>
-  </div>
-
-  <!-- PAID -->
-  <div class="card" id="paid">
-    <div class="chd">
-      <div class="ctitle">Paid media by platform</div>
-      <div class="cscope" id="paidScope"></div>
-    </div>
-    <div class="tw"><table id="paidTable"></table></div>
-    <div class="ksub">Cost per click and cost per session are computed within each platform, against that platform's own reported delivery. Google Ad Grants credit is excluded from spend.</div>
-  </div>
-
-  <div class="card" id="campaigns">
-    <div class="chd">
-      <div class="ctitle">Paid media by campaign</div>
-      <div class="cscope" id="campScope"></div>
-    </div>
-    <div class="tw"><table id="campTable"></table></div>
-  </div>
-
-  <!-- EMAIL -->
-  <div class="card" id="email">
-    <div class="chd">
-      <div class="ctitle">Email</div>
-      <div class="cscope" id="emailScope"></div>
-    </div>
-    <div class="tw"><table id="emailTable"></table></div>
-    <div class="ksub">Bot-excluded. Open and click rates are per send, against that send's own delivered count. Every send goes to the same audience, so delivered is not summed and no campaign-level rate is shown. Clicks and unsubscribes total.</div>
-  </div>
-
-  <!-- DELIVERY -->
-  <div class="card" id="delivery">
-    <div class="chd">
-      <div class="ctitle">Delivery status</div>
-      <div class="cscope">Channels without measured delivery</div>
-    </div>
-    <div class="tw"><table id="delTable"></table></div>
-  </div>
-
-  <div style="font-size:10.5px; color:#8B8F91; line-height:1.7; padding:0 2px;" id="foot"></div>
+  <div class="kpis" id="summary"></div>
+  <div id="pacing"></div>
+  <div id="traffic"></div>
+  <div id="timeline"></div>
+  <div id="paid"></div>
+  <div id="email"></div>
+  <div id="social"></div>
+  <div id="delivery"></div>
 
 </div></div>
 
-<script src="fowc-data.js"></script>
 <script>
-(function(){
-  var D = window.FOWC_DATA;
-  if (!D) { document.body.innerHTML = '<div style="padding:40px;font-family:Arial">fowc-data.js did not load.</div>'; return; }
+(function () {
+  var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var DASH = '<span class="em">&mdash;</span>';
 
-  var $ = function(id){ return document.getElementById(id); };
-  var n = function(v){ return v==null ? null : Math.round(v).toLocaleString('en-US'); };
-  var pct1 = function(v){ return (v*100).toFixed(1)+'%'; };
-  var pct2 = function(v){ return (v*100).toFixed(2)+'%'; };
-  var money = function(v){ return '$'+v.toLocaleString('en-US',{minimumFractionDigits:0, maximumFractionDigits:0}); };
-  var money2 = function(v){ return '$'+v.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2}); };
-  function fmt(v,f){
-    if (v==null) return '<span class="blank">&mdash;</span>';
-    if (f==='money') return money(v);
-    if (f==='pct') return pct1(v);
-    return n(v);
+  function has(v) { return v !== null && v !== undefined && v !== ""; }
+  function int(v) { return has(v) ? Math.round(v).toLocaleString("en-US") : DASH; }
+  function money(v) { return has(v) ? "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : DASH; }
+  function money0(v) { return has(v) ? "$" + Math.round(v).toLocaleString("en-US") : DASH; }
+  function pct(v, d) { return has(v) ? v.toFixed(d === undefined ? 1 : d) + "%" : DASH; }
+  function ratio(a, b, d) { return has(a) && has(b) && b ? pct(a / b * 100, d) : DASH; }
+  function per(a, b) { return has(a) && has(b) && b ? "$" + (a / b).toFixed(2) : DASH; }
+  function fmt(v, f) { return f === "money" ? money(v) : f === "money0" ? money0(v) : f === "pct" ? pct(v, 1) : f === "pct2" ? pct(v, 2) : int(v); }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+  function day(iso) {
+    if (!has(iso)) return "";
+    var p = iso.split("-");
+    return MONTHS[+p[1] - 1] + " " + (+p[2]) + ", " + p[0];
   }
-  var TIERLABEL = { observed:'Observed', manual:'Manual pull', notConnected:'Not Connected', noActivity:'No Activity' };
-  function tier(t){ return '<span class="tier t-'+t+'">'+(TIERLABEL[t]||t)+'</span>'; }
-  function dash(){ return '<span class="blank">&mdash;</span>'; }
-
-  var MON = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
-  function mlabel(m){ var p=m.split('-'); return MON[p[1]]; }
-  function dlabel(d){ var p=d.split('-'); return MON[p[1]]+' '+parseInt(p[2],10)+', '+p[0]; }
-
-  // masthead
-  $('mastThrough').textContent = 'Data through '+dlabel(D.meta.dataThrough);
-  $('mastCode').textContent = D.meta.code+' · '+D.meta.year;
-  $('scopeLine').innerHTML =
-    dlabel(D.meta.campaignStart)+' to '+dlabel(D.meta.campaignEnd)+
-    ' &nbsp;·&nbsp; Landing page live '+dlabel(D.meta.landingPageLive)+
-    ' &nbsp;·&nbsp; <a href="'+D.meta.landingPage+'" target="_blank">Landing page</a>'+
-    ' &nbsp;·&nbsp; <a href="'+D.meta.formUrl+'" target="_blank">Form</a>'+
-    ' &nbsp;·&nbsp; <a href="'+D.meta.mondayBoard+'" target="_blank">Monday board</a>';
-
-  var NAV = [['summary','Summary'],['pacing','Pacing'],['funnel','Funnel'],['timeline','Timeline'],['goal','Goal'],['paid','Paid Media'],['email','Email'],['delivery','Delivery']];
-  $('nav').innerHTML = NAV.map(function(x){
-    return '<div onclick="document.getElementById(\'' + x[0] + '\').scrollIntoView({behavior:\'smooth\'})" '+
-      'style="padding:12px 15px; font-size:12px; font-weight:700; color:#393B3B; cursor:pointer; border-bottom:2px solid transparent;" '+
-      'onmouseover="this.style.borderBottomColor=\'#0074E2\'" onmouseout="this.style.borderBottomColor=\'transparent\'">'+x[1]+'</div>';
-  }).join('');
-
-  // summary
-  $('summaryCards').innerHTML = D.summary.map(function(s){
-    return '<div class="kpi"><div class="kch">'+s.channel+'</div><div class="klab">'+s.label+'</div>'+
-      '<div class="num hdln kval">'+fmt(s.value,s.fmt)+'</div>'+
-      '<div class="ksub">'+s.sub+'</div><div>'+tier(s.tier)+'</div></div>';
-  }).join('');
-
-  // pacing
-  var P = D.pacing;
-  var elapsed = P.daysElapsed / P.daysTotal;
-  $('paceScope').textContent = P.daysElapsed+' of '+P.daysTotal+' campaign days elapsed, '+pct1(elapsed);
-  function paceRow(label, consumed, total, fmtFn, tone){
-    var share = total ? consumed/total : 0;
-    var over = share > elapsed;
-    var colour = tone==='goal' ? (over ? '#1F8A4C' : '#B07A00') : (over ? '#B07A00' : '#0074E2');
-    return '<div class="pacerow">'+
-      '<span class="pacelab">'+label+'</span>'+
-      '<span class="pacetrack"><span class="pacefill" style="width:'+Math.min(100,share*100)+'%; background:'+colour+';"></span>'+
-        '<span class="pacemark" style="left:'+Math.min(100,elapsed*100)+'%;" title="elapsed"></span></span>'+
-      '<span class="num" style="text-align:right; font-weight:700;">'+pct1(share)+'</span>'+
-      '</div>'+
-      '<div class="pacerow"><span></span><span class="ksub">'+fmtFn(consumed)+' of '+fmtFn(total)+'</span><span></span></div>';
+  function dayShort(iso) {
+    if (!has(iso)) return DASH;
+    var p = String(iso).split("-");
+    if (p.length < 2) return String(iso);
+    if (p.length === 2) return MONTHS[+p[1] - 1] + " " + p[0];
+    return MONTHS[+p[1] - 1] + " " + (+p[2]);
   }
-  $('paceBars').innerHTML =
-    paceRow('Budget spent', P.spend, P.budget, money, 'spend') +
-    paceRow('Goal reached', P.goalActual, P.goalTarget, function(v){ return n(v); }, 'goal');
-  $('paceNote').innerHTML = 'The vertical marker on each bar is elapsed campaign time ('+pct1(elapsed)+'). '+
-    'A fill past the marker is ahead of pace, a fill short of it is behind. Spend is complete through '+
-    dlabel(D.meta.paidThrough)+' only, so the current month is not yet in it.';
+  function mlab(iso) { var p = String(iso).split("-"); return MONTHS[+p[1] - 1]; }
+  function set(id, html) { document.getElementById(id).innerHTML = html; }
+  function card(title, scope, body) {
+    return '<div class="card"><div class="chd"><div class="ctitle hdln">' + title + '</div>' +
+      (scope ? '<div class="cscope">' + scope + "</div>" : "") + "</div>" + body + "</div>";
+  }
+  function tbl(head, rows, foot) {
+    return '<div class="tw"><table><thead><tr>' + head + "</tr></thead><tbody>" + rows + "</tbody>" +
+      (foot ? "<tfoot>" + foot + "</tfoot>" : "") + "</table></div>";
+  }
+  function link(url, text) { return has(url) ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + text + "</a>" : text; }
 
-  // funnel
-  var paidImpr = D.paid.platforms.reduce(function(a,p){ return a+p.impressions; },0);
-  var paidClicks = D.paid.platforms.reduce(function(a,p){ return a+p.clicks; },0);
-  var LP = D.landingPage;
-  var steps = [
-    { lab:'Paid impressions', v:paidImpr, scope:'3 platforms', rate:null },
-    { lab:'Paid clicks', v:paidClicks, scope:'3 platforms', rate:'Click rate '+pct2(paidClicks/paidImpr) },
-    { lab:'Landing page sessions', v:LP.sessions, scope:'GA4, all sources', rate:'Engagement '+pct1(LP.engaged/LP.sessions) },
-    { lab:'Page submissions', v:LP.submissions, scope:'HubSpot, all sources', rate:'Submission rate '+pct2(LP.submissions/LP.sessions) }
-  ];
-  $('funnelSteps').innerHTML = steps.map(function(s){
-    return '<div class="fstep"><div class="flab">'+s.lab+'</div>'+
-      '<div class="num hdln fnum">'+n(s.v)+'</div>'+
-      '<div class="ksub">'+s.scope+'</div>'+
-      '<div class="frate">'+(s.rate||'&nbsp;')+'</div></div>';
-  }).join('');
+  function render() {
+    var D = window.CAMPAIGN_DATA;
+    if (!D) { document.getElementById("err").style.display = "block"; return; }
+    var M = D.meta || {}, F = D.flags || {};
+    var paid = F.hasPaid && D.paid, outcome = F.hasOutcome;
 
-  // timeline
-  var M = D.monthly;
-  var maxS = Math.max.apply(null, M.map(function(r){ return r.sessions||0; })) || 1;
-  var maxSp = Math.max.apply(null, M.map(function(r){ return r.spend||0; })) || 1;
-  var maxSu = Math.max.apply(null, M.map(function(r){ return r.submissions||0; })) || 1;
-  $('chart').innerHTML = M.map(function(r){
-    function h(v,mx){ return v==null ? 0 : Math.max(2, (v/mx)*150); }
-    return '<div class="ccol"><div class="cbars">'+
-      '<span class="cbar b-sess"  style="height:'+h(r.sessions,maxS)+'px" title="'+n(r.sessions)+' sessions"></span>'+
-      '<span class="cbar b-spend" style="height:'+h(r.spend,maxSp)+'px" title="'+(r.spend==null?'no data':money(r.spend))+'"></span>'+
-      '<span class="cbar b-sub"   style="height:'+h(r.submissions,maxSu)+'px" title="'+n(r.submissions)+' submissions"></span>'+
-      '</div><span class="cx">'+mlabel(r.m)+(r.partial?'*':'')+'</span>'+
-      '<span class="cvals">'+
-        '<span style="color:#0074E2;">'+n(r.sessions)+'</span>'+
-        '<span style="color:#5C93CC;">'+(r.spend==null?'&mdash;':money(r.spend))+'</span>'+
-        '<span style="color:#001527;">'+n(r.submissions)+'</span>'+
-      '</span></div>';
-  }).join('');
-  $('chartScale').textContent = 'Each series scaled to its own maximum. * partial month.';
+    document.title = M.campaign + " | Campaign Performance | American Welding Society";
+    set("mTitle", esc(M.campaign));
+    set("mThrough", "Data through " + day(M.dataThrough));
 
-  var tS=0, tSp=0, tSu=0;
-  M.forEach(function(r){ tS+=r.sessions||0; tSp+=r.spend||0; tSu+=r.submissions||0; });
-  $('monthTable').innerHTML =
-    '<tr><th>Month</th><th class="r">Sessions</th><th class="r">Engaged</th><th class="r">Engagement</th>'+
-    '<th class="r">Spend</th><th class="r">Submissions</th><th class="r">Cost / Session</th></tr>'+
-    M.map(function(r){
-      return '<tr><td>'+mlabel(r.m)+' '+r.m.slice(2,4)+(r.partial?' *':'')+'</td>'+
-        '<td class="r num">'+n(r.sessions)+'</td>'+
-        '<td class="r num">'+n(r.engaged)+'</td>'+
-        '<td class="r num">'+pct1(r.engaged/r.sessions)+'</td>'+
-        '<td class="r num">'+(r.spend==null?dash():money2(r.spend))+'</td>'+
-        '<td class="r num">'+n(r.submissions)+'</td>'+
-        '<td class="r num">'+(r.spend==null||!r.sessions?dash():money2(r.spend/r.sessions))+'</td></tr>';
-    }).join('')+
-    '<tr class="tot"><td>2026 to date</td><td class="r num">'+n(tS)+'</td>'+
-    '<td class="r num">'+n(M.reduce(function(a,r){return a+(r.engaged||0);},0))+'</td>'+
-    '<td class="r num">'+pct1(M.reduce(function(a,r){return a+(r.engaged||0);},0)/tS)+'</td>'+
-    '<td class="r num">'+money2(tSp)+'</td><td class="r num">'+n(tSu)+'</td>'+
-    '<td class="r num">'+money2(tSp/tS)+'</td></tr>';
+    /* nav: only sections that render */
+    var hasPacing = (outcome && D.goal) || (paid && D.pacing && has(D.pacing.budget));
+    var secs = [];
+    if (hasPacing) secs.push(["Progress", "pacing"]);
+    if (D.channels && D.channels.length) secs.push(["Traffic", "traffic"]);
+    if ((D.monthly || []).length) secs.push(["Timeline", "timeline"]);
+    if (paid) secs.push(["Paid Media", "paid"]);
+    if ((D.email && D.email.sends || []).length) secs.push(["Email", "email"]);
+    if (D.social && (D.social.posts || []).length) secs.push(["Organic Social", "social"]);
+    if ((D.delivery || []).length) secs.push(["Traditional Media", "delivery"]);
+    set("nav", secs.map(function (s) { return '<a href="#' + s[1] + '">' + s[0] + "</a>"; }).join(""));
 
-  // goal
-  var G = D.goal;
-  $('goalScope').innerHTML = 'Target '+n(G.target)+' · 2025 full year '+n(G.baseline2025);
-  $('goalTable').innerHTML =
-    '<tr><th>Measure</th><th class="r">Value</th><th class="r">Of target</th><th>Evidence</th></tr>'+
-    G.measures.map(function(m){
-      return '<tr><td><strong>'+m.label+'</strong><div class="ksub">'+m.note+'</div></td>'+
-        '<td class="r num" style="font-size:17px; font-weight:700;">'+n(m.value)+'</td>'+
-        '<td class="r num">'+pct1(m.value/G.target)+'</td>'+
-        '<td>'+tier(m.tier)+'</td></tr>';
-    }).join('');
-  var remaining = G.target - (G.measures[0].value);
-  var daysLeft = D.pacing.daysTotal - D.pacing.daysElapsed;
-  $('goalNote').innerHTML =
-    'Two measures are shown because they answer different questions and have been mistaken for each other. '+
-    'Page submissions counts every submission. New contacts counts only people converting for the first time, '+
-    'so it is always the smaller number and never the one to compare against a submissions-based target.<br><br>'+
-    'Against the '+n(G.target)+' target, '+n(remaining)+' remain with '+daysLeft+' campaign days left, '+
-    'a required rate of '+(remaining/daysLeft).toFixed(1)+' submissions a day. The rate so far is '+
-    (G.measures[0].value/D.pacing.daysElapsed).toFixed(1)+' a day.';
+    /* scope strip: every date lives here */
+    var sc = [["Campaign window", day(M.campaignStart) + " &ndash; " + day(M.campaignEnd)]];
+    if (M.landingPageLive) sc.push(["Landing page live", day(M.landingPageLive)]);
+    /* Paid spend closes a month behind everything else. Stating it here, once, in the only
+       place dates are allowed, is what stops a reader dividing complete sessions by
+       incomplete spend and reading the result as efficiency. */
+    if (paid && M.paidThrough) sc.push(["Paid spend complete through", day(M.paidThrough)]);
+    var links = [];
+    if (M.landingPage) links.push(link(M.landingPage, esc(M.landingPath || "Landing page")));
+    if (M.formUrl) links.push(link(M.formUrl, "Form"));
+    if (M.mondayBoard) links.push(link(M.mondayBoard, "Monday board"));
+    set("scope",
+      sc.map(function (s) { return '<div class="sc"><div class="sck">' + s[0] + '</div><div class="scv num">' + s[1] + "</div></div>"; }).join("") +
+      (links.length ? '<div class="sclinks">' + links.join('<span style="color:#CFD2D4;">&#124;</span>') + "</div>" : ""));
 
-  // paid by platform
-  var pTot = { spend:0, clicks:0, impressions:0, sessions:0, budget:0 };
-  D.paid.platforms.forEach(function(p){ pTot.spend+=p.spend; pTot.clicks+=p.clicks; pTot.impressions+=p.impressions; pTot.sessions+=p.sessions; pTot.budget+=p.budget; });
-  $('paidScope').innerHTML = tier(D.paid.tier)+' &nbsp;Spend complete through '+dlabel(D.paid.through);
-  $('paidTable').innerHTML =
-    '<tr><th>Platform</th><th>Flight</th><th class="r">Budget</th><th class="r">Spend</th><th class="r">Used</th>'+
-    '<th class="r">Impressions</th><th class="r">Clicks</th><th class="r">CTR</th><th class="r">Cost / Click</th><th class="r">Sessions</th><th class="r">Cost / Session</th></tr>'+
-    D.paid.platforms.map(function(p){
-      return '<tr><td><strong>'+p.platform+'</strong></td>'+
-        '<td class="ksub" style="white-space:nowrap;">'+p.flight+'</td>'+
-        '<td class="r num">'+money(p.budget)+'</td>'+
-        '<td class="r num">'+money2(p.spend)+'</td>'+
-        '<td class="r num">'+pct1(p.spend/p.budget)+'</td>'+
-        '<td class="r num">'+n(p.impressions)+'</td>'+
-        '<td class="r num">'+n(p.clicks)+'</td>'+
-        '<td class="r num">'+pct2(p.clicks/p.impressions)+'</td>'+
-        '<td class="r num">'+money2(p.spend/p.clicks)+'</td>'+
-        '<td class="r num">'+n(p.sessions)+'</td>'+
-        '<td class="r num">'+(p.sessions?money2(p.spend/p.sessions):dash())+'</td></tr>';
-    }).join('')+
-    '<tr class="tot"><td>Total</td><td></td><td class="r num">'+money(pTot.budget)+'</td>'+
-    '<td class="r num">'+money2(pTot.spend)+'</td><td class="r num">'+pct1(pTot.spend/pTot.budget)+'</td>'+
-    '<td class="r num">'+n(pTot.impressions)+'</td><td class="r num">'+n(pTot.clicks)+'</td>'+
-    '<td class="r num">'+pct2(pTot.clicks/pTot.impressions)+'</td>'+
-    '<td class="r num">'+money2(pTot.spend/pTot.clicks)+'</td>'+
-    '<td class="r num">'+n(pTot.sessions)+'</td>'+
-    '<td class="r num">'+money2(pTot.spend/pTot.sessions)+'</td></tr>';
+    /* 1. channel summary */
+    set("summary", (D.summary || []).map(function (s) {
+      return '<div class="kpi"><div class="kch">' + esc(s.channel) + "</div>" +
+        '<div class="klab hdln">' + esc(s.label) + "</div>" +
+        '<div class="kval num hdln">' + (s.pending ? '<span class="kpend">not connected</span>' : fmt(s.value, s.fmt)) + "</div></div>";
+    }).join(""));
 
-  // paid by campaign
-  var live = D.paid.campaigns.filter(function(c){ return c.spend > 0; });
-  $('campScope').textContent = live.length+' campaigns with spend in 2026';
-  $('campTable').innerHTML =
-    '<tr><th>Campaign</th><th>Platform</th><th class="r">Spend</th><th class="r">Impressions</th><th class="r">Clicks</th><th class="r">Cost / Click</th></tr>'+
-    live.map(function(c){
-      return '<tr><td><strong>'+c.campaign+'</strong><div class="ksub">ID '+c.id+'</div></td>'+
-        '<td>'+c.platform+'</td>'+
-        '<td class="r num">'+money2(c.spend)+'</td>'+
-        '<td class="r num">'+n(c.impressions)+'</td>'+
-        '<td class="r num">'+n(c.clicks)+'</td>'+
-        '<td class="r num">'+(c.clicks?money2(c.spend/c.clicks):dash())+'</td></tr>';
-    }).join('');
-
-  // email
-  var sent = D.email.sends.filter(function(s){ return s.status==='sent'; });
-  var eClicks = sent.reduce(function(a,s){ return a+s.clicks; },0);
-  var eUnsubs = sent.reduce(function(a,s){ return a+s.unsubs; },0);
-  $('emailScope').innerHTML = tier(D.email.tier)+' &nbsp;HubSpot, bot-excluded';
-  $('emailTable').innerHTML =
-    '<tr><th>Send</th><th>Sent</th><th class="r">Delivered</th><th class="r">Opens</th><th class="r">Open Rate</th>'+
-    '<th class="r">Clicks</th><th class="r">Click Rate</th><th class="r">Unsubs</th><th class="r">Unsub Rate</th><th>Status</th></tr>'+
-    D.email.sends.map(function(s){
-      if (s.status!=='sent') {
-        return '<tr><td><strong>Email '+s.n+'</strong></td><td class="ksub" style="white-space:nowrap;">'+s.sent+'</td>'+
-          '<td class="r">'+dash()+'</td><td class="r">'+dash()+'</td><td class="r">'+dash()+'</td>'+
-          '<td class="r">'+dash()+'</td><td class="r">'+dash()+'</td><td class="r">'+dash()+'</td><td class="r">'+dash()+'</td>'+
-          '<td><span class="pill p-sched">Scheduled</span></td></tr>';
+    /* 2. progress and pacing */
+    (function () {
+      var P = D.pacing || {}, G = D.goal || null;
+      var elapsed = has(P.daysTotal) && P.daysTotal ? P.daysElapsed / P.daysTotal : null;
+      var rows = [];
+      if (outcome && G) {
+        rows.push(bar(G.label, G.target ? G.actual / G.target : 0, elapsed,
+          int(G.actual) + " of " + int(G.target), "#0074E2", "goal"));
       }
-      return '<tr><td><strong>Email '+s.n+'</strong><div class="ksub">'+s.subject+'</div></td>'+
-        '<td class="num" style="white-space:nowrap;">'+s.sent+'</td>'+
-        '<td class="r num">'+n(s.delivered)+'</td>'+
-        '<td class="r num">'+n(s.opens)+'</td>'+
-        '<td class="r num">'+pct1(s.opens/s.delivered)+'</td>'+
-        '<td class="r num">'+n(s.clicks)+'</td>'+
-        '<td class="r num">'+pct2(s.clicks/s.delivered)+'</td>'+
-        '<td class="r num">'+n(s.unsubs)+'</td>'+
-        '<td class="r num">'+pct2(s.unsubs/s.delivered)+'</td>'+
-        '<td><span class="pill p-done">Sent</span></td></tr>';
-    }).join('')+
-    '<tr class="tot"><td>Campaign to date</td><td></td>'+
-    '<td class="r ksub" style="text-align:right; font-weight:400;">not summed</td>'+
-    '<td class="r ksub" style="text-align:right; font-weight:400;">not summed</td>'+
-    '<td class="r ksub" style="text-align:right; font-weight:400;">not aggregated</td>'+
-    '<td class="r num">'+n(eClicks)+'</td>'+
-    '<td class="r ksub" style="text-align:right; font-weight:400;">not aggregated</td>'+
-    '<td class="r num">'+n(eUnsubs)+'</td>'+
-    '<td class="r ksub" style="text-align:right; font-weight:400;">not aggregated</td><td></td></tr>';
+      if (paid && has(P.budget)) {
+        rows.push(bar("Budget", P.budget ? P.spend / P.budget : 0, elapsed,
+          money(P.spend) + " of " + money0(P.budget), "#7FB2E8", "budget"));
+      }
+      if (!rows.length) { set("pacing", ""); return; }
 
-  // delivery
-  var PILL = { done:['p-done','Done'], notStarted:['p-not','Not Started'], scheduled:['p-sched','Scheduled'] };
-  $('delTable').innerHTML =
-    '<tr><th>Channel</th><th>Item</th><th>Due</th><th>Status</th></tr>'+
-    D.delivery.map(function(d){
-      var pl = PILL[d.status]||PILL.notStarted;
-      return '<tr><td class="ksub">'+d.channel+'</td><td>'+d.item+'</td>'+
-        '<td class="num" style="white-space:nowrap;">'+d.due+'</td>'+
-        '<td><span class="pill '+pl[0]+'">'+pl[1]+'</span></td></tr>';
-    }).join('');
+      set("pacing", card("Progress and pacing",
+        "each bar marked at elapsed campaign time",
+        '<div class="pace">' + rows.join("") + "</div>"));
 
-  // footer
-  $('foot').innerHTML =
-    'Sources: Google Analytics 4 landing page, filtered to '+D.meta.landingPath+' and every query-string variant &middot; '+
-    'Paid Campaign Cache from the monthly reporting pipeline &middot; HubSpot marketing email analytics, bot-excluded &middot; '+
-    'HubSpot content analytics &middot; HubSpot CRM contact conversion properties.<br>'+
-    'Form: '+D.meta.formName+'<br>'+
-    'Generated '+dlabel(D.meta.generated)+'. Site data through '+dlabel(D.meta.dataThrough)+'. Paid spend through '+dlabel(D.meta.paidThrough)+'.';
+      function bar(label, frac, mk, sub, color, kind) {
+        var p = Math.max(0, Math.min(1, frac || 0)), chip = "";
+        if (kind && has(mk)) {
+          var d = (p - mk) * 100, ab = d >= 0;
+          var good = kind === "goal" ? ab : !ab;
+          chip = '<span class="pchip ' + (Math.abs(d) < 1 ? "flat" : good ? "ok" : "warn") + '">' +
+            Math.abs(d).toFixed(1) + " pts " + (ab ? "ahead of" : "behind") + " pace</span>";
+          if (kind === "budget" && ab) chip = '<span class="pchip warn">' + Math.abs(d).toFixed(1) + " pts ahead of time</span>";
+        }
+        var showMark = kind && has(mk);
+        return '<div class="prow"><div><div class="plab hdln">' + esc(label) + '</div><div class="psub num">' + sub + "</div></div>" +
+          '<div class="track"><div class="fill" style="width:' + (p * 100).toFixed(2) + "%; background:" + color + ';"></div>' +
+          (showMark ? '<div class="mark" style="left:' + (mk * 100).toFixed(2) + '%;"></div>' +
+            '<div class="marklab" style="left:' + (mk * 100).toFixed(2) + '%;">pace</div>' : "") + "</div>" +
+          '<div class="pval"><div class="ppct num hdln">' + pct(p * 100) + "</div>" + chip + "</div></div>";
+      }
+    })();
+
+    /* 3. how people reached the page, then the conversion step */
+    (function () {
+      var ch = D.channels || [];
+      if (!ch.length) { set("traffic", ""); return; }
+      var tot = ch.reduce(function (a, c) { return { s: a.s + (c.sessions || 0), e: a.e + (c.engaged || 0) }; }, { s: 0, e: 0 });
+      var mx = Math.max.apply(null, ch.map(function (c) { return c.sessions || 0; }));
+      var hasSub = ch.some(function (c) { return has(c.submissions); });
+      var totSub = hasSub ? ch.reduce(function (a, c) { return a + (c.submissions || 0); }, 0) : null;
+      var head = '<th>Channel</th><th class="r">Sessions</th><th class="r">Share</th><th></th>' +
+        '<th class="r">Engaged sessions</th><th class="r">Engagement rate</th>' +
+        (hasSub ? '<th class="r">' + esc(D.goal ? D.goal.label : "Submissions") + '</th><th class="r">Conversion rate</th>' : "");
+      var rows = ch.slice().sort(function (a, b) { return b.sessions - a.sessions; }).map(function (c) {
+        return '<tr><td class="name">' + esc(c.channel) + "</td>" +
+          '<td class="r num">' + int(c.sessions) + "</td>" +
+          '<td class="r num">' + ratio(c.sessions, tot.s) + "</td>" +
+          '<td style="width:18%; padding-left:14px;"><span class="sbar"><i style="width:' + (mx ? (c.sessions / mx * 100).toFixed(1) : 0) + '%"></i></span></td>' +
+          '<td class="r num">' + int(c.engaged) + "</td>" +
+          '<td class="r num">' + ratio(c.engaged, c.sessions) + "</td>" +
+          (hasSub ? '<td class="r num">' + int(c.submissions) + '</td><td class="r num">' + ratio(c.submissions, c.sessions, 2) + "</td>" : "") +
+          "</tr>";
+      }).join("");
+      var foot = '<tr class="tot"><td>All sources</td><td class="r num">' + int(tot.s) + '</td><td class="r num">' + pct(100) +
+        '</td><td></td><td class="r num">' + int(tot.e) + '</td><td class="r num">' + ratio(tot.e, tot.s) + "</td>" +
+        (hasSub ? '<td class="r num">' + int(totSub) + '</td><td class="r num">' + ratio(totSub, tot.s, 2) + "</td>" : "") +
+        "</tr>";
+
+      set("traffic", card("How people reached the page",
+        "landing page sessions, all sources",
+        tbl(head, rows, foot)));
+    })();
+
+    /* 4. timeline */
+    (function () {
+      var m = D.monthly || [];
+      if (!m.length) { set("timeline", ""); return; }
+      var showSub = outcome && m.some(function (r) { return has(r.submissions); });
+      var W = 1000, PX = 26, PY = 16;
+
+      /* Monotone cubic interpolation. A plain Catmull-Rom spline overshoots on a series
+         that jumps two orders of magnitude in a month and would draw negative sessions
+         between April and May, so the tangents are clamped to preserve monotonicity. */
+      function smooth(pts) {
+        var n = pts.length;
+        if (n < 2) return "";
+        if (n === 2) return "M" + f(pts[0]) + " L" + f(pts[1]);
+        var dx = [], dy = [], mSl = [];
+        for (var i = 0; i < n - 1; i++) {
+          dx.push(pts[i + 1].x - pts[i].x);
+          dy.push(pts[i + 1].y - pts[i].y);
+          mSl.push(dy[i] / (dx[i] || 1));
+        }
+        var t = [mSl[0]];
+        for (var j = 1; j < n - 1; j++) {
+          if (mSl[j - 1] * mSl[j] <= 0) { t.push(0); }
+          else {
+            var w1 = 2 * dx[j] + dx[j - 1], w2 = dx[j] + 2 * dx[j - 1];
+            t.push((w1 + w2) / (w1 / mSl[j - 1] + w2 / mSl[j]));
+          }
+        }
+        t.push(mSl[n - 2]);
+        var d = "M" + f(pts[0]);
+        for (var k = 0; k < n - 1; k++) {
+          var h = dx[k];
+          d += " C" + (pts[k].x + h / 3).toFixed(1) + " " + (pts[k].y + t[k] * h / 3).toFixed(1) +
+               " " + (pts[k + 1].x - h / 3).toFixed(1) + " " + (pts[k + 1].y - t[k + 1] * h / 3).toFixed(1) +
+               " " + f(pts[k + 1]);
+        }
+        return d;
+        function f(p) { return p.x.toFixed(1) + " " + p.y.toFixed(1); }
+      }
+
+      function points(vals, mx, h) {
+        var n = vals.length, iw = W - PX * 2, ih = h - PY * 2;
+        var step = n > 1 ? iw / (n - 1) : 0;
+        return vals.map(function (v, i) {
+          return { x: PX + i * step, y: PY + ih - (v === null ? 0 : v / mx * ih), v: v, i: i };
+        });
+      }
+
+      function single(key, color, label, h) {
+        var vals = m.map(function (r) { return has(r[key]) ? r[key] : null; });
+        var mx = Math.max.apply(null, vals.map(function (v) { return v || 0; })) || 1;
+        var pts = points(vals, mx, h).filter(function (p) { return p.v !== null; });
+        var d = smooth(pts);
+        var ih = h - PY * 2;
+        var area = d ? d + " L" + pts[pts.length - 1].x.toFixed(1) + " " + (PY + ih) +
+                       " L" + pts[0].x.toFixed(1) + " " + (PY + ih) + " Z" : "";
+        return '<div class="tlcap"><div class="tlname hdln">' + esc(label) +
+          '</div><div class="tlmax num">peak ' + int(mx) + "</div></div>" +
+          '<svg class="ln" viewBox="0 0 ' + W + " " + h + '" preserveAspectRatio="none" role="img">' +
+          grid(h) +
+          (area ? '<path d="' + area + '" fill="' + color + '" fill-opacity="0.10"/>' : "") +
+          (d ? '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' : "") +
+          pts.map(function (p) {
+            return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="3.5" fill="#fff" stroke="' +
+              color + '" stroke-width="2"' + (m[p.i].partial ? ' stroke-dasharray="2 2"' : "") + "/>";
+          }).join("") +
+          pts.map(function (p) {
+            var a = p.x < PX + 30 ? "start" : p.x > W - PX - 30 ? "end" : "middle";
+            return '<text x="' + p.x.toFixed(1) + '" y="' + Math.max(11, p.y - 9).toFixed(1) +
+              '" text-anchor="' + a + '" font-size="11" font-family="Arial,Helvetica,sans-serif" fill="#393B3B">' +
+              int(p.v) + "</text>";
+          }).join("") + "</svg>";
+      }
+
+      function grid(h) {
+        var ih = h - PY * 2;
+        return [0, 0.5, 1].map(function (fr) {
+          var y = PY + ih * fr;
+          return '<line x1="' + PX + '" x2="' + (W - PX) + '" y1="' + y + '" y2="' + y +
+                 '" stroke="#EDEEEF" stroke-width="1"/>';
+        }).join("");
+      }
+
+      var cols = "grid-template-columns:repeat(" + m.length + ",minmax(0,1fr));";
+      var body = '<div class="tl">' + single("sessions", "#0074E2", "Landing page sessions", 150);
+      if (showSub) body += '<div style="height:14px;"></div>' +
+        single("submissions", "#003767", D.goal ? D.goal.label : "Submissions", 118);
+      body += '<div class="tlx" style="' + cols + '">' + m.map(function (r) {
+        return '<div><div class="tlm hdln">' + mlab(r.m) + '</div>' +
+          (r.partial ? '<div class="tlp">to ' + dayShort(M.dataThrough) + "</div>" : "") + "</div>";
+      }).join("") + "</div></div>";
+      set("timeline", card("Timeline", "monthly", body));
+    })();
+
+    /* 5. paid media */
+    (function () {
+      if (!paid) { set("paid", ""); return; }
+      var P = D.paid, pl = P.platforms || [], pt = P.placements || [];
+
+      function tot(list) {
+        return list.reduce(function (a, r) {
+          return { spend: a.spend + (r.spend || 0),
+                   clicks: a.clicks + (r.clicks || 0),
+                   imp: has(r.impressions) ? a.imp + r.impressions : a.imp,
+                   impN: has(r.impressions) ? a.impN + 1 : a.impN,
+                   sess: has(r.sessions) ? a.sess + r.sessions : a.sess,
+                   sessN: has(r.sessions) ? a.sessN + 1 : a.sessN };
+        }, { spend: 0, clicks: 0, imp: 0, impN: 0, sess: 0, sessN: 0 });
+      }
+      /* A total is only shown when every row contributed to it. A partial sum under a
+         complete-looking heading is the same failure as an invented figure. */
+      function rollup(list) {
+        var t = tot(list);
+        return { spend: t.spend, clicks: t.clicks,
+                 impressions: t.impN === list.length ? t.imp : null,
+                 sessions: t.sessN === list.length ? t.sess : null };
+      }
+
+      var showSess = pl.some(function (r) { return has(r.sessions); }) ||
+                     pt.some(function (r) { return has(r.sessions); });
+
+      var HEAD = '<th class="r">Spend</th><th class="r">Impressions</th>' +
+                 '<th class="r">Landing page clicks</th><th class="r">Click rate</th>' +
+                 '<th class="r">Cost / click</th>' +
+                 (showSess ? '<th class="r">Sessions</th><th class="r">Click to session</th><th class="r">Cost / session</th>' : "");
+      function cells(r) {
+        return '<td class="r num">' + money(r.spend) + "</td>" +
+               '<td class="r num">' + int(r.impressions) + "</td>" +
+               '<td class="r num">' + int(r.clicks) + "</td>" +
+               '<td class="r num">' + ratio(r.clicks, r.impressions, 2) + "</td>" +
+               '<td class="r num">' + per(r.spend, r.clicks) + "</td>" +
+               (showSess ? '<td class="r num">' + int(r.sessions) + "</td>" +
+                           '<td class="r num">' + ratio(r.sessions, r.clicks, 1) + "</td>" +
+                           '<td class="r num">' + per(r.spend, r.sessions) + "</td>" : "");
+      }
+
+      var tp = rollup(pl);
+      var plRows = pl.map(function (r) {
+        return '<tr><td class="name">' + esc(r.platform) + "</td>" + cells(r) + "</tr>";
+      }).join("");
+      var plFoot = '<tr class="tot"><td>All platforms</td>' + cells(tp) + "</tr>";
+
+      /* By placement type. A campaign name means nothing to a reader; the buy type does. */
+      var ptBlock = "";
+      if (pt.length) {
+        var tc = rollup(pt);
+        var ptRows = pt.slice().sort(function (a, b) { return b.spend - a.spend; }).map(function (r) {
+          return '<tr><td class="name">' + esc(r.placement) + '</td><td class="dim">' + esc(r.platforms || "") + "</td>" +
+            cells(r) + "</tr>";
+        }).join("");
+        var ptFoot = '<tr class="tot"><td>All placements</td><td></td>' + cells(tc) + "</tr>";
+        ptBlock = '<div class="sub hdln">By placement type</div>' +
+          tbl('<th>Placement</th><th>Platform</th>' + HEAD, ptRows, ptFoot);
+      }
+
+      var note = showSess
+        ? '<div class="pnote">Click to session compares platform-reported landing page clicks with ' +
+          'analytics sessions attributed to the campaign. A low ratio means arrivals are lost between ' +
+          'the click and the page. A ratio above 100% means the campaign earned more sessions than ' +
+          'first-time clicks, which return visits and onward browsing can both produce.</div>'
+        : "";
+
+      set("paid", card("Paid media", "paid channels only",
+        '<div class="sub hdln">By platform</div>' +
+        tbl('<th>Platform</th>' + HEAD, plRows, plFoot) +
+        ptBlock + note));
+    })();
+
+    /* 6. email */
+    (function () {
+      var s = (D.email && D.email.sends) || [];
+      if (!s.length) { set("email", ""); return; }
+      var t = s.reduce(function (a, r) {
+        return { d: a.d + (r.delivered || 0), o: a.o + (r.opens || 0), c: a.c + (r.clicks || 0), u: a.u + (r.unsubs || 0),
+                 n: a.n + (has(r.delivered) ? 1 : 0) };
+      }, { d: 0, o: 0, c: 0, u: 0, n: 0 });
+      var rows = s.map(function (r) {
+        var subj = has(r.subject) ? link(r.url, esc(r.subject))
+                 : '<span class="dim">Scheduled for ' + esc(r.scheduled || "TBD") + "</span>";
+        return '<tr><td class="name">' + subj + "</td>" +
+          '<td class="dim num">' + dayShort(r.sent) + "</td>" +
+          '<td class="r num">' + int(r.delivered) + "</td>" +
+          '<td class="r num">' + int(r.opens) + "</td>" +
+          '<td class="r num">' + ratio(r.opens, r.delivered, 2) + "</td>" +
+          '<td class="r num">' + int(r.clicks) + "</td>" +
+          '<td class="r num">' + ratio(r.clicks, r.delivered, 2) + "</td>" +
+          '<td class="r num">' + int(r.unsubs) + "</td>" +
+          '<td class="r num">' + ratio(r.unsubs, r.delivered, 2) + "</td></tr>";
+      }).join("");
+      var foot = '<tr class="tot"><td>All sends</td><td></td>' +
+        '<td class="r num">' + int(t.d) + '</td><td class="r num">' + int(t.o) + '</td><td class="r num">' + ratio(t.o, t.d, 2) +
+        '</td><td class="r num">' + int(t.c) + '</td><td class="r num">' + ratio(t.c, t.d, 2) +
+        '</td><td class="r num">' + int(t.u) + '</td><td class="r num">' + ratio(t.u, t.d, 2) + "</td></tr>";
+      set("email", card("Email", s.length + " sends planned, " + t.n + " sent",
+        tbl('<th>Subject</th><th>Sent</th><th class="r">Delivered</th><th class="r">Opens</th><th class="r">Open rate</th><th class="r">Clicks</th><th class="r">Click rate</th><th class="r">Unsubs</th><th class="r">Unsub rate</th>', rows, foot)));
+    })();
+
+    /* 7. organic social */
+    (function () {
+      var posts = (D.social && D.social.posts) || [];
+      if (!posts.length) { set("social", ""); return; }
+      var CAP = 10;
+      /* A total is only shown when every post contributed to it. Facebook impressions are
+         not available today, so summing what exists would publish a total that silently
+         covers one post in four. */
+      var t = posts.reduce(function (a, p) {
+        return { i: a.i + (p.impressions || 0), iN: a.iN + (has(p.impressions) ? 1 : 0),
+                 e: a.e + (p.engagements || 0), eN: a.eN + (has(p.engagements) ? 1 : 0) };
+      }, { i: 0, iN: 0, e: 0, eN: 0 });
+      var impTot = t.iN === posts.length ? t.i : null;
+      var engTot = t.eN === posts.length ? t.e : null;
+      function tile(p) {
+        var thumb;
+        if (p.image && !p.placeholder) thumb = '<div class="thumb"><img src="' + esc(p.image) + '" alt=""></div>';
+        else if (p.mediaType === "video") thumb = '<div class="thumb"><div class="play">&#9654;</div>' + (p.duration ? '<div class="dur num">' + esc(p.duration) + "</div>" : "") + "</div>";
+        else if (p.mediaType === "none") thumb = '<div class="thumb" style="background:#FAFAFA;"><div class="quote">&ldquo;' + esc(p.caption) + "&rdquo;</div></div>";
+        else thumb = '<div class="thumb"><div class="thlab">Creative</div></div>';
+        return '<div class="post">' + thumb + '<div class="pmeta">' +
+          '<div class="pplat"><span>' + esc(p.platform) + '</span><span class="num">' + dayShort(p.date) +
+          (has(p.url) ? '</span><a class="pview" href="' + esc(p.url) + '" target="_blank" rel="noopener">View</a>' : "</span>") + "</div>" +
+          (p.mediaType === "none" ? "" : '<div class="pcap">' + esc(p.caption) + "</div>") +
+          '<div class="pfig"><div class="pf"><div class="pfl">' +
+            (has(p.impressions) || !has(p.reach) ? "Impressions" : "Reach") + '</div><div class="pfv num">' +
+            (has(p.impressions) ? int(p.impressions) : int(p.reach)) + "</div></div>" +
+          '<div class="pf"><div class="pfl">Engagements</div><div class="pfv num">' + int(p.engagements) + "</div></div>" +
+          "</div></div></div>";
+      }
+      var body = '<div class="galsum">' +
+        sum("Posts published", int(posts.length)) + sum("Impressions", int(impTot)) +
+        sum("Engagements", int(engTot)) + sum("Engagement rate", ratio(impTot ? t.e : null, impTot, 2)) + "</div>" +
+        '<div class="gal" id="gal">' + posts.slice(0, CAP).map(tile).join("") + "</div>" +
+        (posts.length > CAP ? '<button class="more" id="galMore">Show all ' + posts.length + " posts</button>" : "");
+      set("social", card("Organic social", (D.social.mockup ? "mockup, data not connected; figures are placeholders" : "platform reported"), body));
+      var btn = document.getElementById("galMore");
+      if (btn) btn.onclick = function () {
+        document.getElementById("gal").innerHTML = posts.map(tile).join("");
+        btn.parentNode.removeChild(btn);
+      };
+      function sum(l, v) { return '<div class="pf"><div class="rlab">' + l + '</div><div class="rval num">' + v + "</div></div>"; }
+    })();
+
+    /* 8. traditional media */
+    (function () {
+      var d = D.delivery || [];
+      if (!d.length) { set("delivery", ""); return; }
+      /* Three states only. Project-board vocabulary such as Stuck or Working on it does not
+         belong on a performance report; it describes the board, not the delivery. */
+      function state(v) {
+        var t = String(v || "").toLowerCase();
+        if (/done|deliver|publish|sent|live|complete/.test(t)) return "Done";
+        if (/progress|stuck|review|draft|schedul|working/.test(t)) return "In progress";
+        return "Not started";
+      }
+      var done = d.filter(function (r) { return state(r.status) === "Done"; }).length;
+      set("delivery", card("Traditional media", done + " of " + d.length + " published",
+        tbl('<th>Channel</th><th>Item</th><th>Date</th><th>Status</th><th>Tracking</th>',
+          d.map(function (r) {
+            var st = state(r.status);
+            var cls = st === "Done" ? "ok" : st === "In progress" ? "warn" : "flat";
+            var tr = "";
+            if (r.vanity) {
+              tr = '<a href="' + esc(r.vanityUrl || "#") + '" target="_blank" rel="noopener">' + esc(r.vanity) + "</a>";
+              if (has(r.clicks)) tr += ' <span class="dim num">' + int(r.clicks) + " clicks</span>";
+              if (has(r.sessions)) tr += ' <span class="dim num">&middot; ' + int(r.sessions) + " sessions</span>";
+            } else {
+              tr = '<span class="dim">not trackable</span>';
+            }
+            return '<tr><td class="dim">' + esc(r.channel) + '</td><td class="name">' + esc(r.item) + "</td>" +
+              '<td class="num">' + dayShort(r.due) + '</td><td><span class="pill ' + cls + '">' + st + "</span></td>" +
+              "<td>" + tr + "</td></tr>";
+          }).join(""))));
+    })();
+  }
+
+  window.__renderCampaign = render;
+  /* data file loads after this script; see the loader at the end of the document */
 })();
 </script>
-</body>
-</html>
+
+<script src="fowc-data.js"></script>
+<script>window.__renderCampaign();</script>
+
+
+</body></html>
