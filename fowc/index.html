@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AWS FOWC Campaign Performance</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; background:#F2F3F4; font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; -webkit-font-smoothing: antialiased; color:#393B3B; }
+  .num { font-variant-numeric: tabular-nums; }
+  .hdln { font-family:"Helvetica Neue Condensed","HelveticaNeue-CondensedBold","Helvetica Neue","Arial Narrow",Arial,sans-serif; font-stretch:condensed; letter-spacing:0; }
+  a { color:#0074E2; text-decoration:none; }
+  a:hover { color:#003767; text-decoration:underline; }
+
+  .wrap { min-height:100vh; padding:26px 24px 56px; display:flex; justify-content:center; }
+  .col  { width:1180px; max-width:100%; display:flex; flex-direction:column; gap:16px; }
+
+  .card { background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:13px; }
+  .chd  { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+  .ctitle { font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; }
+  .cscope { font-size:10.5px; color:#6E7274; }
+
+  .kpis { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
+  .kpi  { background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px; display:flex; flex-direction:column; gap:8px; }
+  .kch  { font-size:9px; letter-spacing:1.1px; text-transform:uppercase; color:#A7ABAD; font-weight:700; }
+  .klab { font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; font-family:"Helvetica Neue Condensed","Arial Narrow",Arial,sans-serif; }
+  .kval { font-size:31px; font-weight:700; color:#001527; line-height:1; }
+  .ksub { font-size:10.5px; color:#6E7274; line-height:1.45; }
+
+  table { border-collapse:collapse; width:100%; font-size:12.5px; }
+  th { text-align:left; font-size:9.5px; letter-spacing:0.7px; text-transform:uppercase; color:#6E7274; font-weight:700; padding:0 10px 7px 0; border-bottom:1px solid #E3E5E6; white-space:nowrap; }
+  td { padding:9px 10px 9px 0; border-bottom:1px solid #F2F3F4; vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  td.r, th.r { text-align:right; }
+  tr.tot td { font-weight:700; border-top:1px solid #E3E5E6; }
+
+  .tier { display:inline-block; font-size:9px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; padding:2px 6px; border-radius:2px; white-space:nowrap; }
+  .t-observed     { background:#E8F3EC; color:#1F8A4C; }
+  .t-manual       { background:#E7F0FA; color:#0074E2; }
+  .t-notConnected { background:#F3EEE1; color:#B07A00; }
+  .t-noActivity   { background:#F2F3F4; color:#6E7274; }
+
+  .pill { display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:3px 8px; border-radius:2px; }
+  .p-done { background:#E8F3EC; color:#1F8A4C; }
+  .p-sched{ background:#F3EEE1; color:#B07A00; }
+  .p-not  { background:#F2F3F4; color:#6E7274; }
+
+  .blank { color:#A7ABAD; font-weight:700; }
+
+  /* pacing */
+  .pace { display:flex; flex-direction:column; gap:9px; }
+  .pacerow { display:grid; grid-template-columns:118px 1fr 92px; align-items:center; gap:12px; font-size:11.5px; }
+  .pacetrack { display:block; background:#F2F3F4; border-radius:2px; height:20px; position:relative; overflow:hidden; }
+  .pacefill { display:block; height:100%; border-radius:2px; }
+  .pacemark { position:absolute; top:0; bottom:0; width:2px; background:#001527; z-index:2; }
+  .pacelab { font-size:10.5px; color:#6E7274; }
+
+  /* combo chart */
+  .chart { position:relative; height:250px; display:grid; grid-template-columns:repeat(8,1fr); gap:10px; align-items:end; padding:14px 0 0; }
+  .ccol { display:flex; flex-direction:column; align-items:center; gap:5px; height:100%; justify-content:flex-end; }
+  .cbars { display:flex; align-items:flex-end; gap:3px; height:100%; width:100%; justify-content:center; }
+  .cbar { width:17px; border-radius:2px 2px 0 0; }
+  .b-sess { background:#0074E2; }
+  .b-spend{ background:#7FB2E8; }
+  .b-sub  { background:#001527; }
+  .cx { font-size:10px; color:#6E7274; white-space:nowrap; }
+  .cvals { display:flex; flex-direction:column; align-items:center; gap:1px; font-size:9px; font-variant-numeric:tabular-nums; line-height:1.25; }
+  .legend { display:flex; gap:16px; flex-wrap:wrap; font-size:10.5px; color:#6E7274; align-items:center; }
+  .lg { display:inline-flex; align-items:center; gap:6px; }
+  .sw { width:10px; height:10px; border-radius:2px; display:inline-block; }
+
+  /* funnel */
+  .funnel { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .fstep { background:#FAFAFA; border:1px solid #EDEEEF; border-radius:4px; padding:13px 14px; display:flex; flex-direction:column; gap:6px; }
+  .fnum { font-size:25px; font-weight:700; color:#001527; line-height:1; }
+  .flab { font-size:10px; letter-spacing:0.8px; text-transform:uppercase; color:#6E7274; font-weight:700; }
+  .frate { font-size:10.5px; color:#0074E2; font-weight:700; }
+
+  .cols2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .cols3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+  @media (max-width:960px) {
+    .kpis { grid-template-columns:1fr 1fr; }
+    .cols2, .cols3 { grid-template-columns:1fr; }
+    .funnel { grid-template-columns:1fr 1fr; }
+    .tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .tw > table { min-width:600px; }
+  }
+  @media (max-width:520px) {
+    .kpis { grid-template-columns:1fr; }
+    .funnel { grid-template-columns:1fr; }
+    .mast { flex-direction:column; align-items:flex-start !important; gap:9px !important; }
+    .mast > div:last-child { text-align:left !important; }
+    .chart { gap:5px; }
+    .cbar { width:9px; }
+  }
+</style>
+</head>
+<body>
+
+<!--
+  ==========================================================================
+  AWS FOWC CAMPAIGN DASHBOARD | EDU_1045 | 2026
+  Built 19 August 2026.
+
+  Same visual system as the monthly Marketing Performance dashboard, but laid
+  out for a campaign rather than a period. Three things a campaign needs that a
+  monthly report does not, and which drive this layout:
+
+    PACING     A campaign has a fixed window and a fixed budget, so the useful
+               question is not "how much" but "how much, by now". Every pacing
+               bar carries a marker at elapsed time so consumed and elapsed can
+               be read against each other at a glance.
+    ONE TIMELINE
+               Sessions, spend and submissions share an x axis. A campaign is
+               judged on whether the money moved the outcome, and that is only
+               legible when the three series sit together.
+    FUNNEL     Impressions to clicks to sessions to submissions, with the
+               conversion rate between each pair stated rather than left to
+               mental arithmetic.
+
+  METRIC RULES
+  - Email sends go to the same audience, so delivered is never summed and no
+    campaign-level email rate is computed. Clicks and unsubscribes total.
+  - Paid clicks and landing page sessions are DIFFERENT SCOPES and are never
+    divided by one another. Paid clicks are platform-reported across the whole
+    campaign; landing page sessions are Google Analytics 4, all sources, for one
+    page. The funnel labels the scope of every step for that reason.
+  - Google Ad Grants credit is never counted as cash spend.
+  - Figures only. A value not measured renders as a dash, never a zero.
+  ==========================================================================
+-->
+
+<div class="wrap"><div class="col">
+
+  <!-- IDENTITY -->
+  <div style="border:1px solid #E3E5E6; border-radius:6px; overflow:hidden; display:flex; flex-direction:column;">
+    <div class="mast" style="background:#001527; padding:19px 24px 17px; display:flex; align-items:flex-end; justify-content:space-between; gap:24px;">
+      <div style="display:flex; flex-direction:column; gap:5px;">
+        <div class="hdln" style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2.4px; color:#B6BABC;">American Welding Society</div>
+        <div class="hdln" style="font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:#fff; line-height:1;">FOWC Campaign Performance</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:4px; text-align:right;">
+        <div class="hdln num" id="mastThrough" style="font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#fff; line-height:1;"></div>
+        <div class="hdln" id="mastCode" style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.4px; color:#B6BABC;"></div>
+      </div>
+    </div>
+    <div style="background:#fff; display:flex; padding:0 24px; flex-wrap:wrap;" id="nav"></div>
+    <div style="background:#FAFAFA; border-top:1px solid #EDEEEF; padding:9px 24px 10px; display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+      <div class="hdln" style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#A7ABAD;">Scope</div>
+      <div id="scopeLine" style="font-size:11.5px; color:#6E7274;"></div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div id="summary">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; margin:2px 2px 10px;">
+      <div class="hdln" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.6px; color:#6E7274;">Channel summary</div>
+      <div class="cscope">Campaign to date</div>
+    </div>
+    <div class="kpis" id="summaryCards"></div>
+  </div>
+
+  <!-- PACING -->
+  <div class="card" id="pacing">
+    <div class="chd">
+      <div class="ctitle">Pacing</div>
+      <div class="cscope" id="paceScope"></div>
+    </div>
+    <div class="pace" id="paceBars"></div>
+    <div class="ksub" id="paceNote"></div>
+  </div>
+
+  <!-- FUNNEL -->
+  <div class="card" id="funnel">
+    <div class="chd">
+      <div class="ctitle">Delivery funnel</div>
+      <div class="cscope">Each step labelled with its own scope</div>
+    </div>
+    <div class="funnel" id="funnelSteps"></div>
+    <div class="ksub">Paid impressions and clicks are platform-reported for the FOWC campaigns. Landing page sessions are Google Analytics 4, all sources, for the campaign landing page. Submissions are all submissions on that page. The steps are shown in sequence but the scopes differ, so a rate between two steps describes the pair only.</div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="card" id="timeline">
+    <div class="chd">
+      <div class="ctitle">Sessions, spend and submissions by month</div>
+      <div class="cscope">2026</div>
+    </div>
+    <div class="chart" id="chart"></div>
+    <div class="legend">
+      <span class="lg"><span class="sw b-sess"></span>Landing page sessions</span>
+      <span class="lg"><span class="sw b-spend"></span>Paid spend</span>
+      <span class="lg"><span class="sw b-sub"></span>Page submissions</span>
+      <span class="lg" style="margin-left:auto;" id="chartScale"></span>
+    </div>
+    <div class="tw"><table id="monthTable"></table></div>
+  </div>
+
+  <!-- GOAL -->
+  <div class="card" id="goal">
+    <div class="chd">
+      <div class="ctitle">Campaign goal</div>
+      <div class="cscope" id="goalScope"></div>
+    </div>
+    <div class="cols2" style="align-items:start;">
+      <div class="tw"><table id="goalTable"></table></div>
+      <div class="ksub" id="goalNote" style="padding-top:22px;"></div>
+    </div>
+  </div>
+
+  <!-- PAID -->
+  <div class="card" id="paid">
+    <div class="chd">
+      <div class="ctitle">Paid media by platform</div>
+      <div class="cscope" id="paidScope"></div>
+    </div>
+    <div class="tw"><table id="paidTable"></table></div>
+    <div class="ksub">Cost per click and cost per session are computed within each platform, against that platform's own reported delivery. Google Ad Grants credit is excluded from spend.</div>
+  </div>
+
+  <div class="card" id="campaigns">
+    <div class="chd">
+      <div class="ctitle">Paid media by campaign</div>
+      <div class="cscope" id="campScope"></div>
+    </div>
+    <div class="tw"><table id="campTable"></table></div>
+  </div>
+
+  <!-- EMAIL -->
+  <div class="card" id="email">
+    <div class="chd">
+      <div class="ctitle">Email</div>
+      <div class="cscope" id="emailScope"></div>
+    </div>
+    <div class="tw"><table id="emailTable"></table></div>
+    <div class="ksub">Bot-excluded. Open and click rates are per send, against that send's own delivered count. Every send goes to the same audience, so delivered is not summed and no campaign-level rate is shown. Clicks and unsubscribes total.</div>
+  </div>
+
+  <!-- DELIVERY -->
+  <div class="card" id="delivery">
+    <div class="chd">
+      <div class="ctitle">Delivery status</div>
+      <div class="cscope">Channels without measured delivery</div>
+    </div>
+    <div class="tw"><table id="delTable"></table></div>
+  </div>
+
+  <div style="font-size:10.5px; color:#8B8F91; line-height:1.7; padding:0 2px;" id="foot"></div>
+
+</div></div>
+
+<script src="fowc-data.js"></script>
+<script>
+(function(){
+  var D = window.FOWC_DATA;
+  if (!D) { document.body.innerHTML = '<div style="padding:40px;font-family:Arial">fowc-data.js did not load.</div>'; return; }
+
+  var $ = function(id){ return document.getElementById(id); };
+  var n = function(v){ return v==null ? null : Math.round(v).toLocaleString('en-US'); };
+  var pct1 = function(v){ return (v*100).toFixed(1)+'%'; };
+  var pct2 = function(v){ return (v*100).toFixed(2)+'%'; };
+  var money = function(v){ return '$'+v.toLocaleString('en-US',{minimumFractionDigits:0, maximumFractionDigits:0}); };
+  var money2 = function(v){ return '$'+v.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2}); };
+  function fmt(v,f){
+    if (v==null) return '<span class="blank">&mdash;</span>';
+    if (f==='money') return money(v);
+    if (f==='pct') return pct1(v);
+    return n(v);
+  }
+  var TIERLABEL = { observed:'Observed', manual:'Manual pull', notConnected:'Not Connected', noActivity:'No Activity' };
+  function tier(t){ return '<span class="tier t-'+t+'">'+(TIERLABEL[t]||t)+'</span>'; }
+  function dash(){ return '<span class="blank">&mdash;</span>'; }
+
+  var MON = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'};
+  function mlabel(m){ var p=m.split('-'); return MON[p[1]]; }
+  function dlabel(d){ var p=d.split('-'); return MON[p[1]]+' '+parseInt(p[2],10)+', '+p[0]; }
+
+  // masthead
+  $('mastThrough').textContent = 'Data through '+dlabel(D.meta.dataThrough);
+  $('mastCode').textContent = D.meta.code+' · '+D.meta.year;
+  $('scopeLine').innerHTML =
+    dlabel(D.meta.campaignStart)+' to '+dlabel(D.meta.campaignEnd)+
+    ' &nbsp;·&nbsp; Landing page live '+dlabel(D.meta.landingPageLive)+
+    ' &nbsp;·&nbsp; <a href="'+D.meta.landingPage+'" target="_blank">Landing page</a>'+
+    ' &nbsp;·&nbsp; <a href="'+D.meta.formUrl+'" target="_blank">Form</a>'+
+    ' &nbsp;·&nbsp; <a href="'+D.meta.mondayBoard+'" target="_blank">Monday board</a>';
+
+  var NAV = [['summary','Summary'],['pacing','Pacing'],['funnel','Funnel'],['timeline','Timeline'],['goal','Goal'],['paid','Paid Media'],['email','Email'],['delivery','Delivery']];
+  $('nav').innerHTML = NAV.map(function(x){
+    return '<div onclick="document.getElementById(\'' + x[0] + '\').scrollIntoView({behavior:\'smooth\'})" '+
+      'style="padding:12px 15px; font-size:12px; font-weight:700; color:#393B3B; cursor:pointer; border-bottom:2px solid transparent;" '+
+      'onmouseover="this.style.borderBottomColor=\'#0074E2\'" onmouseout="this.style.borderBottomColor=\'transparent\'">'+x[1]+'</div>';
+  }).join('');
+
+  // summary
+  $('summaryCards').innerHTML = D.summary.map(function(s){
+    return '<div class="kpi"><div class="kch">'+s.channel+'</div><div class="klab">'+s.label+'</div>'+
+      '<div class="num hdln kval">'+fmt(s.value,s.fmt)+'</div>'+
+      '<div class="ksub">'+s.sub+'</div><div>'+tier(s.tier)+'</div></div>';
+  }).join('');
+
+  // pacing
+  var P = D.pacing;
+  var elapsed = P.daysElapsed / P.daysTotal;
+  $('paceScope').textContent = P.daysElapsed+' of '+P.daysTotal+' campaign days elapsed, '+pct1(elapsed);
+  function paceRow(label, consumed, total, fmtFn, tone){
+    var share = total ? consumed/total : 0;
+    var over = share > elapsed;
+    var colour = tone==='goal' ? (over ? '#1F8A4C' : '#B07A00') : (over ? '#B07A00' : '#0074E2');
+    return '<div class="pacerow">'+
+      '<span class="pacelab">'+label+'</span>'+
+      '<span class="pacetrack"><span class="pacefill" style="width:'+Math.min(100,share*100)+'%; background:'+colour+';"></span>'+
+        '<span class="pacemark" style="left:'+Math.min(100,elapsed*100)+'%;" title="elapsed"></span></span>'+
+      '<span class="num" style="text-align:right; font-weight:700;">'+pct1(share)+'</span>'+
+      '</div>'+
+      '<div class="pacerow"><span></span><span class="ksub">'+fmtFn(consumed)+' of '+fmtFn(total)+'</span><span></span></div>';
+  }
+  $('paceBars').innerHTML =
+    paceRow('Budget spent', P.spend, P.budget, money, 'spend') +
+    paceRow('Goal reached', P.goalActual, P.goalTarget, function(v){ return n(v); }, 'goal');
+  $('paceNote').innerHTML = 'The vertical marker on each bar is elapsed campaign time ('+pct1(elapsed)+'). '+
+    'A fill past the marker is ahead of pace, a fill short of it is behind. Spend is complete through '+
+    dlabel(D.meta.paidThrough)+' only, so the current month is not yet in it.';
+
+  // funnel
+  var paidImpr = D.paid.platforms.reduce(function(a,p){ return a+p.impressions; },0);
+  var paidClicks = D.paid.platforms.reduce(function(a,p){ return a+p.clicks; },0);
+  var LP = D.landingPage;
+  var steps = [
+    { lab:'Paid impressions', v:paidImpr, scope:'3 platforms', rate:null },
+    { lab:'Paid clicks', v:paidClicks, scope:'3 platforms', rate:'Click rate '+pct2(paidClicks/paidImpr) },
+    { lab:'Landing page sessions', v:LP.sessions, scope:'GA4, all sources', rate:'Engagement '+pct1(LP.engaged/LP.sessions) },
+    { lab:'Page submissions', v:LP.submissions, scope:'HubSpot, all sources', rate:'Submission rate '+pct2(LP.submissions/LP.sessions) }
+  ];
+  $('funnelSteps').innerHTML = steps.map(function(s){
+    return '<div class="fstep"><div class="flab">'+s.lab+'</div>'+
+      '<div class="num hdln fnum">'+n(s.v)+'</div>'+
+      '<div class="ksub">'+s.scope+'</div>'+
+      '<div class="frate">'+(s.rate||'&nbsp;')+'</div></div>';
+  }).join('');
+
+  // timeline
+  var M = D.monthly;
+  var maxS = Math.max.apply(null, M.map(function(r){ return r.sessions||0; })) || 1;
+  var maxSp = Math.max.apply(null, M.map(function(r){ return r.spend||0; })) || 1;
+  var maxSu = Math.max.apply(null, M.map(function(r){ return r.submissions||0; })) || 1;
+  $('chart').innerHTML = M.map(function(r){
+    function h(v,mx){ return v==null ? 0 : Math.max(2, (v/mx)*150); }
+    return '<div class="ccol"><div class="cbars">'+
+      '<span class="cbar b-sess"  style="height:'+h(r.sessions,maxS)+'px" title="'+n(r.sessions)+' sessions"></span>'+
+      '<span class="cbar b-spend" style="height:'+h(r.spend,maxSp)+'px" title="'+(r.spend==null?'no data':money(r.spend))+'"></span>'+
+      '<span class="cbar b-sub"   style="height:'+h(r.submissions,maxSu)+'px" title="'+n(r.submissions)+' submissions"></span>'+
+      '</div><span class="cx">'+mlabel(r.m)+(r.partial?'*':'')+'</span>'+
+      '<span class="cvals">'+
+        '<span style="color:#0074E2;">'+n(r.sessions)+'</span>'+
+        '<span style="color:#5C93CC;">'+(r.spend==null?'&mdash;':money(r.spend))+'</span>'+
+        '<span style="color:#001527;">'+n(r.submissions)+'</span>'+
+      '</span></div>';
+  }).join('');
+  $('chartScale').textContent = 'Each series scaled to its own maximum. * partial month.';
+
+  var tS=0, tSp=0, tSu=0;
+  M.forEach(function(r){ tS+=r.sessions||0; tSp+=r.spend||0; tSu+=r.submissions||0; });
+  $('monthTable').innerHTML =
+    '<tr><th>Month</th><th class="r">Sessions</th><th class="r">Engaged</th><th class="r">Engagement</th>'+
+    '<th class="r">Spend</th><th class="r">Submissions</th><th class="r">Cost / Session</th></tr>'+
+    M.map(function(r){
+      return '<tr><td>'+mlabel(r.m)+' '+r.m.slice(2,4)+(r.partial?' *':'')+'</td>'+
+        '<td class="r num">'+n(r.sessions)+'</td>'+
+        '<td class="r num">'+n(r.engaged)+'</td>'+
+        '<td class="r num">'+pct1(r.engaged/r.sessions)+'</td>'+
+        '<td class="r num">'+(r.spend==null?dash():money2(r.spend))+'</td>'+
+        '<td class="r num">'+n(r.submissions)+'</td>'+
+        '<td class="r num">'+(r.spend==null||!r.sessions?dash():money2(r.spend/r.sessions))+'</td></tr>';
+    }).join('')+
+    '<tr class="tot"><td>2026 to date</td><td class="r num">'+n(tS)+'</td>'+
+    '<td class="r num">'+n(M.reduce(function(a,r){return a+(r.engaged||0);},0))+'</td>'+
+    '<td class="r num">'+pct1(M.reduce(function(a,r){return a+(r.engaged||0);},0)/tS)+'</td>'+
+    '<td class="r num">'+money2(tSp)+'</td><td class="r num">'+n(tSu)+'</td>'+
+    '<td class="r num">'+money2(tSp/tS)+'</td></tr>';
+
+  // goal
+  var G = D.goal;
+  $('goalScope').innerHTML = 'Target '+n(G.target)+' · 2025 full year '+n(G.baseline2025);
+  $('goalTable').innerHTML =
+    '<tr><th>Measure</th><th class="r">Value</th><th class="r">Of target</th><th>Evidence</th></tr>'+
+    G.measures.map(function(m){
+      return '<tr><td><strong>'+m.label+'</strong><div class="ksub">'+m.note+'</div></td>'+
+        '<td class="r num" style="font-size:17px; font-weight:700;">'+n(m.value)+'</td>'+
+        '<td class="r num">'+pct1(m.value/G.target)+'</td>'+
+        '<td>'+tier(m.tier)+'</td></tr>';
+    }).join('');
+  var remaining = G.target - (G.measures[0].value);
+  var daysLeft = D.pacing.daysTotal - D.pacing.daysElapsed;
+  $('goalNote').innerHTML =
+    'Two measures are shown because they answer different questions and have been mistaken for each other. '+
+    'Page submissions counts every submission. New contacts counts only people converting for the first time, '+
+    'so it is always the smaller number and never the one to compare against a submissions-based target.<br><br>'+
+    'Against the '+n(G.target)+' target, '+n(remaining)+' remain with '+daysLeft+' campaign days left, '+
+    'a required rate of '+(remaining/daysLeft).toFixed(1)+' submissions a day. The rate so far is '+
+    (G.measures[0].value/D.pacing.daysElapsed).toFixed(1)+' a day.';
+
+  // paid by platform
+  var pTot = { spend:0, clicks:0, impressions:0, sessions:0, budget:0 };
+  D.paid.platforms.forEach(function(p){ pTot.spend+=p.spend; pTot.clicks+=p.clicks; pTot.impressions+=p.impressions; pTot.sessions+=p.sessions; pTot.budget+=p.budget; });
+  $('paidScope').innerHTML = tier(D.paid.tier)+' &nbsp;Spend complete through '+dlabel(D.paid.through);
+  $('paidTable').innerHTML =
+    '<tr><th>Platform</th><th>Flight</th><th class="r">Budget</th><th class="r">Spend</th><th class="r">Used</th>'+
+    '<th class="r">Impressions</th><th class="r">Clicks</th><th class="r">CTR</th><th class="r">Cost / Click</th><th class="r">Sessions</th><th class="r">Cost / Session</th></tr>'+
+    D.paid.platforms.map(function(p){
+      return '<tr><td><strong>'+p.platform+'</strong></td>'+
+        '<td class="ksub" style="white-space:nowrap;">'+p.flight+'</td>'+
+        '<td class="r num">'+money(p.budget)+'</td>'+
+        '<td class="r num">'+money2(p.spend)+'</td>'+
+        '<td class="r num">'+pct1(p.spend/p.budget)+'</td>'+
+        '<td class="r num">'+n(p.impressions)+'</td>'+
+        '<td class="r num">'+n(p.clicks)+'</td>'+
+        '<td class="r num">'+pct2(p.clicks/p.impressions)+'</td>'+
+        '<td class="r num">'+money2(p.spend/p.clicks)+'</td>'+
+        '<td class="r num">'+n(p.sessions)+'</td>'+
+        '<td class="r num">'+(p.sessions?money2(p.spend/p.sessions):dash())+'</td></tr>';
+    }).join('')+
+    '<tr class="tot"><td>Total</td><td></td><td class="r num">'+money(pTot.budget)+'</td>'+
+    '<td class="r num">'+money2(pTot.spend)+'</td><td class="r num">'+pct1(pTot.spend/pTot.budget)+'</td>'+
+    '<td class="r num">'+n(pTot.impressions)+'</td><td class="r num">'+n(pTot.clicks)+'</td>'+
+    '<td class="r num">'+pct2(pTot.clicks/pTot.impressions)+'</td>'+
+    '<td class="r num">'+money2(pTot.spend/pTot.clicks)+'</td>'+
+    '<td class="r num">'+n(pTot.sessions)+'</td>'+
+    '<td class="r num">'+money2(pTot.spend/pTot.sessions)+'</td></tr>';
+
+  // paid by campaign
+  var live = D.paid.campaigns.filter(function(c){ return c.spend > 0; });
+  $('campScope').textContent = live.length+' campaigns with spend in 2026';
+  $('campTable').innerHTML =
+    '<tr><th>Campaign</th><th>Platform</th><th class="r">Spend</th><th class="r">Impressions</th><th class="r">Clicks</th><th class="r">Cost / Click</th></tr>'+
+    live.map(function(c){
+      return '<tr><td><strong>'+c.campaign+'</strong><div class="ksub">ID '+c.id+'</div></td>'+
+        '<td>'+c.platform+'</td>'+
+        '<td class="r num">'+money2(c.spend)+'</td>'+
+        '<td class="r num">'+n(c.impressions)+'</td>'+
+        '<td class="r num">'+n(c.clicks)+'</td>'+
+        '<td class="r num">'+(c.clicks?money2(c.spend/c.clicks):dash())+'</td></tr>';
+    }).join('');
+
+  // email
+  var sent = D.email.sends.filter(function(s){ return s.status==='sent'; });
+  var eClicks = sent.reduce(function(a,s){ return a+s.clicks; },0);
+  var eUnsubs = sent.reduce(function(a,s){ return a+s.unsubs; },0);
+  $('emailScope').innerHTML = tier(D.email.tier)+' &nbsp;HubSpot, bot-excluded';
+  $('emailTable').innerHTML =
+    '<tr><th>Send</th><th>Sent</th><th class="r">Delivered</th><th class="r">Opens</th><th class="r">Open Rate</th>'+
+    '<th class="r">Clicks</th><th class="r">Click Rate</th><th class="r">Unsubs</th><th class="r">Unsub Rate</th><th>Status</th></tr>'+
+    D.email.sends.map(function(s){
+      if (s.status!=='sent') {
+        return '<tr><td><strong>Email '+s.n+'</strong></td><td class="ksub" style="white-space:nowrap;">'+s.sent+'</td>'+
+          '<td class="r">'+dash()+'</td><td class="r">'+dash()+'</td><td class="r">'+dash()+'</td>'+
+          '<td class="r">'+dash()+'</td><td class="r">'+dash()+'</td><td class="r">'+dash()+'</td><td class="r">'+dash()+'</td>'+
+          '<td><span class="pill p-sched">Scheduled</span></td></tr>';
+      }
+      return '<tr><td><strong>Email '+s.n+'</strong><div class="ksub">'+s.subject+'</div></td>'+
+        '<td class="num" style="white-space:nowrap;">'+s.sent+'</td>'+
+        '<td class="r num">'+n(s.delivered)+'</td>'+
+        '<td class="r num">'+n(s.opens)+'</td>'+
+        '<td class="r num">'+pct1(s.opens/s.delivered)+'</td>'+
+        '<td class="r num">'+n(s.clicks)+'</td>'+
+        '<td class="r num">'+pct2(s.clicks/s.delivered)+'</td>'+
+        '<td class="r num">'+n(s.unsubs)+'</td>'+
+        '<td class="r num">'+pct2(s.unsubs/s.delivered)+'</td>'+
+        '<td><span class="pill p-done">Sent</span></td></tr>';
+    }).join('')+
+    '<tr class="tot"><td>Campaign to date</td><td></td>'+
+    '<td class="r ksub" style="text-align:right; font-weight:400;">not summed</td>'+
+    '<td class="r ksub" style="text-align:right; font-weight:400;">not summed</td>'+
+    '<td class="r ksub" style="text-align:right; font-weight:400;">not aggregated</td>'+
+    '<td class="r num">'+n(eClicks)+'</td>'+
+    '<td class="r ksub" style="text-align:right; font-weight:400;">not aggregated</td>'+
+    '<td class="r num">'+n(eUnsubs)+'</td>'+
+    '<td class="r ksub" style="text-align:right; font-weight:400;">not aggregated</td><td></td></tr>';
+
+  // delivery
+  var PILL = { done:['p-done','Done'], notStarted:['p-not','Not Started'], scheduled:['p-sched','Scheduled'] };
+  $('delTable').innerHTML =
+    '<tr><th>Channel</th><th>Item</th><th>Due</th><th>Status</th></tr>'+
+    D.delivery.map(function(d){
+      var pl = PILL[d.status]||PILL.notStarted;
+      return '<tr><td class="ksub">'+d.channel+'</td><td>'+d.item+'</td>'+
+        '<td class="num" style="white-space:nowrap;">'+d.due+'</td>'+
+        '<td><span class="pill '+pl[0]+'">'+pl[1]+'</span></td></tr>';
+    }).join('');
+
+  // footer
+  $('foot').innerHTML =
+    'Sources: Google Analytics 4 landing page, filtered to '+D.meta.landingPath+' and every query-string variant &middot; '+
+    'Paid Campaign Cache from the monthly reporting pipeline &middot; HubSpot marketing email analytics, bot-excluded &middot; '+
+    'HubSpot content analytics &middot; HubSpot CRM contact conversion properties.<br>'+
+    'Form: '+D.meta.formName+'<br>'+
+    'Generated '+dlabel(D.meta.generated)+'. Site data through '+dlabel(D.meta.dataThrough)+'. Paid spend through '+dlabel(D.meta.paidThrough)+'.';
+})();
+</script>
+</body>
+</html>
