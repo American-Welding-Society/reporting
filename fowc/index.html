@@ -102,15 +102,15 @@
   /* social gallery */
   .gal { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; }
   .post { border:1px solid #E3E5E6; border-radius:3px; overflow:hidden; display:flex; flex-direction:column; }
-  .thumb { position:relative; aspect-ratio:4/3; background:#F2F3F4 repeating-linear-gradient(135deg,#EDEEEF 0 6px,#F6F7F7 6px 12px); display:flex; align-items:center; justify-content:center; }
-  .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .thumb { position:relative; aspect-ratio:1/1; background:#F2F3F4 repeating-linear-gradient(135deg,#EDEEEF 0 6px,#F6F7F7 6px 12px); display:flex; align-items:center; justify-content:center; }
+  .thumb img { width:100%; height:100%; object-fit:contain; display:block; background:#FFFFFF; }
   .thlab { font-size:9px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:#A7ABAD; }
   .quote { padding:14px; font-size:11.5px; line-height:1.5; color:#6E7274; align-self:center; }
   .play { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:34px; height:34px; border-radius:50%; background:rgba(0,21,39,0.72); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; padding-left:3px; }
   .dur { position:absolute; right:6px; bottom:6px; background:rgba(0,21,39,0.78); color:#fff; font-size:9.5px; font-weight:700; padding:2px 5px; border-radius:2px; }
   .pmeta { padding:9px 10px 10px; display:flex; flex-direction:column; gap:7px; }
   .pplat { display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#A7ABAD; }
-  .pcap { font-size:11.5px; line-height:1.4; color:#393B3B; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .pcap { font-size:11.5px; line-height:1.4; color:#393B3B; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
   .pfig { display:flex; flex-wrap:wrap; gap:6px 10px; border-top:1px solid #EDEEEF; padding-top:7px; }
   .pf { min-width:0; }
   .pview { font-size:10px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; }
@@ -531,31 +531,45 @@
       /* A total is only shown when every post contributed to it. Facebook impressions are
          not available today, so summing what exists would publish a total that silently
          covers one post in four. */
-      var t = posts.reduce(function (a, p) {
-        return { i: a.i + (p.impressions || 0), iN: a.iN + (has(p.impressions) ? 1 : 0),
-                 e: a.e + (p.engagements || 0), eN: a.eN + (has(p.engagements) ? 1 : 0) };
-      }, { i: 0, iN: 0, e: 0, eN: 0 });
-      var impTot = t.iN === posts.length ? t.i : null;
-      var engTot = t.eN === posts.length ? t.e : null;
+      /* Delivery is reported on a different basis by each platform and Facebook
+         reports none at all, so a single blended total would be a partial sum
+         under a complete-looking heading. Each figure below is complete for the
+         platform it names, which is what makes it publishable. */
+      function complete(list, key) {
+        var n = 0, s = 0;
+        list.forEach(function (p) { if (has(p[key])) { n++; s += p[key]; } });
+        return (list.length && n === list.length) ? s : null;
+      }
+      var onLi = posts.filter(function (p) { return p.platform === "LinkedIn"; });
+      var onIg = posts.filter(function (p) { return p.platform === "Instagram"; });
+      var liImp = complete(onLi, "impressions");
+      var igViews = complete(onIg, "views");
+      var engTot = complete(posts, "engagements");
+      /* LinkedIn reports impressions, Instagram reports views, Facebook reports
+         neither: every metric in the post_impressions family is withdrawn. The
+         cell is left empty rather than filled from a different basis. */
+      function dlab(p) { return has(p.impressions) ? "Impressions" : has(p.views) ? "Views" : "Impressions"; }
+      function dval(p) { return has(p.impressions) ? p.impressions : has(p.views) ? p.views : null; }
+
       function tile(p) {
         var thumb;
-        if (p.image && !p.placeholder) thumb = '<div class="thumb"><img src="' + esc(p.image) + '" alt=""></div>';
+        if (has(p.image)) thumb = '<div class="thumb"><img src="' + esc(p.image) + '" alt="" loading="lazy"></div>';
         else if (p.mediaType === "video") thumb = '<div class="thumb"><div class="play">&#9654;</div>' + (p.duration ? '<div class="dur num">' + esc(p.duration) + "</div>" : "") + "</div>";
-        else if (p.mediaType === "none") thumb = '<div class="thumb" style="background:#FAFAFA;"><div class="quote">&ldquo;' + esc(p.caption) + "&rdquo;</div></div>";
-        else thumb = '<div class="thumb"><div class="thlab">Creative</div></div>';
+        else thumb = '<div class="thumb" style="background:#FAFAFA;"><div class="quote">&ldquo;' + esc(p.caption) + "&rdquo;</div></div>";
         return '<div class="post">' + thumb + '<div class="pmeta">' +
           '<div class="pplat"><span>' + esc(p.platform) + '</span><span class="num">' + dayShort(p.date) +
           (has(p.url) ? '</span><a class="pview" href="' + esc(p.url) + '" target="_blank" rel="noopener">View</a>' : "</span>") + "</div>" +
-          (p.mediaType === "none" ? "" : '<div class="pcap">' + esc(p.caption) + "</div>") +
-          '<div class="pfig"><div class="pf"><div class="pfl">' +
-            (has(p.impressions) || !has(p.reach) ? "Impressions" : "Reach") + '</div><div class="pfv num">' +
-            (has(p.impressions) ? int(p.impressions) : int(p.reach)) + "</div></div>" +
+          '<div class="pcap">' + esc(p.caption) + "</div>" +
+          '<div class="pfig"><div class="pf"><div class="pfl">' + dlab(p) + '</div><div class="pfv num">' +
+            int(dval(p)) + "</div></div>" +
           '<div class="pf"><div class="pfl">Engagements</div><div class="pfv num">' + int(p.engagements) + "</div></div>" +
           "</div></div></div>";
       }
       var body = '<div class="galsum">' +
-        sum("Posts published", int(posts.length)) + sum("Impressions", int(impTot)) +
-        sum("Engagements", int(engTot)) + sum("Engagement rate", ratio(impTot ? t.e : null, impTot, 2)) + "</div>" +
+        sum("Posts published", int(posts.length)) +
+        sum("LinkedIn impressions", int(liImp)) +
+        sum("Instagram views", int(igViews)) +
+        sum("Engagements", int(engTot)) + "</div>" +
         '<div class="gal" id="gal">' + posts.slice(0, CAP).map(tile).join("") + "</div>" +
         (posts.length > CAP ? '<button class="more" id="galMore">Show all ' + posts.length + " posts</button>" : "");
       set("social", card("Organic social", (D.social.mockup ? "mockup, data not connected; figures are placeholders" : "platform reported"), body));
