@@ -25,10 +25,7 @@
   .nav a { padding:14px 0 11px; font-size:12px; text-transform:uppercase; letter-spacing:1px; font-weight:600; color:#6E7274; border-bottom:3px solid transparent; white-space:nowrap; }
   .nav a:hover { color:#003767; border-bottom-color:#F56A00; text-decoration:none; }
   .scope { background:#FAFAFA; border-top:1px solid #EDEEEF; padding:11px 24px 12px; display:flex; align-items:flex-start; gap:0 30px; flex-wrap:wrap; row-gap:10px; }
-  .sc { display:flex; flex-direction:column; gap:3px; }
-  .sck { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1.4px; color:#A7ABAD; }
-  .scv { font-size:12px; font-weight:600; color:#393B3B; white-space:nowrap; }
-  .sclinks { margin-left:auto; display:flex; gap:16px; align-items:center; font-size:12px; font-weight:600; }
+  .sclinks { display:flex; gap:16px; align-items:center; font-size:12px; font-weight:600; }
 
   /* cards */
   .card { background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:13px; }
@@ -60,23 +57,11 @@
   .id { font-size:11px; color:#A7ABAD; }
   .note { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; }
 
-  /* pacing */
-  .pace { display:flex; flex-direction:column; gap:2px; }
-  .prow { display:grid; grid-template-columns:132px 1fr 150px; align-items:center; gap:16px; padding:11px 0; border-top:1px solid #EDEEEF; }
-  .prow:first-child { border-top:none; }
-  .plab { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#001527; }
-  .psub { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; padding-top:2px; }
-  .track { position:relative; height:22px; background:#F2F3F4; border-radius:2px; }
-  .fill { position:absolute; left:0; top:0; bottom:0; border-radius:2px; min-width:2px; }
-  .mark { position:absolute; top:-4px; bottom:-4px; width:2px; background:#001527; }
-  .marklab { position:absolute; top:-15px; font-size:8.5px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:#001527; transform:translateX(-50%); white-space:nowrap; }
-  .pval { text-align:right; }
-  .ppct { font-size:19px; font-weight:700; color:#001527; line-height:1; }
-  .pchip { display:inline-block; margin-top:5px; font-size:9.5px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:3px 7px; border-radius:2px; }
   .ok { background:#E8F3EC; color:#1F8A4C; }
   .warn { background:#F3EEE1; color:#B07A00; }
   .flat { background:#F2F3F4; color:#6E7274; }
   .bad { background:#FBEDEA; color:#C0402B; }
+
   .rlab { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6E7274; }
   .rval { font-size:17px; font-weight:700; color:#001527; padding-top:3px; }
 
@@ -140,7 +125,7 @@
     .wrap { padding:14px 12px 40px; }
     .ttl { font-size:19px; }
     .mast { flex-direction:column; align-items:flex-start; gap:10px; }
-    .sclinks { margin-left:0; }
+
     .prow { grid-template-columns:1fr; gap:7px; }
     .pval { text-align:left; }
   }
@@ -165,7 +150,6 @@
   <div id="err">No data file loaded. This page renders from a generated <code>&lt;campaign&gt;-data.js</code> in the same directory.</div>
 
   <div class="kpis" id="summary"></div>
-  <div id="pacing"></div>
   <div id="traffic"></div>
   <div id="timeline"></div>
   <div id="paid"></div>
@@ -233,9 +217,7 @@
     set("mThrough", "Data through " + day(M.dataThrough));
 
     /* nav: only sections that render */
-    var hasPacing = (outcome && D.goal) || (paid && D.pacing && has(D.pacing.budget));
     var secs = [];
-    if (hasPacing) secs.push(["Progress", "pacing"]);
     if (D.channels && D.channels.length) secs.push(["Traffic", "traffic"]);
     if ((D.monthly || []).length) secs.push(["Timeline", "timeline"]);
     if (paid) secs.push(["Paid Media", "paid"]);
@@ -244,20 +226,15 @@
     if ((D.delivery || []).length) secs.push(["Traditional Media", "delivery"]);
     set("nav", secs.map(function (s) { return '<a href="#' + s[1] + '">' + s[0] + "</a>"; }).join(""));
 
-    /* scope strip: every date lives here */
-    var sc = [["Campaign window", day(M.campaignStart) + " &ndash; " + day(M.campaignEnd)]];
-    if (M.landingPageLive) sc.push(["Landing page live", day(M.landingPageLive)]);
-    /* Paid spend closes a month behind everything else. Stating it here, once, in the only
-       place dates are allowed, is what stops a reader dividing complete sessions by
-       incomplete spend and reading the result as efficiency. */
-    if (paid && M.paidThrough) sc.push(["Paid spend complete through", day(M.paidThrough)]);
+    /* Header links only. The dashboard carries one date, the data-through stamp
+       in the masthead. Campaign window, landing page live date and the paid
+       spend cut-off were removed on 20 Aug 2026 at Roque's instruction. */
     var links = [];
     if (M.landingPage) links.push(link(M.landingPage, esc(M.landingPath || "Landing page")));
     if (M.formUrl) links.push(link(M.formUrl, "Form"));
     if (M.mondayBoard) links.push(link(M.mondayBoard, "Monday board"));
-    set("scope",
-      sc.map(function (s) { return '<div class="sc"><div class="sck">' + s[0] + '</div><div class="scv num">' + s[1] + "</div></div>"; }).join("") +
-      (links.length ? '<div class="sclinks">' + links.join('<span style="color:#CFD2D4;">&#124;</span>') + "</div>" : ""));
+    set("scope", links.length ? '<div class="sclinks">' + links.join('<span style="color:#CFD2D4;">&#124;</span>') + "</div>" : "");
+    if (!links.length) document.getElementById("scope").style.display = "none";
 
     /* 1. channel summary */
     set("summary", (D.summary || []).map(function (s) {
@@ -265,45 +242,6 @@
         '<div class="klab hdln">' + esc(s.label) + "</div>" +
         '<div class="kval num hdln">' + (s.pending ? '<span class="kpend">not connected</span>' : fmt(s.value, s.fmt)) + "</div></div>";
     }).join(""));
-
-    /* 2. progress and pacing */
-    (function () {
-      var P = D.pacing || {}, G = D.goal || null;
-      var elapsed = has(P.daysTotal) && P.daysTotal ? P.daysElapsed / P.daysTotal : null;
-      var rows = [];
-      /* The goal bar is drawn only when a target exists. A pace verdict against
-         a target nobody set is a judgement the data cannot support. */
-      if (outcome && G && has(G.target)) {
-        rows.push(bar(G.label, G.target ? G.actual / G.target : 0, elapsed,
-          int(G.actual) + " of " + int(G.target), "#0074E2", "goal"));
-      }
-      if (paid && has(P.budget)) {
-        rows.push(bar("Budget", P.budget ? P.spend / P.budget : 0, elapsed,
-          money(P.spend) + " of " + money0(P.budget), "#7FB2E8", "budget"));
-      }
-      if (!rows.length) { set("pacing", ""); return; }
-
-      set("pacing", card("Progress and pacing",
-        "each bar marked at elapsed campaign time",
-        '<div class="pace">' + rows.join("") + "</div>"));
-
-      function bar(label, frac, mk, sub, color, kind) {
-        var p = Math.max(0, Math.min(1, frac || 0)), chip = "";
-        if (kind && has(mk)) {
-          var d = (p - mk) * 100, ab = d >= 0;
-          var good = kind === "goal" ? ab : !ab;
-          chip = '<span class="pchip ' + (Math.abs(d) < 1 ? "flat" : good ? "ok" : "warn") + '">' +
-            Math.abs(d).toFixed(1) + " pts " + (ab ? "ahead of" : "behind") + " pace</span>";
-          if (kind === "budget" && ab) chip = '<span class="pchip warn">' + Math.abs(d).toFixed(1) + " pts ahead of time</span>";
-        }
-        var showMark = kind && has(mk);
-        return '<div class="prow"><div><div class="plab hdln">' + esc(label) + '</div><div class="psub num">' + sub + "</div></div>" +
-          '<div class="track"><div class="fill" style="width:' + (p * 100).toFixed(2) + "%; background:" + color + ';"></div>' +
-          (showMark ? '<div class="mark" style="left:' + (mk * 100).toFixed(2) + '%;"></div>' +
-            '<div class="marklab" style="left:' + (mk * 100).toFixed(2) + '%;">pace</div>' : "") + "</div>" +
-          '<div class="pval"><div class="ppct num hdln">' + pct(p * 100) + "</div>" + chip + "</div></div>";
-      }
-    })();
 
     /* 3. how people reached the page, then the conversion step */
     (function () {

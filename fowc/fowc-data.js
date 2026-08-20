@@ -12,18 +12,28 @@
    197 cells, no (other) rows. Every total on the page therefore adds up by
    construction rather than by luck.
 
-   SUBMISSIONS COME FROM HUBSPOT ONLY. That is the standing rule, set by Roque
-   on 20 August: GA4 is not a source for form submissions on any report. The
-   figure is 143 for 1 January to 19 August 2026, from HubSpot content analytics
-   on www.aws.org/educators/welding-curriculum, the same number the form
-   performance page shows for form d73e472e. Monthly is HubSpot too:
-   13, 10, 18, 18, 33, 32, 11, 8.
+   SUBMISSIONS COME FROM HUBSPOT ONLY, AND FROM THE FORM, NOT THE PAGE. That is
+   the standing rule, set by Roque on 20 August: GA4 is not a source for form
+   submissions on any report. The figure is 140 for 1 January to 19 August 2026,
+   pulled from the HubSpot form report for form d73e472e, the Fundamentals of
+   Welding Curriculum (FOWC) form, which is the number the form performance
+   screen shows. Monthly is the same source: 13, 10, 18, 18, 32, 30, 11, 8.
 
-   Until 20 August this page published GA4's fowc_form_submission event count,
-   144, with a GA4 monthly split of 1, 3, 7, 15, 46, 50, 14, 8. The totals
-   differ by one but the distributions are not close: GA4 put 1 submission in
-   January against HubSpot's 13, and 50 in June against HubSpot's 32. The
-   totals agreeing hid a monthly series that was substantially wrong.
+   Two HubSpot numbers exist and they are three apart. HubSpot content analytics
+   for the page www.aws.org/educators/welding-curriculum returns 143 with a
+   monthly series of 13, 10, 18, 18, 33, 32, 11, 8. The page metric counts every
+   form submitted on that page; the form metric counts only the FOWC form. The
+   gap is one submission in May and two in June, and the FOWC form report is the
+   one published because the campaign's outcome is submissions of the FOWC form.
+   This page carried the page-level 143 for part of 20 August, and before that
+   GA4's fowc_form_submission event count, 144, with a GA4 monthly split of
+   1, 3, 7, 15, 46, 50, 14, 8. The GA4 total was one away from HubSpot while its
+   distribution was substantially wrong, 1 in January against 13, 50 in June
+   against 30, which is exactly how a wrong basis hides.
+
+   Form views for the same window are 17,083 against the page's 17,104 raw
+   views, so the two reports describe the same traffic; only the submission
+   population differs.
 
    THE CHANNEL TABLE NO LONGER CARRIES SUBMISSIONS OR A CONVERSION RATE.
    HubSpot cannot split submissions by GA4 channel group; it has its own source
@@ -100,10 +110,11 @@
    published until 20 August. It appears in exactly one document,
    MASTER-PROMPT-campaign-dashboard.md, in a section headed "FOWC, for the
    worked example", which is a dashboard design brief using FOWC as sample
-   data. The same section states monthly submissions as 13, 10, 18, 18, 33, 32,
-   11, 8 when GA4 shows 1, 3, 7, 15, 46, 50, 14, 8, and says two organic social
-   posts were planned with one published when ten exist, so its FOWC detail is
-   illustrative rather than actual. QUERY-for-Reporting-session.md defines the
+   data. Its monthly submissions, 13, 10, 18, 18, 33, 32, 11, 8, are exactly the
+   HubSpot page series, so that document was citing the source of record
+   correctly and an earlier note in this file calling the series invented was
+   wrong. Its organic social count is off, two posts planned with one published
+   when ten exist. Neither observation gives 460 an owner. QUERY-for-Reporting-session.md defines the
    goal as submissions on HubSpot form d73e472e and states no number. The FOWC
    meeting of 18 August, attended by Claudia Keppinger, Roque Corona, Trish
    Fliss, Nicole Soules and Miguel Romero, lists the KPIs as demo requests,
@@ -113,10 +124,12 @@
    could not support. The submissions count is still published; only the target
    and the pace verdict are withdrawn, pending a number someone owns.
 
-   BUDGET 18,000 is sourced and stays: QUERY-for-Reporting-session.md records
-   $6,000 each on Google Ads and Microsoft Advertising flighting 28 April to
-   24 November, and $6,000 on LinkedIn Ads flighting 24 March to 24 November.
-   CAMPAIGN WINDOW and LANDING PAGE LIVE date come from the same document.
+   NO PROGRESS AND PACING SECTION. Removed on 20 August at Roque's instruction,
+   along with the campaign window, the landing page live date and the paid spend
+   cut-off from the header. The page now carries one date, the data-through
+   stamp in the masthead. The $18,000 budget from
+   QUERY-for-Reporting-session.md is no longer published because nothing renders
+   it; spend is reported as spend.
 
    EMAIL: re-pulled from HubSpot marketing email analytics, bot-excluded unique
    basis. Sends 1 and 2 are dated from the Email Campaign group on Monday board
@@ -146,7 +159,6 @@ window.CAMPAIGN_DATA = {
     campaignStart: "2026-03-16",
     campaignEnd: "2026-11-30",
     dataThrough: "2026-08-19",
-    landingPageLive: "2026-05-11",
     paidThrough: "2026-08-19",
     landingPage: "https://www.aws.org/educators/welding-curriculum/",
     landingPath: "/educators/welding-curriculum/",
@@ -157,24 +169,17 @@ window.CAMPAIGN_DATA = {
   flags: { hasPaid: true, hasOutcome: true },
 
   summary: [
-    { channel: "Outcome",         label: "Form submissions",      value: 143,       fmt: "int" },
-    { channel: "Outcome",         label: "Form conversion rate",  value: 0.96,      fmt: "pct2" },
+    { channel: "Outcome",         label: "Form submissions",      value: 140,       fmt: "int" },
+    { channel: "Outcome",         label: "Form conversion rate",  value: 0.94,      fmt: "pct2" },
     { channel: "Website",         label: "Landing page sessions", value: 14931,     fmt: "int" },
     { channel: "Website",         label: "Engagement rate",       value: 61.2,      fmt: "pct" },
     { channel: "Paid media",      label: "Paid spend",            value: 15166.42,  fmt: "money" },
     { channel: "Marketing email", label: "Email clicks",          value: 307,       fmt: "int" }
   ],
 
-  goal: { label: "Form submissions", actual: 143 },
+  goal: { label: "Form submissions", actual: 140 },
 
-  pacing: {
-    daysElapsed: 156,
-    daysTotal: 259,
-    budget: 18000,
-    spend: 15166.42,
-  },
-
-  landingPage: { sessions: 14931, engaged: 9141, seconds: 2213050, submissions: 143 },
+  landingPage: { sessions: 14931, engaged: 9141, seconds: 2213050, submissions: 140 },
 
   /* Aggregated from the single grid by channel. Print falls out of the grid on
      source, welding journal, rather than being subtracted from Unassigned by
@@ -200,8 +205,8 @@ window.CAMPAIGN_DATA = {
     { m: "2026-02", sessions:  196, engaged:  158, seconds:   24237, submissions: 10, partial: false },
     { m: "2026-03", sessions:  223, engaged:  159, seconds:   18837, submissions: 18, partial: false },
     { m: "2026-04", sessions:  301, engaged:  205, seconds:   29568, submissions: 18, partial: false },
-    { m: "2026-05", sessions: 3100, engaged: 1905, seconds:  408014, submissions: 33, partial: false },
-    { m: "2026-06", sessions: 6541, engaged: 4200, seconds: 1138968, submissions: 32, partial: false },
+    { m: "2026-05", sessions: 3100, engaged: 1905, seconds:  408014, submissions: 32, partial: false },
+    { m: "2026-06", sessions: 6541, engaged: 4200, seconds: 1138968, submissions: 30, partial: false },
     { m: "2026-07", sessions: 3843, engaged: 2179, seconds:  548054, submissions: 11, partial: false },
     { m: "2026-08", sessions:  550, engaged:  211, seconds:   25801, submissions: 8, partial: true }
   ],
