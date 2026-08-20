@@ -531,20 +531,17 @@
       /* A total is only shown when every post contributed to it. Facebook impressions are
          not available today, so summing what exists would publish a total that silently
          covers one post in four. */
-      /* Delivery is reported on a different basis by each platform and Facebook
-         reports none at all, so a single blended total would be a partial sum
-         under a complete-looking heading. Each figure below is complete for the
-         platform it names, which is what makes it publishable. */
-      function complete(list, key) {
+      /* Every post now carries a delivery figure, so the total is a real total.
+         LinkedIn calls it impressions and Meta calls it views; both count times
+         the content was put in front of someone, which is why the heading names
+         both rather than picking one and quietly covering the other. */
+      function complete(list, fn) {
         var n = 0, s = 0;
-        list.forEach(function (p) { if (has(p[key])) { n++; s += p[key]; } });
+        list.forEach(function (p) { var v = fn(p); if (has(v)) { n++; s += v; } });
         return (list.length && n === list.length) ? s : null;
       }
-      var onLi = posts.filter(function (p) { return p.platform === "LinkedIn"; });
-      var onIg = posts.filter(function (p) { return p.platform === "Instagram"; });
-      var liImp = complete(onLi, "impressions");
-      var igViews = complete(onIg, "views");
-      var engTot = complete(posts, "engagements");
+      var seenTot = complete(posts, dval);
+      var engTot = complete(posts, function (p) { return p.engagements; });
       /* LinkedIn reports impressions, Instagram reports views, Facebook reports
          neither: every metric in the post_impressions family is withdrawn. The
          cell is left empty rather than filled from a different basis. */
@@ -567,9 +564,9 @@
       }
       var body = '<div class="galsum">' +
         sum("Posts published", int(posts.length)) +
-        sum("LinkedIn impressions", int(liImp)) +
-        sum("Instagram views", int(igViews)) +
-        sum("Engagements", int(engTot)) + "</div>" +
+        sum("Impressions and views", int(seenTot)) +
+        sum("Engagements", int(engTot)) +
+        sum("Engagement rate", ratio(engTot, seenTot, 2)) + "</div>" +
         '<div class="gal" id="gal">' + posts.slice(0, CAP).map(tile).join("") + "</div>" +
         (posts.length > CAP ? '<button class="more" id="galMore">Show all ' + posts.length + " posts</button>" : "");
       set("social", card("Organic social", (D.social.mockup ? "mockup, data not connected; figures are placeholders" : "platform reported"), body));

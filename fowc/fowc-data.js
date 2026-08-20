@@ -171,7 +171,16 @@ window.CAMPAIGN_DATA = {
      Meta Business Suite reports and the basis Nicole records on the Monday
      board. It reproduces her figures exactly: 112 on 17 March and 27 on 16
      June. Reactions alone, which this file previously published, gave 32 and
-     11 for the same two posts. */
+     11 for the same two posts.
+
+     Facebook views come from post_media_view, which survived the 15 June 2026
+     Page Insights deprecation that removed every metric with impressions,
+     reach or views in its name. On the 17 March post it returns 11,030 against
+     Nicole's Business Suite 10,994 from a May snapshot, so it is the same
+     quantity still accruing. post_total_media_view_unique is Meta's redefined
+     reach, unique media viewers rather than unique impressions, and is not
+     published here because it is a different quantity from the reach figure
+     the team has been recording. */
   social: {
     posts: [
       { platform: "LinkedIn", date: "2026-07-27",
@@ -191,13 +200,13 @@ window.CAMPAIGN_DATA = {
         url: "https://www.facebook.com/1602329701256807/posts/1549352543221190",
         mediaType: "image",
         caption: "Thinking about attending AWS Train the Trainer but still have questions? We've got answers. Visit aws.org/fowc.",
-        engagements: 85 },
+        views: 4535, engagements: 85 },
       { platform: "Facebook", date: "2026-06-16",
         image: "https://american-welding-society.github.io/reporting/fowc/img/2026-06-16-facebook.jpg",
         url: "https://www.facebook.com/1602329701256807/posts/1548517826637995",
         mediaType: "image",
         caption: "Whether you're enhancing an existing course or building from the ground up, get the tools, structure and support you need.",
-        engagements: 27 },
+        views: 2776, engagements: 27 },
       { platform: "Instagram", date: "2026-06-16",
         image: "https://american-welding-society.github.io/reporting/fowc/img/2026-06-16-instagram.jpg",
         url: "https://www.instagram.com/p/DZqM35TDtm8/",
@@ -227,7 +236,7 @@ window.CAMPAIGN_DATA = {
         url: "https://www.facebook.com/1602329701256807/posts/1473296210826824",
         mediaType: "image",
         caption: "Strong welding programs start with a strong foundation. The Fundamentals of Welding Curriculum from the American Welding Society.",
-        engagements: 112 },
+        views: 11030, engagements: 112 },
       { platform: "Instagram", date: "2026-03-17",
         image: "https://american-welding-society.github.io/reporting/fowc/img/2026-03-17-instagram.jpg",
         url: "https://www.instagram.com/p/DV9z8c-DmoP/",
