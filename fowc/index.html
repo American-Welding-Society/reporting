@@ -55,6 +55,9 @@
   .dim { color:#6E7274; }
   .em { color:#A7ABAD; }
   .id { font-size:11px; color:#A7ABAD; }
+  .msub { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; }
+  .up { color:#1F8A4C; font-weight:700; }
+  .down { color:#C0402B; font-weight:700; }
   .note { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; }
 
   .ok { background:#E8F3EC; color:#1F8A4C; }
@@ -72,6 +75,8 @@
   /* timeline */
   .tl { display:flex; flex-direction:column; gap:0; }
   .tlcap { display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:2px 0 7px; }
+  .tlkey { font-size:9px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:#A7ABAD; margin-left:12px; }
+  .tlkey i { display:inline-block; width:14px; height:3px; border-radius:2px; vertical-align:3px; margin-right:5px; }
   .tlname { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.9px; color:#001527; }
   .tlmax { font-size:10px; color:#6E7274; }
   .tlgrid { display:grid; gap:0 8px; }
@@ -270,7 +275,23 @@
       var mx = Math.max.apply(null, ch.map(function (c) { return c.sessions || 0; }));
       var hasSub = ch.some(function (c) { return has(c.submissions); });
       var totSub = hasSub ? ch.reduce(function (a, c) { return a + (c.submissions || 0); }, 0) : null;
+      /* Two comparisons, added 20 August on Miguel's recommendation. Month on month is
+         the last two complete months, named in the card scope so nobody has to guess.
+         Year on year is the same window in the prior year, same filter, same four
+         dimension construction. A channel with no prior-year row renders a dash: the
+         change from nothing is not a percentage. */
+      var hasMoM = ch.some(function (c) { return has(c.m1) && has(c.m2); });
+      var hasYoY = ch.some(function (c) { return has(c.prior); });
+      function chg(now, was) {
+        if (!has(now) || !has(was) || !was) return DASH;
+        var d = (now - was) / was * 100;
+        var cls = Math.abs(d) < 0.05 ? "flat" : d > 0 ? "up" : "down";
+        return '<span class="' + cls + '">' + (d > 0 ? "+" : d < 0 ? "\u2212" : "") +
+               Math.abs(d).toFixed(1) + "%</span>";
+      }
       var head = '<th>Channel</th><th class="r">Sessions</th><th class="r">Share</th><th></th>' +
+        (hasMoM ? '<th class="r">MoM</th>' : "") +
+        (hasYoY ? '<th class="r">YoY</th>' : "") +
         (hasDur ? '<th class="r">Avg engagement time</th>' : '<th class="r">Engaged sessions</th>') +
         '<th class="r">Engagement rate</th>' +
         (hasSub ? '<th class="r">' + esc(D.goal ? D.goal.label : "Submissions") + '</th><th class="r">Conversion rate</th>' : "");
@@ -278,20 +299,58 @@
         return '<tr><td class="name">' + esc(c.channel) + "</td>" +
           '<td class="r num">' + int(c.sessions) + "</td>" +
           '<td class="r num">' + ratio(c.sessions, tot.s) + "</td>" +
-          '<td style="width:18%; padding-left:14px;"><span class="sbar"><i style="width:' + (mx ? (c.sessions / mx * 100).toFixed(1) : 0) + '%"></i></span></td>' +
+          '<td style="width:14%; padding-left:14px;"><span class="sbar"><i style="width:' + (mx ? (c.sessions / mx * 100).toFixed(1) : 0) + '%"></i></span></td>' +
+          (hasMoM ? '<td class="r num">' + chg(c.m2, c.m1) + "</td>" : "") +
+          (hasYoY ? '<td class="r num">' + chg(c.sessions, c.prior) + "</td>" : "") +
           '<td class="r num">' + (hasDur ? dur(c.seconds, c.sessions) : int(c.engaged)) + "</td>" +
           '<td class="r num">' + ratio(c.engaged, c.sessions) + "</td>" +
           (hasSub ? '<td class="r num">' + int(c.submissions) + '</td><td class="r num">' + ratio(c.submissions, c.sessions, 2) + "</td>" : "") +
           "</tr>";
       }).join("");
+      var sumk = function (k) { return ch.reduce(function (a, c) { return a + (has(c[k]) ? c[k] : 0); }, 0); };
       var foot = '<tr class="tot"><td>All sources</td><td class="r num">' + int(tot.s) + '</td><td class="r num">' + pct(100) +
-        '</td><td></td><td class="r num">' + (hasDur ? dur(tot.d, tot.s) : int(tot.e)) + '</td><td class="r num">' + ratio(tot.e, tot.s) + "</td>" +
+        '</td><td></td>' +
+        (hasMoM ? '<td class="r num">' + chg(sumk("m2"), sumk("m1")) + "</td>" : "") +
+        (hasYoY ? '<td class="r num">' + chg(tot.s, D.prior ? D.prior.sessions : null) + "</td>" : "") +
+        '<td class="r num">' + (hasDur ? dur(tot.d, tot.s) : int(tot.e)) + '</td><td class="r num">' + ratio(tot.e, tot.s) + "</td>" +
         (hasSub ? '<td class="r num">' + int(totSub) + '</td><td class="r num">' + ratio(totSub, tot.s, 2) + "</td>" : "") +
         "</tr>";
 
+      /* Landing page sessions answer "what did the campaign deliver". They cannot
+         answer "how often was the page reached", because a visitor who arrives on
+         another page and navigates here is invisible to them. Both are published,
+         and the difference between them is the internal navigation the campaign
+         did not buy. Added 20 August on Miguel's recommendation. */
+      var reachBlock = "";
+      var LP = D.landingPage || {}, PR = D.prior || null;
+      if (has(LP.reached)) {
+        var mrows = [
+          ["Landing page sessions", "started on the page", LP.sessions, PR && PR.sessions],
+          ["Reached the page", "started anywhere, viewed the page", LP.reached, PR && PR.reached],
+          ["Page views", "", LP.views, PR && PR.views]
+        ].filter(function (r) { return has(r[2]); }).map(function (r) {
+          return '<tr><td class="name">' + esc(r[0]) +
+            (r[1] ? '<div class="msub">' + esc(r[1]) + "</div>" : "") + "</td>" +
+            '<td class="r num">' + int(r[2]) + "</td>" +
+            (PR ? '<td class="r num">' + int(r[3]) + '</td><td class="r num">' + chg(r[2], r[3]) + "</td>" : "") +
+            "</tr>";
+        }).join("");
+        var mhead = "<th>Measure</th><th class=\"r\">" + esc(M.year || "This year") + "</th>" +
+          (PR ? '<th class="r">' + esc(PR.year) + '</th><th class="r">Change</th>' : "");
+        reachBlock = '<div class="sub hdln">Two ways to count the page</div>' + tbl(mhead, mrows) +
+          '<div class="sub hdln" style="padding-top:6px;">By channel</div>';
+      }
+
       set("traffic", card("How people reached the page",
-        "landing page sessions, all sources",
-        tbl(head, rows, foot)));
+        "landing page sessions; month on month is " + mlab(prevM(1)) + " against " + mlab(prevM(2)),
+        reachBlock + tbl(head, rows, foot)));
+
+      /* The two complete months the MoM column compares, named rather than assumed. */
+      function prevM(back) {
+        var mm = (D.monthly || []).filter(function (r) { return !r.partial; });
+        var r = mm[mm.length - back];
+        return r ? r.m : "";
+      }
     })();
 
     /* 4. timeline */
@@ -342,18 +401,32 @@
         });
       }
 
-      function single(key, color, label, h) {
+      /* A prior-year line shares the axis with this year, so the scale is the larger
+         of the two. Drawn behind, thinner and grey, with no point labels: it is a
+         reference, not a second reading. */
+      function single(key, color, label, h, priorKey) {
         var vals = m.map(function (r) { return has(r[key]) ? r[key] : null; });
+        var pv = priorKey ? m.map(function (r) { return has(r[priorKey]) ? r[priorKey] : null; }) : null;
+        var hasPrior = pv && pv.some(function (v) { return v !== null; });
         var mx = Math.max.apply(null, vals.map(function (v) { return v || 0; })) || 1;
+        if (hasPrior) mx = Math.max(mx, Math.max.apply(null, pv.map(function (v) { return v || 0; })));
         var pts = points(vals, mx, h).filter(function (p) { return p.v !== null; });
         var d = smooth(pts);
         var ih = h - PY * 2;
         var area = d ? d + " L" + pts[pts.length - 1].x.toFixed(1) + " " + (PY + ih) +
                        " L" + pts[0].x.toFixed(1) + " " + (PY + ih) + " Z" : "";
+        var pd = "";
+        if (hasPrior) {
+          var ppts = points(pv, mx, h).filter(function (p) { return p.v !== null; });
+          pd = smooth(ppts);
+        }
         return '<div class="tlcap"><div class="tlname hdln">' + esc(label) +
+          (hasPrior ? '<span class="tlkey"><i style="background:' + color + '"></i>' + esc(M.year || "") +
+            '<i style="background:#C4C8CA;margin-left:12px;"></i>' + esc(D.prior ? D.prior.year : "") + "</span>" : "") +
           '</div><div class="tlmax num">peak ' + int(mx) + "</div></div>" +
           '<svg class="ln" viewBox="0 0 ' + W + " " + h + '" preserveAspectRatio="none" role="img">' +
           grid(h) +
+          (pd ? '<path d="' + pd + '" fill="none" stroke="#C4C8CA" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' : "") +
           (area ? '<path d="' + area + '" fill="' + color + '" fill-opacity="0.10"/>' : "") +
           (d ? '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' : "") +
           pts.map(function (p) {
@@ -378,7 +451,7 @@
       }
 
       var cols = "grid-template-columns:repeat(" + m.length + ",minmax(0,1fr));";
-      var body = '<div class="tl">' + single("sessions", "#0074E2", "Landing page sessions", 150);
+      var body = '<div class="tl">' + single("sessions", "#0074E2", "Landing page sessions", 168, "prior");
       if (showSub) body += '<div style="height:14px;"></div>' +
         single("submissions", "#003767", D.goal ? D.goal.label : "Submissions", 118);
       body += '<div class="tlx" style="' + cols + '">' + m.map(function (r) {
