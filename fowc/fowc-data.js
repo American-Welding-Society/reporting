@@ -35,14 +35,50 @@
    views, so the two reports describe the same traffic; only the submission
    population differs.
 
-   THE CHANNEL TABLE NO LONGER CARRIES SUBMISSIONS OR A CONVERSION RATE.
-   HubSpot cannot split submissions by GA4 channel group; it has its own source
-   taxonomy, and forcing one onto the other is the two-sources-for-one-quantity
-   fault this file exists to prevent. Sessions, engagement and average time in
-   that table are GA4. Submissions are HubSpot. They are never mixed inside a
-   row. The consequence worth knowing off the page: the GA4 split showed paid
-   social producing zero submissions, and that observation is now unpublished
-   because its basis is not the source of record.
+   THE CHANNEL TABLE CARRIES SUBMISSIONS AND A CONVERSION RATE AGAIN, and they
+   are HubSpot's, not GA4's. HubSpot does split this form's submissions by
+   source: the Submissions by source table on the form performance screen, which
+   is the forms-sources report filtered to form d73e472e. For 1 January to
+   19 August 2026 it returns nine buckets summing to exactly 140:
+
+     paid 42, organic 27, direct 32, email 24, referrals 13, other 1,
+     ai-referrals 1, paid-social 0, social 0.
+
+   Mapped onto the GA4 channel groups: paid to Paid search, paid-social to Paid
+   social, organic to Organic search, email to Email, direct to Direct, social to
+   Organic social, referrals to Referral, ai-referrals to AI assistant. One
+   mapping is a judgement and is flagged as such: HubSpot's "other campaigns"
+   bucket, 1 submission, is published against GA4's Unassigned row, those being
+   the two buckets each system uses for traffic it recognises as campaign-tagged
+   but cannot classify.
+
+   Organic video, Print and Cross-network carry no submissions key at all.
+   HubSpot has no bucket that corresponds to them, so the page renders a dash
+   rather than a zero. A dash means HubSpot cannot say; it does not mean none.
+
+   READ THE PER-CHANNEL CONVERSION RATE AS A RANKING, NOT AN ABSOLUTE. The
+   numerator is HubSpot submissions and the denominator is GA4 sessions, which
+   is the same arithmetic as the headline tile, 140 over 14,931. The two systems
+   do not bucket traffic identically, and two rows are inflated by that alone:
+
+     Referral  25.00 percent published, 13 over 52 GA4 sessions.
+               HubSpot counts 280 form views on referrals, so its own rate is
+               4.6 percent.
+     Direct    11.64 percent published, 32 over 275 GA4 sessions.
+               HubSpot counts 1,002 form views on direct, so its own rate is
+               3.2 percent.
+
+   Everywhere else the two denominators are close and the rate is sound: Paid
+   search 0.35, Organic search 2.88, Email 6.70. This caveat is here and not on
+   the page, per R2, but it is the first thing to say if anyone asks why Referral
+   and Direct convert best. The honest reading is that both are small-session
+   rows where HubSpot sees more form views than GA4 sees sessions.
+
+   ALL 140 SUBMISSIONS HAPPENED ON THE CAMPAIGN LANDING PAGE. The forms-url
+   report gives www.aws.org/educators/welding-curriculum 140, with 3 form views
+   on a share.hsforms.com link and 2 on cm.aws.org producing none. So the three
+   submission gap against page content analytics is definitely a second form on
+   the same page, not the FOWC form being submitted somewhere else.
 
    PAID SESSIONS are allocated to a platform by GA4 session source, taken from
    the same grid: google 8,284, bing 3,592, linkedin 1,226. No campaign name
@@ -185,17 +221,17 @@ window.CAMPAIGN_DATA = {
      source, welding journal, rather than being subtracted from Unassigned by
      hand, so the carve-out cannot drift. */
   channels: [
-    { channel: "Paid search",    sessions: 11876, engaged: 7627, seconds: 2020467 },
-    { channel: "Paid social",    sessions:  1239, engaged:  201, seconds:    4016 },
-    { channel: "Organic search", sessions:   938, engaged:  785, seconds:  106099 },
-    { channel: "Email",          sessions:   358, engaged:  264, seconds:   22305 },
-    { channel: "Direct",         sessions:   275, engaged:  129, seconds:   19255 },
-    { channel: "Organic social", sessions:   117, engaged:   63, seconds:    5665 },
-    { channel: "Referral",       sessions:    52, engaged:   41, seconds:    8563 },
-    { channel: "Unassigned",     sessions:    39, engaged:    9, seconds:   17070 },
+    { channel: "Paid search",    sessions: 11876, engaged: 7627, seconds: 2020467, submissions:  42 },
+    { channel: "Paid social",    sessions:  1239, engaged:  201, seconds:    4016, submissions:   0 },
+    { channel: "Organic search", sessions:   938, engaged:  785, seconds:  106099, submissions:  27 },
+    { channel: "Email",          sessions:   358, engaged:  264, seconds:   22305, submissions:  24 },
+    { channel: "Direct",         sessions:   275, engaged:  129, seconds:   19255, submissions:  32 },
+    { channel: "Organic social", sessions:   117, engaged:   63, seconds:    5665, submissions:   0 },
+    { channel: "Referral",       sessions:    52, engaged:   41, seconds:    8563, submissions:  13 },
+    { channel: "Unassigned",     sessions:    39, engaged:    9, seconds:   17070, submissions:   1 },
     { channel: "Organic video",  sessions:    17, engaged:    8, seconds:    5507 },
     { channel: "Print",          sessions:     8, engaged:    7, seconds:     922 },
-    { channel: "AI assistant",   sessions:     8, engaged:    7, seconds:    3181 },
+    { channel: "AI assistant",   sessions:     8, engaged:    7, seconds:    3181, submissions:   1 },
     { channel: "Cross-network",  sessions:     4, engaged:    0, seconds:       0 }
   ],
 
