@@ -81,14 +81,37 @@
    Each platform was validated against a closed month before the open month was
    trusted. Complete through 19 August, not through the last closed month.
 
-   GOAL 460 and BUDGET 18,000: MASTER-PROMPT-campaign-dashboard.md and
-   QUERY-for-Reporting-session.md. Budget is $6,000 each on Google Ads,
-   Microsoft Advertising and LinkedIn Ads. CAMPAIGN WINDOW and LANDING PAGE
-   LIVE date: the same two documents.
+   THERE IS NO GOAL TARGET ON THIS PAGE, deliberately. A target of 460 was
+   published until 20 August. It appears in exactly one document,
+   MASTER-PROMPT-campaign-dashboard.md, in a section headed "FOWC, for the
+   worked example", which is a dashboard design brief using FOWC as sample
+   data. The same section states monthly submissions as 13, 10, 18, 18, 33, 32,
+   11, 8 when GA4 shows 1, 3, 7, 15, 46, 50, 14, 8, and says two organic social
+   posts were planned with one published when ten exist, so its FOWC detail is
+   illustrative rather than actual. QUERY-for-Reporting-session.md defines the
+   goal as submissions on HubSpot form d73e472e and states no number. The FOWC
+   meeting of 18 August, attended by Claudia Keppinger, Roque Corona, Trish
+   Fliss, Nicole Soules and Miguel Romero, lists the KPIs as demo requests,
+   form submissions, email open rate, email click rate and landing page traffic,
+   with no numeric target against any of them. So 460 has no owner, and a
+   verdict of "28.9 points behind pace" against it was a judgement the data
+   could not support. The submissions count is still published; only the target
+   and the pace verdict are withdrawn, pending a number someone owns.
+
+   BUDGET 18,000 is sourced and stays: QUERY-for-Reporting-session.md records
+   $6,000 each on Google Ads and Microsoft Advertising flighting 28 April to
+   24 November, and $6,000 on LinkedIn Ads flighting 24 March to 24 November.
+   CAMPAIGN WINDOW and LANDING PAGE LIVE date come from the same document.
 
    EMAIL: re-pulled from HubSpot marketing email analytics, bot-excluded unique
-   basis. Send dates and the two forward schedules come from the Email Campaign
-   group on Monday board 18399502759, not from the HubSpot publish timestamp.
+   basis. Sends 1 and 2 are dated from the Email Campaign group on Monday board
+   18399502759, not from the HubSpot publish timestamp. Sends 3 and 4 were
+   published as 2 September and 4 November until 20 August; both were superseded
+   at the FOWC meeting of 18 August, which moved Email 3 to after 5 October, so
+   it does not precede the 2nd Edition teaser launch, and Email 4 to after
+   30 November. The Monday board carries no date on either item as at 20 August.
+   The notes record 30 November as "presumably" the 2nd Edition on-sale date and
+   say to treat it as not firm.
 
    TRADITIONAL MEDIA: every item opened on the Monday board, per R6. Statuses
    are normalised to Done, In progress and Not started; the blog reads Stuck on
@@ -127,15 +150,13 @@ window.CAMPAIGN_DATA = {
     { channel: "Marketing email", label: "Email clicks",          value: 307,       fmt: "int" }
   ],
 
-  goal: { label: "Form submissions", actual: 144, target: 460 },
+  goal: { label: "Form submissions", actual: 144 },
 
   pacing: {
     daysElapsed: 156,
     daysTotal: 259,
     budget: 18000,
     spend: 15166.42,
-    goalActual: 144,
-    goalTarget: 460
   },
 
   landingPage: { sessions: 14931, engaged: 9141, seconds: 2213050, submissions: 144 },
@@ -215,8 +236,8 @@ window.CAMPAIGN_DATA = {
         subject: "See AWS Fundamentals of Welding Curriculum in Action: Schedule Your Demo Now!",
         url: "https://app.hubspot.com/contacts/7723471/record/0-29/555868224659",
         delivered: 6212, opens: 1659, clicks: 190, unsubs: 14 },
-      { n: 3, scheduled: "Sep 2, 2026" },
-      { n: 4, scheduled: "Nov 4, 2026" }
+      { n: 3, scheduled: "After Oct 5, 2026" },
+      { n: 4, scheduled: "After Nov 30, 2026" }
     ]
   },
 

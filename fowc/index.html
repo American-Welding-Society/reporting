@@ -271,7 +271,9 @@
       var P = D.pacing || {}, G = D.goal || null;
       var elapsed = has(P.daysTotal) && P.daysTotal ? P.daysElapsed / P.daysTotal : null;
       var rows = [];
-      if (outcome && G) {
+      /* The goal bar is drawn only when a target exists. A pace verdict against
+         a target nobody set is a judgement the data cannot support. */
+      if (outcome && G && has(G.target)) {
         rows.push(bar(G.label, G.target ? G.actual / G.target : 0, elapsed,
           int(G.actual) + " of " + int(G.target), "#0074E2", "goal"));
       }
