@@ -89,6 +89,8 @@
   .tlm { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#6E7274; text-align:center; }
   .tlp { font-size:9px; color:#A7ABAD; text-align:center; }
 
+  .gsn { font-size:10px; font-weight:600; color:#A7ABAD; letter-spacing:0.4px; }
+
   /* social gallery */
   .gal { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; }
   .post { border:1px solid #E3E5E6; border-radius:3px; overflow:hidden; display:flex; flex-direction:column; }
@@ -182,6 +184,7 @@
   <div id="paid"></div>
   <div id="email"></div>
   <div id="social"></div>
+  <div id="video"></div>
   <div id="delivery"></div>
 
 </div></div>
@@ -250,6 +253,7 @@
     if (paid) secs.push(["Paid Media", "paid"]);
     if ((D.email && D.email.sends || []).length) secs.push(["Email", "email"]);
     if (D.social && (D.social.posts || []).length) secs.push(["Organic Social", "social"]);
+    if (D.video && (D.video.assets || []).length) secs.push(["Video", "video"]);
     if ((D.delivery || []).length) secs.push(["Traditional Media", "delivery"]);
     set("nav", secs.map(function (s) { return '<a href="#' + s[1] + '">' + s[0] + "</a>"; }).join(""));
 
@@ -658,6 +662,52 @@
         btn.parentNode.removeChild(btn);
       };
       function sum(l, v) { return '<div class="pf"><div class="rlab">' + l + '</div><div class="rval num">' + v + "</div></div>"; }
+    })();
+
+    /* 7b. video assets. Produced before this campaign, so this section reports
+       what exists rather than what the campaign delivered. No rate is computed
+       against a lifetime view count. */
+    (function () {
+      var V = (D.video && D.video.assets) || [];
+      if (!V.length) { set("video", ""); return; }
+      function clock(sec) {
+        if (!has(sec)) return "";
+        var m = Math.floor(sec / 60), r = sec % 60;
+        return m + ":" + (r < 10 ? "0" : "") + r;
+      }
+      function yr(iso) { return String(iso).slice(0, 4); }
+      /* Shorts and long form are counted on different bases, so they are never
+         added together. Each gets its own total or neither means anything. */
+      function tot(f) {
+        return V.filter(function (a) { return a.format === f; })
+                .reduce(function (n, a) { return n + (a.views || 0); }, 0);
+      }
+      function nOf(f) { return V.filter(function (a) { return a.format === f; }).length; }
+      function sum(l, v) { return '<div class="pf"><div class="rlab">' + l + '</div><div class="rval num">' + v + "</div></div>"; }
+
+      function tile(a) {
+        var href = "https://www.youtube.com/watch?v=" + encodeURIComponent(a.id);
+        return '<div class="post">' +
+          '<div class="thumb"><img src="https://i.ytimg.com/vi/' + esc(a.id) + '/hqdefault.jpg" alt="" loading="lazy">' +
+            '<div class="play">&#9654;</div>' +
+            (has(a.seconds) ? '<div class="dur num">' + clock(a.seconds) + "</div>" : "") + "</div>" +
+          '<div class="pmeta">' +
+            '<div class="pplat"><span>' + esc(a.format) + " &middot; " + yr(a.published) + "</span>" +
+              '<a class="pview" href="' + href + '" target="_blank" rel="noopener">Watch</a></div>' +
+            '<div class="pcap">' + esc(a.title) + "</div>" +
+            '<div class="pfig"><div class="pf"><div class="pfl">Lifetime views</div>' +
+              '<div class="pfv num">' + int(a.views) + "</div></div></div>" +
+          "</div></div>";
+      }
+
+      var body = '<div class="galsum">' +
+        sum("Assets live", int(V.length)) +
+        sum("Long form views", int(tot("Long form")) + '<span class="gsn"> across ' + nOf("Long form") + "</span>") +
+        sum("Short views", int(tot("Short")) + '<span class="gsn"> across ' + nOf("Short") + "</span>") + "</div>" +
+        '<div class="gal">' + V.map(tile).join("") + "</div>";
+
+      set("video", card("Video assets",
+        "live and reusable, produced before this campaign; views are lifetime", body));
     })();
 
     /* 8. traditional media */

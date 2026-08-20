@@ -221,6 +221,40 @@
    are Terminus, and Terminus counts a QR scan as a click on the same short
    link, so scans are inside the 22 and there is no separate figure.
 
+   VIDEO ASSETS are not campaign delivery and the page says so. Claudia's
+   framing, 20 August: include them because they are live, reusable, and show
+   the look, feel and messaging lining up, not because this campaign produced
+   them. Four of the five were published in 2025 and one in 2020.
+
+   Titles, publish dates, durations and view counts were read from the YouTube
+   watch pages on 20 August 2026, from the American Welding Society channel.
+   VIEWS ARE LIFETIME, not campaign window. A windowed figure needs YouTube
+   Analytics access with the channel owner's consent, which the pipeline does
+   not have, so the card says lifetime and no rate is computed against them.
+
+   LONG FORM AND SHORTS ARE TOTALLED SEPARATELY, deliberately. A Short registers
+   a view almost immediately while long form needs watch time, so one combined
+   number would flatter the total and mean nothing. Long form 12,720 across
+   three assets, Shorts 1,918 across two.
+
+   Nicole described RbN7M9TumCQ as the 2020 original rebranded. The watch page
+   gives its publish date as 25 March 2025 and its length as 174 seconds, the
+   same length as the 2020 original 0_lISK-tZMY. So it is a re-upload of the
+   same cut rather than an edit of the original listing, and the re-upload
+   started its view count from zero: the 2020 original holds 10,111 views and
+   the rebranded copy 1,305.
+
+   ONLY ONE OF THE FIVE LINKS TO THE LANDING PAGE. The 2020 original carries the
+   curriculum URL in its description. The rebranded re-upload, the testimonial
+   and both Shorts carry no link to it at all, and none of the five carries utm
+   parameters. That is recorded here rather than on the page, per R2, and it is
+   why the Organic video channel row is small.
+
+   THUMBNAILS ARE HOTLINKED to i.ytimg.com rather than copied into the repo, the
+   opposite of the organic social gallery. Social platforms serve signed URLs
+   that expire; YouTube thumbnail URLs are stable and public, so there is
+   nothing to rot.
+
    RULE: every value here is pulled. Nothing is estimated, apportioned or filled
    in to complete a layout. Where a figure is not pulled the key is absent and
    the dashboard renders nothing rather than a number.
@@ -413,6 +447,22 @@ window.CAMPAIGN_DATA = {
      reach, unique media viewers rather than unique impressions, and is not
      published here because it is a different quantity from the reach figure
      the team has been recording. */
+  /* Live assets, produced before this campaign. Views are lifetime. */
+  video: {
+    assets: [
+      { id: "0_lISK-tZMY", format: "Long form", published: "2020-07-25", seconds: 174, views: 10111,
+        title: "American Welding Society Fundamentals Of Welding Curriculum (FOWC) Package Overview" },
+      { id: "8-PA6Oobt9E", format: "Short",     published: "2025-10-07", seconds:  55, views:  1405,
+        title: "How AWS Curriculum Prepares Students for Real-World Welding Jobs" },
+      { id: "RbN7M9TumCQ", format: "Long form", published: "2025-03-25", seconds: 174, views:  1305,
+        title: "AWS Fundamentals of Welding Curriculum (FOWC) Welding Program for High Schools & Colleges" },
+      { id: "AOKbEhnYMOQ", format: "Long form", published: "2025-09-02", seconds: 196, views:  1304,
+        title: "Why Welding Educators Choose AWS Fundamentals of Welding Curriculum (FOWC)" },
+      { id: "NBiy8J7DN1U", format: "Short",     published: "2025-06-12", seconds:  30, views:   513,
+        title: "The Fundamentals of Welding Curriculum (FOWC): The Welding Curriculum Is Changing the Classroom" }
+    ]
+  },
+
   social: {
     posts: [
       { platform: "LinkedIn", date: "2026-07-27",
