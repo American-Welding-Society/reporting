@@ -106,6 +106,24 @@
   .more:hover { border-color:#003767; }
   .galsum { display:flex; gap:30px; flex-wrap:wrap; border-bottom:1px solid #EDEEEF; padding-bottom:11px; }
 
+  /* paid creative gallery: same tiles, wider, 16:9 art */
+  .gal.ads { grid-template-columns:repeat(auto-fill,minmax(430px,1fr)); gap:16px; }
+  .post.ad .thumb { aspect-ratio:16/9; }
+  .post.ad .thumb { background:#0E1B26; }
+  .post.ad .thumb img { object-fit:contain; background:#0E1B26; }
+  .adkind { font-size:8.5px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:#A7ABAD; }
+  .adcamp { font-size:8.5px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:#0074E2; }
+  .adname { font-size:13.5px; font-weight:700; line-height:1.25; color:#001527; }
+  .pcta { font-size:9.5px; font-weight:700; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; }
+  .post.ad .tw { margin-top:2px; }
+  .post.ad td, .post.ad th { font-size:11.5px; padding-top:6px; padding-bottom:6px; }
+  .post.ad td.name { white-space:normal; line-height:1.3; }
+  .post.ad table { table-layout:fixed; }
+  .post.ad th:first-child, .post.ad td:first-child { width:38%; }
+  .post.ad th { font-size:9px; letter-spacing:0.4px; }
+  .post.ad th.r, .post.ad td.r { padding-left:6px; }
+  .bought { display:inline-block; align-self:flex-start; font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:3px 7px; border-radius:2px; }
+
   .pill { display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:3px 8px; border-radius:2px; }
   .grant { display:flex; justify-content:space-between; align-items:center; gap:12px; background:#FAFAFA; border:1px solid #EDEEEF; border-radius:3px; padding:10px 12px; }
   .grantl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.9px; color:#6E7274; }
@@ -443,12 +461,71 @@
           tbl('<th>Placement</th><th>Platform</th>' + head(ptSess, ptView), ptRows, ptFoot);
       }
 
+      /* What actually ran. A placement row says a video buy exists; it cannot show
+         that the video was bought for views, nor that four different messages ran
+         behind the same picture. Each asset card leads with the metric its own buy
+         was optimised for, and a cost per click is printed only where somebody bid
+         for clicks. */
+      var creBlock = "";
+      var cre = (D.paid && D.paid.creatives) || [];
+      if (cre.length) {
+        creBlock = '<div class="sub hdln">What ran</div><div class="gal ads">' +
+          cre.slice().sort(function (a, b) { return b.spend - a.spend; }).map(adCard).join("") + "</div>";
+      }
+
       set("paid", card("Paid media", "paid channels only",
         '<div class="sub hdln">By platform</div>' +
         tbl('<th>Platform</th>' + head(plSess, plView), plRows, plFoot) +
-        ptBlock));
-    })();
+        ptBlock + creBlock));
 
+      function fig(l, v) { return '<div class="pf"><div class="pfl">' + l + '</div><div class="pfv num">' + v + "</div></div>"; }
+      function adCard(c) {
+        var views = c.boughtFor === "views";
+        var msgs = (c.messages || []).slice().sort(function (x, y) { return y.spend - x.spend; });
+        var thumb = has(c.image)
+          ? '<div class="thumb"><img src="' + esc(c.image) + '" alt="" loading="lazy">' +
+            (views ? '<div class="play">&#9654;</div>' : "") + "</div>"
+          : '<div class="thumb">' + (views ? '<div class="play">&#9654;</div>' : "") + "</div>";
+        var figs = fig("Spend", money(c.spend)) + fig("Impressions", int(c.impressions));
+        if (views) {
+          figs += fig("Video views", int(c.views)) +
+                  fig("View rate", ratio(c.views, c.impressions, 1)) +
+                  fig("Cost / view", has(c.spend) && c.views ? "$" + (c.spend / c.views).toFixed(3) : DASH) +
+                  fig("Clicks", int(c.clicks));
+        } else {
+          figs += fig("Clicks", int(c.clicks)) +
+                  fig("Click rate", ratio(c.clicks, c.impressions, 2)) +
+                  fig("Cost / click", per(c.spend, c.clicks));
+        }
+        var mt = "";
+        if (msgs.length) {
+          var mhead = "<th>Message</th><th class=\"r\">Spend</th><th class=\"r\">Impressions</th>" +
+            (views ? "<th class=\"r\">Views</th>"
+                   : "<th class=\"r\">Clicks</th><th class=\"r\">Cost / click</th>");
+          var mrows = msgs.map(function (m) {
+            return '<tr><td class="name">' + esc(m.name) + "</td>" +
+              '<td class="r num">' + money(m.spend) + "</td>" +
+              '<td class="r num">' + int(m.impressions) + "</td>" +
+              (views
+                ? '<td class="r num">' + int(m.views) + "</td>"
+                : '<td class="r num">' + int(m.clicks) + "</td>" +
+                  '<td class="r num">' + per(m.spend, m.clicks) + "</td>") +
+              "</tr>";
+          }).join("");
+          mt = tbl(mhead, mrows);
+        }
+        return '<div class="post ad">' + thumb + '<div class="pmeta">' +
+          '<div class="pplat"><span class="adkind">' + esc(c.kind || "") + '</span>' +
+          '<span class="adcamp">' + esc(c.campaign || "") + "</span></div>" +
+          (has(c.asset) ? '<div class="adname">' + esc(c.asset) + "</div>" : "") +
+          '<div class="pfig">' + figs + "</div>" +
+          (has(c.cta) ? '<div class="pcta">' + esc(c.cta) + "</div>" : "") +
+          mt +
+          (has(c.boughtFor) ? '<span class="bought ' + (views ? "warn" : "ok") + '">Bought for ' +
+            esc(views ? "views, not clicks" : "clicks") + "</span>" : "") +
+          "</div></div>";
+      }
+    })();
     /* 6. email */
     (function () {
       var s = (D.email && D.email.sends) || [];

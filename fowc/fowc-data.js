@@ -275,6 +275,54 @@ window.CAMPAIGN_DATA = {
       { placement: "Search",       platforms: "Google Ads, Microsoft Advertising", spend: 12325.56, clicks: 19153, impressions: 906733 },
       { placement: "Document ad",  platforms: "LinkedIn Ads",                      spend:  1614.79, clicks:   628, impressions:  28640 },
       { placement: "Video",        platforms: "LinkedIn Ads",                      spend:  1226.07, clicks:    56, impressions: 110155, views: 91343 }
+    ],
+
+    /* WHAT RAN, and it is not two ads. Twenty-one creatives ran across the two
+       LinkedIn campaigns, but they share only two pieces of artwork: one video
+       and one PDF. What differs between them is the message. So the page shows
+       the two assets, each with the metric its buy was optimised for, and under
+       each the message variants with their own delivery.
+
+       Pulled 20 August from the LinkedIn creatives and adAnalytics endpoints,
+       account 507421707, pivot CREATIVE, 1 January to 19 August. Note the path
+       change: creative endpoints now require the account in the URL,
+       /rest/adAccounts/507421707/creatives, and reject pageSize in favour of
+       count.
+
+       Cross-footing is exact on the document ad, $1,614.79 and 628 clicks
+       against the placement row. The video's four message groups sum to
+       $1,226.08 against a placement row of $1,226.07, a one cent difference
+       from rounding sixteen creative-level floats to cents. The gate allows two
+       cents on that one comparison and nothing else.
+
+       The video's cost per click is $21.89 and is deliberately absent from the
+       page. Nobody bid for those clicks. */
+    creatives: [
+      { placement: "Document ad", kind: "Document ad", campaign: "EDU_fowc_doc",
+        campaignId: 701402454, boughtFor: "clicks",
+        asset: "Welding-Curriculum-Fact-Sheet.pdf",
+        cta: "Learn more",
+        image: "https://american-welding-society.github.io/reporting/fowc/img/paid-linkedin-document.jpg",
+        spend: 1614.79, impressions: 28640, clicks: 628,
+        messages: [
+          { name: "Program Upgrade Angle",    spend: 488.35, impressions: 8147, clicks: 219 },
+          { name: "Content Depth / Features", spend: 369.16, impressions: 7653, clicks: 178 },
+          { name: "Flexibility & Ease",       spend: 257.51, impressions: 4478, clicks:  78 },
+          { name: "Career Path Focus",        spend: 253.15, impressions: 4097, clicks:  82 },
+          { name: "value+scale",              spend: 246.62, impressions: 4265, clicks:  71 }
+        ] },
+      { placement: "Video", kind: "Video ad", campaign: "fowc_2026",
+        campaignId: 831744894, boughtFor: "views",
+        asset: "Empowering the next generation of welders",
+        cta: "Request a demo",
+        image: "https://american-welding-society.github.io/reporting/fowc/img/paid-linkedin-video.jpg",
+        spend: 1226.07, impressions: 110155, clicks: 56, views: 91343,
+        messages: [
+          { name: "Transform your welding program with AWS FOWC",              spend: 630.08, impressions: 68207, clicks: 35, views: 58424 },
+          { name: "Prepare students for certification and career success",     spend: 413.59, impressions: 36557, clicks: 16, views: 30587 },
+          { name: "Request a demo of AWS Fundamentals of Welding Curriculum",  spend: 134.56, impressions:  3585, clicks:  3, views:  1822 },
+          { name: "Industry-aligned welding education starts here",            spend:  47.85, impressions:  1806, clicks:  2, views:   510 }
+        ] }
     ]
   },
 
