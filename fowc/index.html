@@ -187,6 +187,15 @@
   function pct(v, d) { return has(v) ? v.toFixed(d === undefined ? 1 : d) + "%" : DASH; }
   function ratio(a, b, d) { return has(a) && has(b) && b ? pct(a / b * 100, d) : DASH; }
   function per(a, b) { return has(a) && has(b) && b ? "$" + (a / b).toFixed(2) : DASH; }
+  /* GA4 gives total engagement seconds; the average is seconds divided by the
+     session count printed in the same row, so a reader can reproduce it. */
+  function dur(sec, n) {
+    if (!has(sec) || !has(n) || !n) return DASH;
+    var v = Math.round(sec / n);
+    if (v < 60) return v + "s";
+    var m = Math.floor(v / 60), r = v % 60;
+    return m + "m " + (r < 10 ? "0" : "") + r + "s";
+  }
   function fmt(v, f) { return f === "money" ? money(v) : f === "money0" ? money0(v) : f === "pct" ? pct(v, 1) : f === "pct2" ? pct(v, 2) : int(v); }
   function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
   function day(iso) {
@@ -298,25 +307,27 @@
     (function () {
       var ch = D.channels || [];
       if (!ch.length) { set("traffic", ""); return; }
-      var tot = ch.reduce(function (a, c) { return { s: a.s + (c.sessions || 0), e: a.e + (c.engaged || 0) }; }, { s: 0, e: 0 });
+      var tot = ch.reduce(function (a, c) { return { s: a.s + (c.sessions || 0), e: a.e + (c.engaged || 0), d: a.d + (c.seconds || 0) }; }, { s: 0, e: 0, d: 0 });
+      var hasDur = ch.some(function (c) { return has(c.seconds); });
       var mx = Math.max.apply(null, ch.map(function (c) { return c.sessions || 0; }));
       var hasSub = ch.some(function (c) { return has(c.submissions); });
       var totSub = hasSub ? ch.reduce(function (a, c) { return a + (c.submissions || 0); }, 0) : null;
       var head = '<th>Channel</th><th class="r">Sessions</th><th class="r">Share</th><th></th>' +
-        '<th class="r">Engaged sessions</th><th class="r">Engagement rate</th>' +
+        (hasDur ? '<th class="r">Avg engagement time</th>' : '<th class="r">Engaged sessions</th>') +
+        '<th class="r">Engagement rate</th>' +
         (hasSub ? '<th class="r">' + esc(D.goal ? D.goal.label : "Submissions") + '</th><th class="r">Conversion rate</th>' : "");
       var rows = ch.slice().sort(function (a, b) { return b.sessions - a.sessions; }).map(function (c) {
         return '<tr><td class="name">' + esc(c.channel) + "</td>" +
           '<td class="r num">' + int(c.sessions) + "</td>" +
           '<td class="r num">' + ratio(c.sessions, tot.s) + "</td>" +
           '<td style="width:18%; padding-left:14px;"><span class="sbar"><i style="width:' + (mx ? (c.sessions / mx * 100).toFixed(1) : 0) + '%"></i></span></td>' +
-          '<td class="r num">' + int(c.engaged) + "</td>" +
+          '<td class="r num">' + (hasDur ? dur(c.seconds, c.sessions) : int(c.engaged)) + "</td>" +
           '<td class="r num">' + ratio(c.engaged, c.sessions) + "</td>" +
           (hasSub ? '<td class="r num">' + int(c.submissions) + '</td><td class="r num">' + ratio(c.submissions, c.sessions, 2) + "</td>" : "") +
           "</tr>";
       }).join("");
       var foot = '<tr class="tot"><td>All sources</td><td class="r num">' + int(tot.s) + '</td><td class="r num">' + pct(100) +
-        '</td><td></td><td class="r num">' + int(tot.e) + '</td><td class="r num">' + ratio(tot.e, tot.s) + "</td>" +
+        '</td><td></td><td class="r num">' + (hasDur ? dur(tot.d, tot.s) : int(tot.e)) + '</td><td class="r num">' + ratio(tot.e, tot.s) + "</td>" +
         (hasSub ? '<td class="r num">' + int(totSub) + '</td><td class="r num">' + ratio(totSub, tot.s, 2) + "</td>" : "") +
         "</tr>";
 

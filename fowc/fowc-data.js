@@ -90,8 +90,8 @@ window.CAMPAIGN_DATA = {
 
   summary: [
     { channel: "Outcome",         label: "Form submissions",      value: 144,       fmt: "int" },
-    { channel: "Outcome",         label: "Form conversion rate",  value: 0.97,      fmt: "pct2" },
-    { channel: "Website",         label: "Landing page sessions", value: 14920,     fmt: "int" },
+    { channel: "Outcome",         label: "Form conversion rate",  value: 0.96,      fmt: "pct2" },
+    { channel: "Website",         label: "Landing page sessions", value: 14931,     fmt: "int" },
     { channel: "Website",         label: "Engagement rate",       value: 61.2,      fmt: "pct" },
     { channel: "Paid media",      label: "Paid spend",            value: 15166.42,  fmt: "money" },
     { channel: "Marketing email", label: "Email clicks",          value: 307,       fmt: "int" }
@@ -108,36 +108,36 @@ window.CAMPAIGN_DATA = {
     goalTarget: 460
   },
 
-  landingPage: { sessions: 14920, engaged: 9138, submissions: 144 },
+  landingPage: { sessions: 14931, engaged: 9141, seconds: 2213050, submissions: 144 },
 
   /* Aggregated from the single grid by channel. Print falls out of the grid on
      source, welding journal, rather than being subtracted from Unassigned by
      hand, so the carve-out cannot drift. */
   channels: [
-    { channel: "Paid search",    sessions: 11876, engaged: 7627, submissions: 65 },
-    { channel: "Paid social",    sessions:  1229, engaged:  199, submissions:  0 },
-    { channel: "Organic search", sessions:   937, engaged:  784, submissions: 31 },
-    { channel: "Email",          sessions:   358, engaged:  264, submissions: 43 },
-    { channel: "Direct",         sessions:   275, engaged:  129, submissions:  4 },
-    { channel: "Organic social", sessions:   117, engaged:   63, submissions:  0 },
-    { channel: "Referral",       sessions:    52, engaged:   41, submissions:  1 },
-    { channel: "Unassigned",     sessions:    39, engaged:    9, submissions:  0 },
-    { channel: "Organic video",  sessions:    17, engaged:    8, submissions:  0 },
-    { channel: "Print",          sessions:     8, engaged:    7, submissions:  0 },
-    { channel: "AI assistant",   sessions:     8, engaged:    7, submissions:  0 },
-    { channel: "Cross-network",  sessions:     4, engaged:    0, submissions:  0 }
+    { channel: "Paid search",    sessions: 11876, engaged: 7627, seconds: 2020467, submissions: 65 },
+    { channel: "Paid social",    sessions:  1239, engaged:  201, seconds:    4016, submissions:  0 },
+    { channel: "Organic search", sessions:   938, engaged:  785, seconds:  106099, submissions: 31 },
+    { channel: "Email",          sessions:   358, engaged:  264, seconds:   22305, submissions: 43 },
+    { channel: "Direct",         sessions:   275, engaged:  129, seconds:   19255, submissions:  4 },
+    { channel: "Organic social", sessions:   117, engaged:   63, seconds:    5665, submissions:  0 },
+    { channel: "Referral",       sessions:    52, engaged:   41, seconds:    8563, submissions:  1 },
+    { channel: "Unassigned",     sessions:    39, engaged:    9, seconds:   17070, submissions:  0 },
+    { channel: "Organic video",  sessions:    17, engaged:    8, seconds:    5507, submissions:  0 },
+    { channel: "Print",          sessions:     8, engaged:    7, seconds:     922, submissions:  0 },
+    { channel: "AI assistant",   sessions:     8, engaged:    7, seconds:    3181, submissions:  0 },
+    { channel: "Cross-network",  sessions:     4, engaged:    0, seconds:       0, submissions:  0 }
   ],
 
   /* Same grid, aggregated by month. */
   monthly: [
-    { m: "2026-01", sessions:  177, engaged:  124, submissions:  1, partial: false },
-    { m: "2026-02", sessions:  196, engaged:  158, submissions:  3, partial: false },
-    { m: "2026-03", sessions:  223, engaged:  159, submissions:  7, partial: false },
-    { m: "2026-04", sessions:  301, engaged:  205, submissions: 15, partial: false },
-    { m: "2026-05", sessions: 3100, engaged: 1905, submissions: 46, partial: false },
-    { m: "2026-06", sessions: 6541, engaged: 4200, submissions: 50, partial: false },
-    { m: "2026-07", sessions: 3843, engaged: 2179, submissions: 14, partial: false },
-    { m: "2026-08", sessions:  539, engaged:  208, submissions:  8, partial: true }
+    { m: "2026-01", sessions:  177, engaged:  124, seconds:   19571, submissions:  1, partial: false },
+    { m: "2026-02", sessions:  196, engaged:  158, seconds:   24237, submissions:  3, partial: false },
+    { m: "2026-03", sessions:  223, engaged:  159, seconds:   18837, submissions:  7, partial: false },
+    { m: "2026-04", sessions:  301, engaged:  205, seconds:   29568, submissions: 15, partial: false },
+    { m: "2026-05", sessions: 3100, engaged: 1905, seconds:  408014, submissions: 46, partial: false },
+    { m: "2026-06", sessions: 6541, engaged: 4200, seconds: 1138968, submissions: 50, partial: false },
+    { m: "2026-07", sessions: 3843, engaged: 2179, seconds:  548054, submissions: 14, partial: false },
+    { m: "2026-08", sessions:  550, engaged:  211, seconds:   25801, submissions:  8, partial: true }
   ],
 
   paid: {
@@ -154,7 +154,7 @@ window.CAMPAIGN_DATA = {
     platforms: [
       { platform: "Google Ads",            spend: 7376.62, clicks: 14636, impressions:  665197, sessions: 8284 },
       { platform: "Microsoft Advertising", spend: 4948.94, clicks:  4517, impressions:  241536, sessions: 3592 },
-      { platform: "LinkedIn Ads",          spend: 2840.86, clicks:   684, impressions:  138794, sessions: 1226 }
+      { platform: "LinkedIn Ads",          spend: 2840.86, clicks:   684, impressions:  138794, sessions: 1236 }
     ],
 
     /* Placement from the buy itself: Search is Google plus Microsoft, Document
