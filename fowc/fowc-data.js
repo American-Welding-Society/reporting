@@ -12,12 +12,27 @@
    197 cells, no (other) rows. Every total on the page therefore adds up by
    construction rather than by luck.
 
-   SUBMISSIONS are event counts, which GA4 sums exactly rather than estimating.
-   fowc_form_submission returns 144 at every dimension count. HubSpot's form
-   performance page reports 143. GA4 is published because it is the only source
-   that can also split by channel and by month, and using two sources for one
-   quantity is what stops a page adding up. The one record difference is noted
-   rather than reconciled.
+   SUBMISSIONS COME FROM HUBSPOT ONLY. That is the standing rule, set by Roque
+   on 20 August: GA4 is not a source for form submissions on any report. The
+   figure is 143 for 1 January to 19 August 2026, from HubSpot content analytics
+   on www.aws.org/educators/welding-curriculum, the same number the form
+   performance page shows for form d73e472e. Monthly is HubSpot too:
+   13, 10, 18, 18, 33, 32, 11, 8.
+
+   Until 20 August this page published GA4's fowc_form_submission event count,
+   144, with a GA4 monthly split of 1, 3, 7, 15, 46, 50, 14, 8. The totals
+   differ by one but the distributions are not close: GA4 put 1 submission in
+   January against HubSpot's 13, and 50 in June against HubSpot's 32. The
+   totals agreeing hid a monthly series that was substantially wrong.
+
+   THE CHANNEL TABLE NO LONGER CARRIES SUBMISSIONS OR A CONVERSION RATE.
+   HubSpot cannot split submissions by GA4 channel group; it has its own source
+   taxonomy, and forcing one onto the other is the two-sources-for-one-quantity
+   fault this file exists to prevent. Sessions, engagement and average time in
+   that table are GA4. Submissions are HubSpot. They are never mixed inside a
+   row. The consequence worth knowing off the page: the GA4 split showed paid
+   social producing zero submissions, and that observation is now unpublished
+   because its basis is not the source of record.
 
    PAID SESSIONS are allocated to a platform by GA4 session source, taken from
    the same grid: google 8,284, bing 3,592, linkedin 1,226. No campaign name
@@ -142,7 +157,7 @@ window.CAMPAIGN_DATA = {
   flags: { hasPaid: true, hasOutcome: true },
 
   summary: [
-    { channel: "Outcome",         label: "Form submissions",      value: 144,       fmt: "int" },
+    { channel: "Outcome",         label: "Form submissions",      value: 143,       fmt: "int" },
     { channel: "Outcome",         label: "Form conversion rate",  value: 0.96,      fmt: "pct2" },
     { channel: "Website",         label: "Landing page sessions", value: 14931,     fmt: "int" },
     { channel: "Website",         label: "Engagement rate",       value: 61.2,      fmt: "pct" },
@@ -150,7 +165,7 @@ window.CAMPAIGN_DATA = {
     { channel: "Marketing email", label: "Email clicks",          value: 307,       fmt: "int" }
   ],
 
-  goal: { label: "Form submissions", actual: 144 },
+  goal: { label: "Form submissions", actual: 143 },
 
   pacing: {
     daysElapsed: 156,
@@ -159,36 +174,36 @@ window.CAMPAIGN_DATA = {
     spend: 15166.42,
   },
 
-  landingPage: { sessions: 14931, engaged: 9141, seconds: 2213050, submissions: 144 },
+  landingPage: { sessions: 14931, engaged: 9141, seconds: 2213050, submissions: 143 },
 
   /* Aggregated from the single grid by channel. Print falls out of the grid on
      source, welding journal, rather than being subtracted from Unassigned by
      hand, so the carve-out cannot drift. */
   channels: [
-    { channel: "Paid search",    sessions: 11876, engaged: 7627, seconds: 2020467, submissions: 65 },
-    { channel: "Paid social",    sessions:  1239, engaged:  201, seconds:    4016, submissions:  0 },
-    { channel: "Organic search", sessions:   938, engaged:  785, seconds:  106099, submissions: 31 },
-    { channel: "Email",          sessions:   358, engaged:  264, seconds:   22305, submissions: 43 },
-    { channel: "Direct",         sessions:   275, engaged:  129, seconds:   19255, submissions:  4 },
-    { channel: "Organic social", sessions:   117, engaged:   63, seconds:    5665, submissions:  0 },
-    { channel: "Referral",       sessions:    52, engaged:   41, seconds:    8563, submissions:  1 },
-    { channel: "Unassigned",     sessions:    39, engaged:    9, seconds:   17070, submissions:  0 },
-    { channel: "Organic video",  sessions:    17, engaged:    8, seconds:    5507, submissions:  0 },
-    { channel: "Print",          sessions:     8, engaged:    7, seconds:     922, submissions:  0 },
-    { channel: "AI assistant",   sessions:     8, engaged:    7, seconds:    3181, submissions:  0 },
-    { channel: "Cross-network",  sessions:     4, engaged:    0, seconds:       0, submissions:  0 }
+    { channel: "Paid search",    sessions: 11876, engaged: 7627, seconds: 2020467 },
+    { channel: "Paid social",    sessions:  1239, engaged:  201, seconds:    4016 },
+    { channel: "Organic search", sessions:   938, engaged:  785, seconds:  106099 },
+    { channel: "Email",          sessions:   358, engaged:  264, seconds:   22305 },
+    { channel: "Direct",         sessions:   275, engaged:  129, seconds:   19255 },
+    { channel: "Organic social", sessions:   117, engaged:   63, seconds:    5665 },
+    { channel: "Referral",       sessions:    52, engaged:   41, seconds:    8563 },
+    { channel: "Unassigned",     sessions:    39, engaged:    9, seconds:   17070 },
+    { channel: "Organic video",  sessions:    17, engaged:    8, seconds:    5507 },
+    { channel: "Print",          sessions:     8, engaged:    7, seconds:     922 },
+    { channel: "AI assistant",   sessions:     8, engaged:    7, seconds:    3181 },
+    { channel: "Cross-network",  sessions:     4, engaged:    0, seconds:       0 }
   ],
 
   /* Same grid, aggregated by month. */
   monthly: [
-    { m: "2026-01", sessions:  177, engaged:  124, seconds:   19571, submissions:  1, partial: false },
-    { m: "2026-02", sessions:  196, engaged:  158, seconds:   24237, submissions:  3, partial: false },
-    { m: "2026-03", sessions:  223, engaged:  159, seconds:   18837, submissions:  7, partial: false },
-    { m: "2026-04", sessions:  301, engaged:  205, seconds:   29568, submissions: 15, partial: false },
-    { m: "2026-05", sessions: 3100, engaged: 1905, seconds:  408014, submissions: 46, partial: false },
-    { m: "2026-06", sessions: 6541, engaged: 4200, seconds: 1138968, submissions: 50, partial: false },
-    { m: "2026-07", sessions: 3843, engaged: 2179, seconds:  548054, submissions: 14, partial: false },
-    { m: "2026-08", sessions:  550, engaged:  211, seconds:   25801, submissions:  8, partial: true }
+    { m: "2026-01", sessions:  177, engaged:  124, seconds:   19571, submissions: 13, partial: false },
+    { m: "2026-02", sessions:  196, engaged:  158, seconds:   24237, submissions: 10, partial: false },
+    { m: "2026-03", sessions:  223, engaged:  159, seconds:   18837, submissions: 18, partial: false },
+    { m: "2026-04", sessions:  301, engaged:  205, seconds:   29568, submissions: 18, partial: false },
+    { m: "2026-05", sessions: 3100, engaged: 1905, seconds:  408014, submissions: 33, partial: false },
+    { m: "2026-06", sessions: 6541, engaged: 4200, seconds: 1138968, submissions: 32, partial: false },
+    { m: "2026-07", sessions: 3843, engaged: 2179, seconds:  548054, submissions: 11, partial: false },
+    { m: "2026-08", sessions:  550, engaged:  211, seconds:   25801, submissions: 8, partial: true }
   ],
 
   paid: {
