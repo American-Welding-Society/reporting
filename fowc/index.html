@@ -130,7 +130,6 @@
   .mspm { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#A7ABAD; }
   .mspv { font-size:12.5px; font-weight:600; color:#393B3B; }
 
-  .pnote { font-size:10.5px; color:#6E7274; line-height:1.5; border-top:1px solid #EDEEEF; padding-top:10px; }
 
   #err { display:none; background:#fff; border:1px solid #E3E5E6; border-left:3px solid #B07A00; border-radius:4px; padding:16px 18px; font-size:12.5px; }
 
@@ -444,54 +443,59 @@
                  sessions: t.sessN === list.length ? t.sess : null };
       }
 
-      var showSess = pl.some(function (r) { return has(r.sessions); }) ||
-                     pt.some(function (r) { return has(r.sessions); });
-
-      var HEAD = '<th class="r">Spend</th><th class="r">Impressions</th>' +
-                 '<th class="r">Landing page clicks</th><th class="r">Click rate</th>' +
-                 '<th class="r">Cost / click</th>' +
-                 (showSess ? '<th class="r">Sessions</th><th class="r">Click to session</th><th class="r">Cost / session</th>' : "");
-      function cells(r) {
+      /* Sessions are decided per table, not once for the card. The platform table
+         allocates sessions by analytics source, which is exact. The placement table
+         would need a campaign name join, which is the one fragile join on the page,
+         so it carries the buy only: spend, impressions and clicks. */
+      function hasSess(list) { return list.some(function (r) { return has(r.sessions); }); }
+      /* A video buy is not bought on clicks. Showing its cost per click without its
+         views reads as catastrophic inefficiency and would drive the wrong decision,
+         so where a row reports views the column appears and stays blank elsewhere. */
+      function hasViews(list) { return list.some(function (r) { return has(r.views); }); }
+      function head(ss, vw) {
+        return '<th class="r">Spend</th><th class="r">Impressions</th>' +
+               (vw ? '<th class="r">Video views</th>' : "") +
+               '<th class="r">Landing page clicks</th><th class="r">Click rate</th>' +
+               '<th class="r">Cost / click</th>' +
+               (ss ? '<th class="r">Sessions</th><th class="r">Click to session</th><th class="r">Cost / session</th>' : "");
+      }
+      function cells(r, ss, vw) {
         return '<td class="r num">' + money(r.spend) + "</td>" +
                '<td class="r num">' + int(r.impressions) + "</td>" +
+               (vw ? '<td class="r num">' + int(r.views) + "</td>" : "") +
                '<td class="r num">' + int(r.clicks) + "</td>" +
                '<td class="r num">' + ratio(r.clicks, r.impressions, 2) + "</td>" +
                '<td class="r num">' + per(r.spend, r.clicks) + "</td>" +
-               (showSess ? '<td class="r num">' + int(r.sessions) + "</td>" +
-                           '<td class="r num">' + ratio(r.sessions, r.clicks, 1) + "</td>" +
-                           '<td class="r num">' + per(r.spend, r.sessions) + "</td>" : "");
+               (ss ? '<td class="r num">' + int(r.sessions) + "</td>" +
+                     '<td class="r num">' + ratio(r.sessions, r.clicks, 1) + "</td>" +
+                     '<td class="r num">' + per(r.spend, r.sessions) + "</td>" : "");
       }
 
+      var plSess = hasSess(pl), plView = hasViews(pl);
       var tp = rollup(pl);
       var plRows = pl.map(function (r) {
-        return '<tr><td class="name">' + esc(r.platform) + "</td>" + cells(r) + "</tr>";
+        return '<tr><td class="name">' + esc(r.platform) + "</td>" + cells(r, plSess, plView) + "</tr>";
       }).join("");
-      var plFoot = '<tr class="tot"><td>All platforms</td>' + cells(tp) + "</tr>";
+      var plFoot = '<tr class="tot"><td>All platforms</td>' + cells(tp, plSess, plView) + "</tr>";
 
       /* By placement type. A campaign name means nothing to a reader; the buy type does. */
       var ptBlock = "";
       if (pt.length) {
+        var ptSess = hasSess(pt), ptView = hasViews(pt);
         var tc = rollup(pt);
         var ptRows = pt.slice().sort(function (a, b) { return b.spend - a.spend; }).map(function (r) {
           return '<tr><td class="name">' + esc(r.placement) + '</td><td class="dim">' + esc(r.platforms || "") + "</td>" +
-            cells(r) + "</tr>";
+            cells(r, ptSess, ptView) + "</tr>";
         }).join("");
-        var ptFoot = '<tr class="tot"><td>All placements</td><td></td>' + cells(tc) + "</tr>";
+        var ptFoot = '<tr class="tot"><td>All placements</td><td></td>' + cells(tc, ptSess, ptView) + "</tr>";
         ptBlock = '<div class="sub hdln">By placement type</div>' +
-          tbl('<th>Placement</th><th>Platform</th>' + HEAD, ptRows, ptFoot);
+          tbl('<th>Placement</th><th>Platform</th>' + head(ptSess, ptView), ptRows, ptFoot);
       }
-
-      var note = showSess
-        ? '<div class="pnote">Click to session compares platform-reported landing page clicks with ' +
-          'analytics sessions attributed to the campaign. A low ratio means arrivals are lost between ' +
-          'the click and the page. A ratio above 100% means the campaign earned more sessions than ' +
-          'first-time clicks, which return visits and onward browsing can both produce.</div>'
-        : "";
 
       set("paid", card("Paid media", "paid channels only",
         '<div class="sub hdln">By platform</div>' +
-        tbl('<th>Platform</th>' + HEAD, plRows, plFoot) +
-        ptBlock + note));
+        tbl('<th>Platform</th>' + head(plSess, plView), plRows, plFoot) +
+        ptBlock));
     })();
 
     /* 6. email */
