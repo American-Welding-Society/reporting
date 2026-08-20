@@ -31,14 +31,24 @@
    total adds up by construction, and the year on year is like for like because
    both sides were built the same way.
 
-   YEAR ON YEAR, same window, same filter, same construction: 66,058 sessions in
-   2025 against 17,146 this year, down 74.0 percent. READ IT WITH THIS BESIDE IT:
-   paid search alone was 57,167 sessions in 2025 against 12,259 now, which is
-   92 percent of the entire drop. Paid social is the only channel up, by 10 percent.
-   So the comparison is a statement about how much search was bought in each year,
-   not about this page or this campaign, and the 2025 spend is not in this
-   dashboard. That figure should be pulled before anyone reads the comparison as
-   performance.
+   NO MONTH ON MONTH AND NO YEAR ON YEAR. Both were added on 20 August at
+   Miguel's recommendation and removed the same day. The year comparison is not
+   like for like: this page carried roughly 55,000 paid search sessions in 2025
+   against 11,900 in 2026, so a minus 76 percent reads as campaign failure when
+   what changed is the media plan. The only thing that would stop a reader
+   drawing that conclusion is a paragraph of explanation, and R2 keeps the
+   paragraph off the page, so the number cannot be published responsibly. Month
+   on month measured the flight plan rather than performance: June was the
+   heaviest delivery month, so every channel read down in July regardless. The
+   prior-year and two-month keys were removed from this file as well, because a
+   removed section takes its data with it. Miguel gets the comparisons through a
+   saved analytics exploration instead.
+
+   THE TRAIN THE TRAINER POSTS LEFT THE SOCIAL SECTION on 20 August, Nicole's
+   call: they promoted Train the Trainer rather than the curriculum. Three posts
+   went, seven remain, and engagements fall from 833 to 476. The largest single
+   post in the section was one of the three, so the drop is real and expected
+   rather than a fault.
 
    MONTH ON MONTH is July against June, the last two complete months. August is
    partial, through the 19th, and is excluded. The card scope names both months so
@@ -272,7 +282,7 @@ window.CAMPAIGN_DATA = {
     landingPath: "/educators/welding-curriculum/",
     formUrl: "https://app.hubspot.com/submissions/7723471/form/d73e472e-dfd2-42d3-a8a7-626af5df4590/performance",
     mondayBoard: "https://aws-projects.monday.com/boards/18399502759"
-  },
+ },
 
   flags: { hasPaid: true, hasOutcome: true },
 
@@ -292,39 +302,38 @@ window.CAMPAIGN_DATA = {
   /* Same two questions asked of 2025, same filters, same 1 January to 19 August
      window, same four-dimension construction. This is the only comparison basis
      on the page and it is like for like. */
-  prior: { year: 2025, sessions: 66058, engaged: 48221, seconds: 2500372, views: 72865 },
 
   /* Aggregated from the single grid by channel. Print falls out of the grid on
      source, welding journal, rather than being subtracted from Unassigned by
      hand, so the carve-out cannot drift. */
   channels: [
-    { channel: "Paid search",    sessions: 12259, engaged: 7937, seconds: 410397, submissions: 42, prior: 57167, m1: 6099, m2: 3257 },
-    { channel: "Organic search", sessions:  2044, engaged: 1865, seconds: 120685, submissions: 27, prior:  2655, m1:  445, m2:  263 },
-    { channel: "Paid social",    sessions:  1243, engaged:  204, seconds:   3912, submissions:  0, prior:  1129, m1:  262, m2:  511 },
-    { channel: "Direct",         sessions:   704, engaged:  536, seconds:  38524, submissions: 32, prior:  2175, m1:  167, m2:  100 },
-    { channel: "Email",          sessions:   441, engaged:  342, seconds:  15974, submissions: 24, prior:   640, m1:  154, m2:   14 },
-    { channel: "Referral",       sessions:   173, engaged:  158, seconds:  11793, submissions: 13, prior:  1579, m1:   24, m2:   28 },
-    { channel: "Organic social", sessions:   131, engaged:   74, seconds:   4168, submissions:  0, prior:   180, m1:   34, m2:    9 },
-    { channel: "Unassigned",     sessions:    81, engaged:   17, seconds:   3029, submissions:  1, prior:   483, m1:   22, m2:   18 },
-    { channel: "AI assistant",   sessions:    24, engaged:   23, seconds:   1851, submissions:  1,               m1:    7, m2:    9 },
-    { channel: "Organic video",  sessions:    22, engaged:   13, seconds:   2271,                  prior:    46, m1:    4, m2:    0 },
-    { channel: "Print",          sessions:    11, engaged:    9, seconds:    790,                                m1:    0, m2:    1 },
-    { channel: "Display",        sessions:     7, engaged:    7, seconds:    588,                                m1:    1, m2:    3 },
-    { channel: "Cross-network",  sessions:     4, engaged:    2, seconds:     80,                                m1:    2, m2:    0 },
-    { channel: "Paid shopping",  sessions:     1, engaged:    1, seconds:      7,                  prior:     4, m1:    0, m2:    0 },
-    { channel: "SMS",            sessions:     1, engaged:    1, seconds:      7,                                m1:    0, m2:    0 }
+    { channel: "Paid search",    sessions: 12259, engaged: 7937, seconds: 410397, submissions: 42 },
+    { channel: "Organic search", sessions:  2044, engaged: 1865, seconds: 120685, submissions: 27 },
+    { channel: "Paid social",    sessions:  1243, engaged:  204, seconds:   3912, submissions:  0 },
+    { channel: "Direct",         sessions:   704, engaged:  536, seconds:  38524, submissions: 32 },
+    { channel: "Email",          sessions:   441, engaged:  342, seconds:  15974, submissions: 24 },
+    { channel: "Referral",       sessions:   173, engaged:  158, seconds:  11793, submissions: 13 },
+    { channel: "Organic social", sessions:   131, engaged:   74, seconds:   4168, submissions:  0 },
+    { channel: "Unassigned",     sessions:    81, engaged:   17, seconds:   3029, submissions:  1 },
+    { channel: "AI assistant",   sessions:    24, engaged:   23, seconds:   1851, submissions:  1 },
+    { channel: "Organic video",  sessions:    22, engaged:   13, seconds:   2271 },
+    { channel: "Print",          sessions:    11, engaged:    9, seconds:    790 },
+    { channel: "Display",        sessions:     7, engaged:    7, seconds:    588 },
+    { channel: "Cross-network",  sessions:     4, engaged:    2, seconds:     80 },
+    { channel: "Paid shopping",  sessions:     1, engaged:    1, seconds:      7 },
+    { channel: "SMS",            sessions:     1, engaged:    1, seconds:      7 }
   ],
 
   /* Same grid, aggregated by month. */
   monthly: [
-    { m: "2026-01", sessions:  359, engaged:  291, seconds:  19756, submissions: 13, prior:   389, partial: false },
-    { m: "2026-02", sessions:  325, engaged:  275, seconds:  18193, submissions: 10, prior:   394, partial: false },
-    { m: "2026-03", sessions:  382, engaged:  307, seconds:  22185, submissions: 18, prior: 19131, partial: false },
-    { m: "2026-04", sessions:  466, engaged:  359, seconds:  31583, submissions: 18, prior: 11056, partial: false },
-    { m: "2026-05", sessions: 3487, engaged: 2255, seconds: 128202, submissions: 32, prior: 14052, partial: false },
-    { m: "2026-06", sessions: 7221, engaged: 4807, seconds: 249710, submissions: 30, prior:  9294, partial: false },
-    { m: "2026-07", sessions: 4213, engaged: 2538, seconds: 124279, submissions: 11, prior:  9765, partial: false },
-    { m: "2026-08", sessions:  693, engaged:  357, seconds:  20168, submissions:  8, prior:  1977, partial: true }
+    { m: "2026-01", sessions:  359, engaged:  291, seconds:  19756, submissions: 13, partial: false },
+    { m: "2026-02", sessions:  325, engaged:  275, seconds:  18193, submissions: 10, partial: false },
+    { m: "2026-03", sessions:  382, engaged:  307, seconds:  22185, submissions: 18, partial: false },
+    { m: "2026-04", sessions:  466, engaged:  359, seconds:  31583, submissions: 18, partial: false },
+    { m: "2026-05", sessions: 3487, engaged: 2255, seconds: 128202, submissions: 32, partial: false },
+    { m: "2026-06", sessions: 7221, engaged: 4807, seconds: 249710, submissions: 30, partial: false },
+    { m: "2026-07", sessions: 4213, engaged: 2538, seconds: 124279, submissions: 11, partial: false },
+    { m: "2026-08", sessions:  693, engaged:  357, seconds:  20168, submissions:  8, partial: true }
   ],
 
   paid: {
@@ -404,7 +413,7 @@ window.CAMPAIGN_DATA = {
           { name: "Industry-aligned welding education starts here",            spend:  47.85, impressions:  1806, clicks:  2, views:   510 }
         ] }
     ]
-  },
+ },
 
   /* HubSpot marketing email analytics, bot-excluded unique basis, re-pulled
      20 August. Send and schedule dates from the Email Campaign group on the
@@ -423,7 +432,7 @@ window.CAMPAIGN_DATA = {
       { n: 3, scheduled: "After Oct 5, 2026" },
       { n: 4, scheduled: "After Nov 30, 2026" }
     ]
-  },
+ },
 
   /* Organic social, complete for calendar 2026. Built from the full platform
      inventory (501 organic posts: LinkedIn 226, Facebook 133, Instagram 142),
@@ -461,28 +470,10 @@ window.CAMPAIGN_DATA = {
       { id: "NBiy8J7DN1U", format: "Short",     published: "2025-06-12", seconds:  30, views:   513,
         title: "The Fundamentals of Welding Curriculum (FOWC): The Welding Curriculum Is Changing the Classroom" }
     ]
-  },
+ },
 
   social: {
     posts: [
-      { platform: "LinkedIn", date: "2026-07-27",
-        image: "https://american-welding-society.github.io/reporting/fowc/img/2026-07-27-linkedin.jpg",
-        url: "https://www.linkedin.com/feed/update/urn%3Ali%3Ashare%3A7487537418812981249",
-        mediaType: "image",
-        caption: "Thinking about attending AWS Train the Trainer but still have questions? We've got answers. Visit aws.org/fowc to get your questions answered.",
-        impressions: 8618, engagements: 214 },
-      { platform: "Instagram", date: "2026-07-27",
-        image: "https://american-welding-society.github.io/reporting/fowc/img/2026-07-27-instagram.jpg",
-        url: "https://www.instagram.com/p/DbTV_peDRvn/",
-        mediaType: "image",
-        caption: "Thinking about attending AWS Train the Trainer but still have questions? We've got answers.",
-        reach: 2641, views: 4089, engagements: 58 },
-      { platform: "Facebook", date: "2026-06-17",
-        image: "https://american-welding-society.github.io/reporting/fowc/img/2026-06-17-facebook.jpg",
-        url: "https://www.facebook.com/1602329701256807/posts/1549352543221190",
-        mediaType: "image",
-        caption: "Thinking about attending AWS Train the Trainer but still have questions? We've got answers. Visit aws.org/fowc.",
-        views: 4535, engagements: 85 },
       { platform: "Facebook", date: "2026-06-16",
         image: "https://american-welding-society.github.io/reporting/fowc/img/2026-06-16-facebook.jpg",
         url: "https://www.facebook.com/1602329701256807/posts/1548517826637995",
@@ -526,7 +517,7 @@ window.CAMPAIGN_DATA = {
         caption: "Strong welding programs start with a strong foundation. The Fundamentals of Welding Curriculum from the American Welding Society.",
         reach: 3259, views: 4854, engagements: 22 }
     ]
-  },
+ },
 
   /* Every item opened on the Monday board on 20 August, per R6. The date shown
      is the deployment window, not the internal due date: the Welding Journal ad
