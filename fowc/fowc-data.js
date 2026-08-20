@@ -27,25 +27,55 @@
    difference is Facebook paid social, which carries no FOWC spend and so has
    no platform row.
 
-   THE PLACEMENT TABLE CARRIES NO SESSION COLUMN. Splitting LinkedIn between
-   the document ad and the video buy does need the campaign name join, and on
-   20 August that join was traced end to end: the LinkedIn campaigns are in
-   sponsored account 507421707, not 507112113 where the pipeline had been
-   looking, and their creatives store an untagged landing page URL because
-   LinkedIn appends utm_campaign, utm_content and utm_term at serve time. GA4
-   confirms it, with utm_term "Video views" and utm_content naming the video
-   asset. The join is sound. What it produces is not publishable: the video buy
-   reports 56 landing page clicks against 439 sessions from 439 distinct users,
-   an eight to one gap in the opposite direction from the LinkedIn gap the
-   Corporate Membership investigation of 14 August measured, where 4,339 clicks
-   produced 749 sessions. Both figures are pulled and neither can be shown to be
-   the wrong one, so the placement table reports the buy only.
+   THE PLACEMENT TABLE CARRIES NO SESSION COLUMN, and the reason was re-audited
+   in full on 20 August against the LinkedIn API, the GA4 API and both platform
+   interfaces. Findings, all verified:
+
+   The two campaigns are in sponsored account 507421707, named Education.
+   fowc_2026 and EDU_fowc_doc are LinkedIn CAMPAIGN GROUP names, not campaign
+   names, which is why GA4 sees them as the campaign: Video views sits in group
+   fowc_2026, download-doc sits in group EDU_fowc_doc. Confirmed in Campaign
+   Manager, campaign ids 831744894 and 701402454.
+
+   The video buy reports 56 landing page clicks against 447 sessions. That is
+   not a join error and not a GA4 error:
+     - Sessions begin the day the campaign began delivering, 16 July, and track
+       impressions rather than clicks.
+     - Seven delivery days recorded zero LinkedIn clicks and still produced 46
+       GA4 sessions.
+     - LinkedIn reports 57 totalEngagements of every type combined, against 447
+       arrivals.
+     - Campaign Manager shows the same 54 clicks and 0.05 percent click rate as
+       the API, so the pull is faithful.
+     - 447 sessions came from 447 distinct users, so GA4 is not splitting one
+       arrival into several.
+   The cause is the buy itself. Both campaigns run with offsiteDeliveryEnabled
+   true, the LinkedIn Audience Network, and audienceExpansionEnabled true. The
+   video campaign is objective VIDEO_VIEW, optimisation MAX_VIDEO_VIEW, cost
+   type CPM, so LinkedIn's clicks field counts only chargeable clicks and off
+   platform arrivals are largely absent from it. The click column measures
+   billing, the session column measures arrivals, and no ratio between them can
+   be published as a performance figure. Hence spend, impressions, video views
+   and clicks only.
+
+   THE SESSION FIGURE WAS TRIANGULATED three ways because the click to session
+   ratio above 100 percent invites challenge. Channel group route 1,237,
+   campaign decomposition route 787 plus 447 equals 1,234, published grid 1,236.
+   The spread is GA4 approximate counting, not a filter fault.
 
    LINKEDIN POST CLICK QUALITY is weak and the page shows it without comment.
-   Paid social delivered 1,229 sessions, 199 engaged, 84 percent bounce, an
-   average of 3.3 seconds, and zero form submissions. Paid search on the same
-   page averages 171 seconds. The fowc_2026 sessions are 445 sessions from 445
-   users with no repeat visits at all.
+   Paid social delivered 1,239 sessions, 201 engaged, 84 percent bounce, an
+   average of 3 seconds, and zero form submissions. Paid search on the same page
+   averages 2m 50s. The fowc_2026 sessions are 447 sessions from 447 users with
+   no repeat visits at all, and their device, browser and country mix looks like
+   a real audience, so this reads as very low intent traffic rather than as
+   something GA4 has miscounted.
+
+   TAGGING DEFECT, for the record and not on the page: LinkedIn traffic to this
+   landing page arrives under two mediums, paid 623 sessions and paid_social 607.
+   Both fall into Paid Social so no published total is affected, but any filter
+   written on medium alone will silently halve LinkedIn. The Corporate
+   Membership investigation of 14 August raised the same issue.
 
    SPEND, CLICKS and IMPRESSIONS come from the platform APIs and are exact.
    Each platform was validated against a closed month before the open month was
@@ -154,7 +184,7 @@ window.CAMPAIGN_DATA = {
     platforms: [
       { platform: "Google Ads",            spend: 7376.62, clicks: 14636, impressions:  665197, sessions: 8284 },
       { platform: "Microsoft Advertising", spend: 4948.94, clicks:  4517, impressions:  241536, sessions: 3592 },
-      { platform: "LinkedIn Ads",          spend: 2840.86, clicks:   684, impressions:  138794, sessions: 1236 }
+      { platform: "LinkedIn Ads",          spend: 2840.86, clicks:   684, impressions:  138795, sessions: 1236 }
     ],
 
     /* Placement from the buy itself: Search is Google plus Microsoft, Document
@@ -167,7 +197,7 @@ window.CAMPAIGN_DATA = {
     placements: [
       { placement: "Search",       platforms: "Google Ads, Microsoft Advertising", spend: 12325.56, clicks: 19153, impressions: 906733 },
       { placement: "Document ad",  platforms: "LinkedIn Ads",                      spend:  1614.79, clicks:   628, impressions:  28640 },
-      { placement: "Video",        platforms: "LinkedIn Ads",                      spend:  1226.07, clicks:    56, impressions: 110154, views: 91343 }
+      { placement: "Video",        platforms: "LinkedIn Ads",                      spend:  1226.07, clicks:    56, impressions: 110155, views: 91343 }
     ]
   },
 
