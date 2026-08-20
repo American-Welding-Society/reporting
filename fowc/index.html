@@ -114,6 +114,10 @@
   /* paid creative gallery: same tiles, wider, 16:9 art */
   .gal.ads { grid-template-columns:repeat(auto-fill,minmax(430px,1fr)); gap:16px; }
   .post.ad .thumb { aspect-ratio:16/9; }
+  .post.ad.print .thumb { aspect-ratio:3/4; background:#fff; }
+  .post.ad.print .thumb img { object-fit:contain; background:#fff; }
+  .gal.ads.trad { grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); }
+  .gal.ads .post.ad.print { max-width:400px; }
   .post.ad .thumb { background:#0E1B26; }
   .post.ad .thumb img { object-fit:contain; background:#0E1B26; }
   .adkind { font-size:8.5px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:#A7ABAD; }
@@ -316,34 +320,9 @@
         (hasSub ? '<td class="r num">' + int(totSub) + '</td><td class="r num">' + ratio(totSub, tot.s, 2) + "</td>" : "") +
         "</tr>";
 
-      /* Landing page sessions answer "what did the campaign deliver". They cannot
-         answer "how often was the page reached", because a visitor who arrives on
-         another page and navigates here is invisible to them. Both are published,
-         and the difference between them is the internal navigation the campaign
-         did not buy. Added 20 August on Miguel's recommendation. */
-      var reachBlock = "";
-      var LP = D.landingPage || {}, PR = D.prior || null;
-      if (has(LP.reached)) {
-        var mrows = [
-          ["Landing page sessions", "started on the page", LP.sessions, PR && PR.sessions],
-          ["Reached the page", "started anywhere, viewed the page", LP.reached, PR && PR.reached],
-          ["Page views", "", LP.views, PR && PR.views]
-        ].filter(function (r) { return has(r[2]); }).map(function (r) {
-          return '<tr><td class="name">' + esc(r[0]) +
-            (r[1] ? '<div class="msub">' + esc(r[1]) + "</div>" : "") + "</td>" +
-            '<td class="r num">' + int(r[2]) + "</td>" +
-            (PR ? '<td class="r num">' + int(r[3]) + '</td><td class="r num">' + chg(r[2], r[3]) + "</td>" : "") +
-            "</tr>";
-        }).join("");
-        var mhead = "<th>Measure</th><th class=\"r\">" + esc(M.year || "This year") + "</th>" +
-          (PR ? '<th class="r">' + esc(PR.year) + '</th><th class="r">Change</th>' : "");
-        reachBlock = '<div class="sub hdln">Two ways to count the page</div>' + tbl(mhead, mrows) +
-          '<div class="sub hdln" style="padding-top:6px;">By channel</div>';
-      }
-
       set("traffic", card("How people reached the page",
-        "landing page sessions; month on month is " + mlab(prevM(1)) + " against " + mlab(prevM(2)),
-        reachBlock + tbl(head, rows, foot)));
+        "sessions that reached the page; month on month is " + mlab(prevM(1)) + " against " + mlab(prevM(2)),
+        tbl(head, rows, foot)));
 
       /* The two complete months the MoM column compares, named rather than assumed. */
       function prevM(back) {
@@ -451,7 +430,7 @@
       }
 
       var cols = "grid-template-columns:repeat(" + m.length + ",minmax(0,1fr));";
-      var body = '<div class="tl">' + single("sessions", "#0074E2", "Landing page sessions", 168, "prior");
+      var body = '<div class="tl">' + single("sessions", "#0074E2", "Sessions on the page", 168);
       if (showSub) body += '<div style="height:14px;"></div>' +
         single("submissions", "#003767", D.goal ? D.goal.label : "Submissions", 118);
       body += '<div class="tlx" style="' + cols + '">' + m.map(function (r) {
@@ -594,8 +573,6 @@
           '<div class="pfig">' + figs + "</div>" +
           (has(c.cta) ? '<div class="pcta">' + esc(c.cta) + "</div>" : "") +
           mt +
-          (has(c.boughtFor) ? '<span class="bought ' + (views ? "warn" : "ok") + '">Bought for ' +
-            esc(views ? "views, not clicks" : "clicks") + "</span>" : "") +
           "</div></div>";
       }
     })();
@@ -696,7 +673,25 @@
         return "Not started";
       }
       var done = d.filter(function (r) { return state(r.status) === "Done"; }).length;
+      /* Same treatment the paid buy gets: show the thing that ran, then what it did.
+         Only items that carry artwork render a card. */
+      var art = d.filter(function (r) { return has(r.image); });
+      var artBlock = art.length ? '<div class="sub hdln">What ran</div><div class="gal ads trad">' +
+        art.map(function (r) {
+          return '<div class="post ad print">' +
+            '<div class="thumb"><img src="' + esc(r.image) + '" alt="" loading="lazy"></div>' +
+            '<div class="pmeta">' +
+            '<div class="pplat"><span class="adkind">' + esc(r.channel) + "</span>" +
+            (has(r.placement) ? '<span class="adcamp">' + esc(r.placement) + "</span>" : "") + "</div>" +
+            (has(r.headline) ? '<div class="adname">' + esc(r.headline) + "</div>" : "") +
+            (has(r.asset) ? '<div class="pcta">' + esc(r.asset) + "</div>" : "") +
+            '<div class="pfig">' +
+            '<div class="pf"><div class="pfl">Short link clicks</div><div class="pfv num">' + int(r.clicks) + "</div></div>" +
+            '<div class="pf"><div class="pfl">Sessions</div><div class="pfv num">' + int(r.sessions) + "</div></div>" +
+            "</div></div></div>";
+        }).join("") + "</div>" : "";
       set("delivery", card("Traditional media", done + " of " + d.length + " published",
+        artBlock +
         tbl('<th>Channel</th><th>Item</th><th>Date</th><th>Status</th><th>Tracking</th>',
           d.map(function (r) {
             var st = state(r.status);
@@ -712,7 +707,7 @@
             return '<tr><td class="dim">' + esc(r.channel) + '</td><td class="name">' + esc(r.item) + "</td>" +
               '<td class="num">' + dayShort(r.due) + '</td><td><span class="pill ' + cls + '">' + st + "</span></td>" +
               "<td>" + tr + "</td></tr>";
-          }).join(""))));
+          }).join("")) + (artBlock ? "" : "")));
     })();
   }
 

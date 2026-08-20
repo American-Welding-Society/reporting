@@ -2,55 +2,53 @@
    Rebuilt 20 August 2026 after a full source audit. Every figure below was
    traced to a named system on that date; nothing is inherited unverified.
 
-   THE FILTER WAS WRONG AND IS FIXED. Until 20 August the landing page filter was
-   BEGINS_WITH '/educators/welding-curriculum/' with a trailing slash, which drops
-   every session whose landing page was recorded without one. Roque found it by
-   sending a page-path report that did not agree. The prefix is now
-   '/educators/welding-curriculum'. It is worth 33 sessions on the published total,
-   0.2 percent, and it was an undercount rather than a rounding difference.
+   THE PAGE COUNTS EVERYONE WHO REACHED THE CURRICULUM PAGE, not only those who
+   landed on it. Changed 20 August at Roque's instruction, after Miguel Romero
+   pointed out that a landing page measure cannot see a visitor who enters aws.org
+   elsewhere and navigates in. The filter is unifiedPagePathScreen CONTAINS
+   'educators/welding-curriculum'. Sessions are 17,146 for 1 January to 19 August,
+   against 14,964 on the old landing page basis: 2,182 sessions, 13 percent of the
+   total, were invisible before.
+
+   Everything moved together. The tile, the timeline, the channel table, the paid
+   session column and the conversion rate are all on the new basis, because a page
+   where the table foots to one number and the tile above it shows another is a
+   page nobody trusts. The prior landing page filter had its own defect, a trailing
+   slash that dropped 33 sessions, found the same day and fixed before the switch.
+
+   ENGAGEMENT TIME NOW MEANS TIME ON THIS PAGE. This is the consequence of the
+   switch that is easiest to miss. With a landing page filter, GA4's engagement
+   duration covers the whole session wherever it went, and averaged 2m 28s. With a
+   page filter it covers this page only, and averages 36s. The second is the more
+   useful number and the one a reader assumes they are looking at, but it is not
+   comparable to anything published before 20 August.
 
    ONE QUERY. GA4 counts sessions with an approximate distinct algorithm, so the
    same question answered with a different number of dimensions comes back
-   different: 14,813 at zero dimensions against 14,964 by month, channel, source
-   and campaign. None is more correct and no mixture of them cross foots. So the
-   header, the timeline, the traffic table, the print row, the paid session column
-   and both comparisons are all aggregations of a single query, month x channel x
-   source x campaign, run once for 2026 and once for 2025. Every total on the page
-   therefore adds up by construction rather than by luck, and the year on year is
-   like for like because both sides were built the same way.
+   different. So the header, the timeline, the traffic table, the print row, the
+   paid session column and the comparisons are all aggregations of a single query,
+   month x channel x source x campaign, run once for 2026 and once for 2025. Every
+   total adds up by construction, and the year on year is like for like because
+   both sides were built the same way.
 
-   TWO WAYS TO COUNT THE PAGE, added 20 August on Miguel Romero's recommendation.
-   Landing page sessions, 14,964, are sessions that started on the page: what the
-   campaign delivered. Sessions reaching the page, 17,121, are sessions that viewed
-   it at any point, including people who entered aws.org elsewhere and navigated
-   in. The 2,157 difference is internal navigation the campaign did not buy, 13
-   percent of arrivals, and it was invisible on this page until now. The second
-   measure uses unifiedPagePathScreen CONTAINS 'educators/welding-curriculum',
-   which is the filter Roque's own report used.
-
-   Page views behave differently again and the two must never be compared. With a
-   landing page filter, GA4's view count includes every page those sessions saw,
-   64,188. With a page filter it counts only views of this page, 22,483. The page
-   publishes the second.
-
-   YEAR ON YEAR, same window, same filters, same construction: 62,663 landing page
-   sessions in 2025 against 14,964 this year, down 76.1 percent. READ IT WITH THIS
-   BESIDE IT: paid search alone was 57,065 sessions in 2025 against 11,877 now,
-   which is 95 percent of the entire drop. Every other channel moved by hundreds.
-   Paid social is the only channel up, by 10 percent. So the comparison is a
-   statement about how much search was bought in each year, not about this page or
-   this campaign, and the 2025 spend is not in this dashboard. That figure should
-   be pulled before anyone reads the comparison as performance.
+   YEAR ON YEAR, same window, same filter, same construction: 66,058 sessions in
+   2025 against 17,146 this year, down 74.0 percent. READ IT WITH THIS BESIDE IT:
+   paid search alone was 57,167 sessions in 2025 against 12,259 now, which is
+   92 percent of the entire drop. Paid social is the only channel up, by 10 percent.
+   So the comparison is a statement about how much search was bought in each year,
+   not about this page or this campaign, and the 2025 spend is not in this
+   dashboard. That figure should be pulled before anyone reads the comparison as
+   performance.
 
    MONTH ON MONTH is July against June, the last two complete months. August is
    partial, through the 19th, and is excluded. The card scope names both months so
-   no reader has to infer them. Channels with no prior-year row, Print, AI
-   assistant and Cross-network, carry no prior key and render a dash: a change from
-   nothing is not a percentage.
+   no reader has to infer them. Channels with no prior-year row carry no prior key
+   and render a dash: a change from nothing is not a percentage.
 
    NO SUBMISSIONS-BY-CHANNEL CHART. Miguel suggested one. The traffic table already
    carries a form submissions column and a conversion rate per channel, so a chart
-   would be the same numbers a second time.
+   would be the same numbers a second time. A chart has to add a comparison the
+   table cannot make.
 
    SUBMISSIONS COME FROM HUBSPOT ONLY, AND FROM THE FORM, NOT THE PAGE. That is
    the standing rule, set by Roque on 20 August: GA4 is not a source for form
@@ -246,51 +244,53 @@ window.CAMPAIGN_DATA = {
 
   summary: [
     { channel: "Outcome",         label: "Form submissions",      value: 140,       fmt: "int" },
-    { channel: "Outcome",         label: "Form conversion rate",  value: 0.94,      fmt: "pct2" },
-    { channel: "Website",         label: "Landing page sessions", value: 14964,     fmt: "int" },
-    { channel: "Website",         label: "Reached the page",      value: 17121,     fmt: "int" },
-    { channel: "Website",         label: "Engagement rate",       value: 61.2,      fmt: "pct" },
+    { channel: "Outcome",         label: "Form conversion rate",  value: 0.82,      fmt: "pct2" },
+    { channel: "Website",         label: "Sessions on the page",  value: 17146,     fmt: "int" },
+    { channel: "Website",         label: "Engagement rate",       value: 65.3,      fmt: "pct" },
     { channel: "Paid media",      label: "Paid spend",            value: 15166.42,  fmt: "money" },
     { channel: "Marketing email", label: "Email clicks",          value: 307,       fmt: "int" }
   ],
 
   goal: { label: "Form submissions", actual: 140 },
 
-  landingPage: { sessions: 14964, engaged: 9154, seconds: 2214108, submissions: 140, reached: 17121, views: 22483 },
+  landingPage: { sessions: 17146, engaged: 11189, seconds: 614076, submissions: 140, views: 22483 },
 
   /* Same two questions asked of 2025, same filters, same 1 January to 19 August
      window, same four-dimension construction. This is the only comparison basis
      on the page and it is like for like. */
-  prior: { year: 2025, sessions: 62663, engaged: 45474, seconds: 4485756, reached: 66933, views: 72865 },
+  prior: { year: 2025, sessions: 66058, engaged: 48221, seconds: 2500372, views: 72865 },
 
   /* Aggregated from the single grid by channel. Print falls out of the grid on
      source, welding journal, rather than being subtracted from Unassigned by
      hand, so the carve-out cannot drift. */
   channels: [
-    { channel: "Paid search",    sessions: 11877, engaged: 7627, seconds: 2020467, submissions: 42, prior: 57065, m1: 5941, m2: 3167 },
-    { channel: "Paid social",    sessions:  1240, engaged:  201, seconds:    4033, submissions:  0, prior:  1127, m1:  262, m2:  511 },
-    { channel: "Organic search", sessions:   946, engaged:  793, seconds:  107267, submissions: 27, prior:  1340, m1:  107, m2:   90 },
-    { channel: "Email",          sessions:   358, engaged:  265, seconds:   22358, submissions: 24, prior:   488, m1:  131, m2:    3 },
-    { channel: "Direct",         sessions:   295, engaged:  132, seconds:   19310, submissions: 32, prior:   979, m1:   52, m2:   45 },
-    { channel: "Organic social", sessions:   119, engaged:   63, seconds:    5665, submissions:  0, prior:   164, m1:   32, m2:    8 },
-    { channel: "Referral",       sessions:    52, engaged:   41, seconds:    8563, submissions: 13, prior:  1408, m1:    2, m2:    7 },
-    { channel: "Unassigned",     sessions:    40, engaged:    9, seconds:   16830, submissions:  1, prior:    46, m1:   10, m2:    9 },
-    { channel: "Organic video",  sessions:    17, engaged:    8, seconds:    5507,                  prior:    46, m1:    2, m2:    0 },
-    { channel: "Print",          sessions:    10, engaged:    8, seconds:     927,                                m1:    0, m2:    1 },
-    { channel: "AI assistant",   sessions:     8, engaged:    7, seconds:    3181, submissions:  1,               m1:    1, m2:    3 },
-    { channel: "Cross-network",  sessions:     2, engaged:    0, seconds:       0,                                m1:    2, m2:    0 }
+    { channel: "Paid search",    sessions: 12259, engaged: 7937, seconds: 410397, submissions: 42, prior: 57167, m1: 6099, m2: 3257 },
+    { channel: "Organic search", sessions:  2044, engaged: 1865, seconds: 120685, submissions: 27, prior:  2655, m1:  445, m2:  263 },
+    { channel: "Paid social",    sessions:  1243, engaged:  204, seconds:   3912, submissions:  0, prior:  1129, m1:  262, m2:  511 },
+    { channel: "Direct",         sessions:   704, engaged:  536, seconds:  38524, submissions: 32, prior:  2175, m1:  167, m2:  100 },
+    { channel: "Email",          sessions:   441, engaged:  342, seconds:  15974, submissions: 24, prior:   640, m1:  154, m2:   14 },
+    { channel: "Referral",       sessions:   173, engaged:  158, seconds:  11793, submissions: 13, prior:  1579, m1:   24, m2:   28 },
+    { channel: "Organic social", sessions:   131, engaged:   74, seconds:   4168, submissions:  0, prior:   180, m1:   34, m2:    9 },
+    { channel: "Unassigned",     sessions:    81, engaged:   17, seconds:   3029, submissions:  1, prior:   483, m1:   22, m2:   18 },
+    { channel: "AI assistant",   sessions:    24, engaged:   23, seconds:   1851, submissions:  1,               m1:    7, m2:    9 },
+    { channel: "Organic video",  sessions:    22, engaged:   13, seconds:   2271,                  prior:    46, m1:    4, m2:    0 },
+    { channel: "Print",          sessions:    11, engaged:    9, seconds:    790,                                m1:    0, m2:    1 },
+    { channel: "Display",        sessions:     7, engaged:    7, seconds:    588,                                m1:    1, m2:    3 },
+    { channel: "Cross-network",  sessions:     4, engaged:    2, seconds:     80,                                m1:    2, m2:    0 },
+    { channel: "Paid shopping",  sessions:     1, engaged:    1, seconds:      7,                  prior:     4, m1:    0, m2:    0 },
+    { channel: "SMS",            sessions:     1, engaged:    1, seconds:      7,                                m1:    0, m2:    0 }
   ],
 
   /* Same grid, aggregated by month. */
   monthly: [
-    { m: "2026-01", sessions:  180, engaged:  124, seconds:   19573, submissions: 13, prior:   146, partial: false },
-    { m: "2026-02", sessions:  205, engaged:  159, seconds:   24258, submissions: 10, prior:   180, partial: false },
-    { m: "2026-03", sessions:  225, engaged:  159, seconds:   18837, submissions: 18, prior: 18397, partial: false },
-    { m: "2026-04", sessions:  301, engaged:  205, seconds:   29568, submissions: 18, prior: 10389, partial: false },
-    { m: "2026-05", sessions: 3110, engaged: 1906, seconds:  408030, submissions: 32, prior: 13344, partial: false },
-    { m: "2026-06", sessions: 6542, engaged: 4200, seconds: 1138972, submissions: 30, prior:  9008, partial: false },
-    { m: "2026-07", sessions: 3844, engaged: 2180, seconds:  548066, submissions: 11, prior:  9433, partial: false },
-    { m: "2026-08", sessions:  557, engaged:  221, seconds:   26804, submissions:  8, prior:  1766, partial: true }
+    { m: "2026-01", sessions:  359, engaged:  291, seconds:  19756, submissions: 13, prior:   389, partial: false },
+    { m: "2026-02", sessions:  325, engaged:  275, seconds:  18193, submissions: 10, prior:   394, partial: false },
+    { m: "2026-03", sessions:  382, engaged:  307, seconds:  22185, submissions: 18, prior: 19131, partial: false },
+    { m: "2026-04", sessions:  466, engaged:  359, seconds:  31583, submissions: 18, prior: 11056, partial: false },
+    { m: "2026-05", sessions: 3487, engaged: 2255, seconds: 128202, submissions: 32, prior: 14052, partial: false },
+    { m: "2026-06", sessions: 7221, engaged: 4807, seconds: 249710, submissions: 30, prior:  9294, partial: false },
+    { m: "2026-07", sessions: 4213, engaged: 2538, seconds: 124279, submissions: 11, prior:  9765, partial: false },
+    { m: "2026-08", sessions:  693, engaged:  357, seconds:  20168, submissions:  8, prior:  1977, partial: true }
   ],
 
   paid: {
@@ -305,9 +305,9 @@ window.CAMPAIGN_DATA = {
        Sessions are from the single GA4 grid, allocated by session source, and
        total 13,102. */
     platforms: [
-      { platform: "Google Ads",            spend: 7376.62, clicks: 14636, impressions:  665197, sessions: 8285 },
-      { platform: "Microsoft Advertising", spend: 4948.94, clicks:  4517, impressions:  241536, sessions: 3592 },
-      { platform: "LinkedIn Ads",          spend: 2840.86, clicks:   684, impressions:  138795, sessions: 1237 }
+      { platform: "Google Ads",            spend: 7376.62, clicks: 14636, impressions:  665197, sessions: 8473 },
+      { platform: "Microsoft Advertising", spend: 4948.94, clicks:  4517, impressions:  241536, sessions: 3787 },
+      { platform: "LinkedIn Ads",          spend: 2840.86, clicks:   684, impressions:  138795, sessions: 1240 }
     ],
 
     /* Placement from the buy itself: Search is Google plus Microsoft, Document
@@ -487,8 +487,17 @@ window.CAMPAIGN_DATA = {
      Terminus counts a QR scan as a click on the same short link, so the QR
      scans are inside that 22 and there is no separate scan figure to publish. */
   delivery: [
+    /* The artwork is the file from the Design WJ Print Ad subitem on the Monday
+       board, EDU_1045_2026_FOWC_AD FP.pdf, page one rendered to an image. The QR
+       code on it points at the same weld.ng short link, and Terminus counts a scan
+       as a click on that link, so scans are inside the 22 and there is no separate
+       figure to publish. */
     { channel: "Print ad",       item: "Welding Journal print ad",    due: "2026-08-03", status: "Done",
-      vanity: "weld.ng/curriculum", vanityUrl: "https://weld.ng/curriculum", clicks: 22, sessions: 10 },
+      vanity: "weld.ng/curriculum", vanityUrl: "https://weld.ng/curriculum", clicks: 22, sessions: 11,
+      headline: "Prepare students for success in welding",
+      asset: "EDU_1045_2026_FOWC_AD FP.pdf",
+      placement: "Full page, Welding Journal, August 2026 issue",
+      image: "https://american-welding-society.github.io/reporting/fowc/img/print-wj-ad.jpg" },
     { channel: "Blog",           item: "Welding Digest blog post",    due: "2026-08-14", status: "In progress" },
     { channel: "Press release",  item: "Press release",               due: "2026-11-16", status: "In progress" },
     { channel: "Editorial",      item: "Editorial",                   due: "2026-12-01", status: "Not started" },
