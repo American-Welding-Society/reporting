@@ -58,6 +58,10 @@
   .msub { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; }
   .up { color:#1F8A4C; font-weight:700; }
   .down { color:#C0402B; font-weight:700; }
+  tr.grp td { background:#F4F7FB; border-bottom:1px solid #E3E5E6; padding:7px 10px 6px 0; }
+  .bandl { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#003767; }
+  .bandn { font-size:10.5px; color:#6E7274; margin-left:10px; text-transform:none; letter-spacing:0; }
+  tr.sub td { font-weight:700; border-bottom:1px solid #E3E5E6; }
   .note { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; }
 
   .ok { background:#E8F3EC; color:#1F8A4C; }
@@ -309,7 +313,7 @@
         "</tr>";
 
       set("traffic", card("How people reached the page",
-        "sessions that reached the page, all sources",
+        "",
         tbl(head, rows, foot)));
 
     })();
@@ -562,11 +566,20 @@
     (function () {
       var s = (D.email && D.email.sends) || [];
       if (!s.length) { set("email", ""); return; }
-      var t = s.reduce(function (a, r) {
-        return { d: a.d + (r.delivered || 0), o: a.o + (r.opens || 0), c: a.c + (r.clicks || 0), u: a.u + (r.unsubs || 0),
-                 n: a.n + (has(r.delivered) ? 1 : 0) };
-      }, { d: 0, o: 0, c: 0, u: 0, n: 0 });
-      var rows = s.map(function (r) {
+
+      /* Dedicated sends and newsletter inclusions are different objects. A
+         dedicated send's whole audience belongs to the campaign; an inclusion's
+         does not, so an inclusion publishes only its clicks on the campaign
+         link and everything else renders a dash. Grouping them keeps the column
+         alignment while making the difference impossible to miss. */
+      function totals(list) {
+        return list.reduce(function (a, r) {
+          return { d: a.d + (r.delivered || 0), o: a.o + (r.opens || 0),
+                   c: a.c + (r.clicks || 0), u: a.u + (r.unsubs || 0),
+                   n: a.n + (has(r.delivered) || has(r.clicks) ? 1 : 0) };
+        }, { d: 0, o: 0, c: 0, u: 0, n: 0 });
+      }
+      function row(r) {
         var subj = has(r.subject) ? link(r.url, esc(r.subject))
                  : '<span class="dim">Scheduled for ' + esc(r.scheduled || "TBD") + "</span>";
         return '<tr><td class="name">' + subj + "</td>" +
@@ -578,13 +591,40 @@
           '<td class="r num">' + ratio(r.clicks, r.delivered, 2) + "</td>" +
           '<td class="r num">' + int(r.unsubs) + "</td>" +
           '<td class="r num">' + ratio(r.unsubs, r.delivered, 2) + "</td></tr>";
-      }).join("");
-      var foot = '<tr class="tot"><td>All sends</td><td></td>' +
-        '<td class="r num">' + int(t.d) + '</td><td class="r num">' + int(t.o) + '</td><td class="r num">' + ratio(t.o, t.d, 2) +
-        '</td><td class="r num">' + int(t.c) + '</td><td class="r num">' + ratio(t.c, t.d, 2) +
-        '</td><td class="r num">' + int(t.u) + '</td><td class="r num">' + ratio(t.u, t.d, 2) + "</td></tr>";
-      set("email", card("Email", s.length + " sends planned, " + t.n + " sent",
-        tbl('<th>Subject</th><th>Sent</th><th class="r">Delivered</th><th class="r">Opens</th><th class="r">Open rate</th><th class="r">Clicks</th><th class="r">Click rate</th><th class="r">Unsubs</th><th class="r">Unsub rate</th>', rows, foot)));
+      }
+      function band(label, note) {
+        return '<tr class="grp"><td colspan="9"><span class="bandl">' + esc(label) + "</span>" +
+          (note ? '<span class="bandn">' + esc(note) + "</span>" : "") + "</td></tr>";
+      }
+      function sub(label, t, full) {
+        return '<tr class="sub"><td>' + esc(label) + '</td><td></td>' +
+          '<td class="r num">' + (full ? int(t.d) : DASH) + "</td>" +
+          '<td class="r num">' + (full ? int(t.o) : DASH) + "</td>" +
+          '<td class="r num">' + (full ? ratio(t.o, t.d, 2) : DASH) + "</td>" +
+          '<td class="r num">' + int(t.c) + "</td>" +
+          '<td class="r num">' + (full ? ratio(t.c, t.d, 2) : DASH) + "</td>" +
+          '<td class="r num">' + (full ? int(t.u) : DASH) + "</td>" +
+          '<td class="r num">' + (full ? ratio(t.u, t.d, 2) : DASH) + "</td></tr>";
+      }
+
+      var ded = s.filter(function (r) { return r.group !== "inclusion"; });
+      var inc = s.filter(function (r) { return r.group === "inclusion"; });
+      var td = totals(ded), ti = totals(inc), all = totals(s);
+
+      var rows = band("Dedicated sends", "the campaign's own email") +
+                 ded.map(row).join("") + sub("Dedicated subtotal", td, true);
+      if (inc.length) {
+        rows += band("Newsletter inclusions", "a slot inside someone else's send; clicks on the campaign link only") +
+                inc.map(row).join("") + sub("Inclusion subtotal", ti, false);
+      }
+      var foot = '<tr class="tot"><td>Clicks to the page, all email</td><td></td>' +
+        '<td class="r num">' + DASH + '</td><td class="r num">' + DASH + '</td><td class="r num">' + DASH +
+        '</td><td class="r num">' + int(all.c) + '</td><td class="r num">' + DASH +
+        '</td><td class="r num">' + DASH + '</td><td class="r num">' + DASH + "</td></tr>";
+
+      set("email", card("Email", ded.length + " dedicated sends planned, " + td.n + " sent" +
+        (inc.length ? "; " + inc.length + " newsletter inclusion" + (inc.length > 1 ? "s" : "") : ""),
+        tbl('<th>Subject</th><th>Sent</th><th class="r">Delivered</th><th class="r">Opens</th><th class="r">Open rate</th><th class="r">Clicks to page</th><th class="r">Click rate</th><th class="r">Unsubs</th><th class="r">Unsub rate</th>', rows, foot)));
     })();
 
     /* 7. organic social */

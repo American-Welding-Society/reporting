@@ -276,7 +276,7 @@ window.CAMPAIGN_DATA = {
     year: 2026,
     campaignStart: "2026-03-16",
     campaignEnd: "2026-11-30",
-    dataThrough: "2026-08-19",
+    dataThrough: "2026-08-24",
     paidThrough: "2026-08-19",
     landingPage: "https://www.aws.org/educators/welding-curriculum/",
     landingPath: "/educators/welding-curriculum/",
@@ -287,17 +287,17 @@ window.CAMPAIGN_DATA = {
   flags: { hasPaid: true, hasOutcome: true },
 
   summary: [
-    { channel: "Outcome",         label: "Form submissions",      value: 140,       fmt: "int" },
+    { channel: "Outcome",         label: "Form submissions",      value: 142,       fmt: "int" },
     { channel: "Outcome",         label: "Form conversion rate",  value: 0.82,      fmt: "pct2" },
-    { channel: "Website",         label: "Sessions on the page",  value: 17146,     fmt: "int" },
-    { channel: "Website",         label: "Engagement rate",       value: 65.3,      fmt: "pct" },
+    { channel: "Website",         label: "Sessions on the page",  value: 17278,     fmt: "int" },
+    { channel: "Website",         label: "Engagement rate",       value: 65.1,      fmt: "pct" },
     { channel: "Paid media",      label: "Paid spend",            value: 15166.42,  fmt: "money" },
-    { channel: "Marketing email", label: "Email clicks",          value: 307,       fmt: "int" }
+    { channel: "Marketing email", label: "Email clicks",          value: 366,       fmt: "int" }
   ],
 
-  goal: { label: "Form submissions", actual: 140 },
+  goal: { label: "Form submissions", actual: 142 },
 
-  landingPage: { sessions: 17146, engaged: 11189, seconds: 614076, submissions: 140, views: 22483 },
+  landingPage: { sessions: 17278, engaged: 11256, seconds: 617668, views: 22642, submissions: 142 },
 
   /* Same two questions asked of 2025, same filters, same 1 January to 19 August
      window, same four-dimension construction. This is the only comparison basis
@@ -307,21 +307,21 @@ window.CAMPAIGN_DATA = {
      source, welding journal, rather than being subtracted from Unassigned by
      hand, so the carve-out cannot drift. */
   channels: [
-    { channel: "Paid search",    sessions: 12259, engaged: 7937, seconds: 410397, submissions: 42 },
-    { channel: "Organic search", sessions:  2044, engaged: 1865, seconds: 120685, submissions: 27 },
-    { channel: "Paid social",    sessions:  1243, engaged:  204, seconds:   3912, submissions:  0 },
-    { channel: "Direct",         sessions:   704, engaged:  536, seconds:  38524, submissions: 32 },
-    { channel: "Email",          sessions:   441, engaged:  342, seconds:  15974, submissions: 24 },
-    { channel: "Referral",       sessions:   173, engaged:  158, seconds:  11793, submissions: 13 },
-    { channel: "Organic social", sessions:   131, engaged:   74, seconds:   4168, submissions:  0 },
-    { channel: "Unassigned",     sessions:    81, engaged:   17, seconds:   3029, submissions:  1 },
-    { channel: "AI assistant",   sessions:    24, engaged:   23, seconds:   1851, submissions:  1 },
-    { channel: "Organic video",  sessions:    22, engaged:   13, seconds:   2271 },
-    { channel: "Print",          sessions:    11, engaged:    9, seconds:    790 },
-    { channel: "Display",        sessions:     7, engaged:    7, seconds:    588 },
-    { channel: "Cross-network",  sessions:     4, engaged:    2, seconds:     80 },
-    { channel: "Paid shopping",  sessions:     1, engaged:    1, seconds:      7 },
-    { channel: "SMS",            sessions:     1, engaged:    1, seconds:      7 }
+    { channel: "Paid search",     sessions: 12263, engaged: 7940, seconds:  410520, submissions:  42 },
+    { channel: "Organic search",  sessions:  2082, engaged: 1903, seconds:  123509, submissions:  28 },
+    { channel: "Paid social",     sessions:  1304, engaged:  212, seconds:    3986, submissions:   0 },
+    { channel: "Direct",          sessions:   721, engaged:  545, seconds:   38720, submissions:  33 },
+    { channel: "Email",           sessions:   444, engaged:  343, seconds:   16052, submissions:  24 },
+    { channel: "Referral",        sessions:   176, engaged:  161, seconds:   11836, submissions:  13 },
+    { channel: "Organic social",  sessions:   131, engaged:   74, seconds:    4168, submissions:   0 },
+    { channel: "Unassigned",      sessions:    82, engaged:   17, seconds:    3121, submissions:   1 },
+    { channel: "AI assistant",    sessions:    26, engaged:   25, seconds:    1904, submissions:   1 },
+    { channel: "Organic video",   sessions:    22, engaged:   13, seconds:    2271 },
+    { channel: "Print",           sessions:    14, engaged:   12, seconds:     899 },
+    { channel: "Display",         sessions:     7, engaged:    7, seconds:     588 },
+    { channel: "Cross-network",   sessions:     4, engaged:    2, seconds:      80 },
+    { channel: "Paid shopping",   sessions:     1, engaged:    1, seconds:       7 },
+    { channel: "SMS",             sessions:     1, engaged:    1, seconds:       7 }
   ],
 
   /* Same grid, aggregated by month. */
@@ -333,7 +333,7 @@ window.CAMPAIGN_DATA = {
     { m: "2026-05", sessions: 3487, engaged: 2255, seconds: 128202, submissions: 32, partial: false },
     { m: "2026-06", sessions: 7221, engaged: 4807, seconds: 249710, submissions: 30, partial: false },
     { m: "2026-07", sessions: 4213, engaged: 2538, seconds: 124279, submissions: 11, partial: false },
-    { m: "2026-08", sessions:  693, engaged:  357, seconds:  20168, submissions:  8, partial: true }
+    { m: "2026-08", sessions:  825, engaged:  424, seconds:  23760, submissions: 10, partial: true }
   ],
 
   paid: {
@@ -348,9 +348,9 @@ window.CAMPAIGN_DATA = {
        Sessions are from the single GA4 grid, allocated by session source, and
        total 13,102. */
     platforms: [
-      { platform: "Google Ads",            spend: 7376.62, clicks: 14636, impressions:  665197, sessions: 8473 },
-      { platform: "Microsoft Advertising", spend: 4948.94, clicks:  4517, impressions:  241536, sessions: 3787 },
-      { platform: "LinkedIn Ads",          spend: 2840.86, clicks:   684, impressions:  138795, sessions: 1240 }
+      { platform: "Google Ads",            spend: 7376.62, clicks: 14636, impressions:  665197, sessions: 8476 },
+      { platform: "Microsoft Advertising", spend: 4948.94, clicks:  4517, impressions:  241536, sessions: 3788 },
+      { platform: "LinkedIn Ads",          spend: 2840.86, clicks:   684, impressions:  138795, sessions: 1301 }
     ],
 
     /* Placement from the buy itself: Search is Google plus Microsoft, Document
@@ -420,19 +420,47 @@ window.CAMPAIGN_DATA = {
      Monday board. Emails 3 and 4 are built but unsent: HubSpot records zero
      scheduled, zero delivered. */
   email: {
+    /* Two kinds of send, and they are not comparable, so the table groups them.
+       A DEDICATED send is the campaign's own email: the whole audience, the
+       whole message, so delivered, opens, clicks and unsubscribes all belong to
+       FOWC. An INCLUSION is a slot inside a newsletter that went out for its own
+       reasons. Its delivered, opens and unsubscribes belong to the newsletter,
+       not to this campaign, so those cells carry no key and render a dash. Only
+       the clicks on the FOWC link are the campaign's, and that is the only
+       figure an inclusion row publishes.
+
+       The inclusion figure is HubSpot's Top clicked links for that send, read
+       against the exact URL https://www.aws.org/educators/welding-curriculum/.
+       This Week in Welding on 19 May 2026 sent 58 clicks to the page out of 460
+       clicks on the newsletter as a whole.
+
+       Society Newsletter Q2 2026, 27 June, was checked and is deliberately
+       absent. All four pages of its Top clicked links were read and no
+       curriculum link appears in any of them, so it produced no measurable
+       clicks to the page. Its rendered text matches a search for "fowc" but
+       that match is not a clicked link. Absent beats a zero nobody can source.
+
+       Delivered, opens and clicks were re-pulled on 27 August. HubSpot restates
+       engagement after a send, so Email 1 now reads 2,464 opens against the
+       2,463 published on 20 August, and Email 2 reads 1,661 and 191 against
+       1,659 and 190. Restatement, not a correction. */
     sends: [
-      { n: 1, sent: "2026-04",
+      { n: 1, group: "dedicated", sent: "2026-04",
         subject: "Empower Your Students with AWS Fundamentals of Welding Curriculum",
         url: "https://app.hubspot.com/contacts/7723471/record/0-29/544122920036",
-        delivered: 8530, opens: 2463, clicks: 117, unsubs: 43 },
-      { n: 2, sent: "2026-06",
+        delivered: 8530, opens: 2464, clicks: 117, unsubs: 43 },
+      { n: 2, group: "dedicated", sent: "2026-06",
         subject: "See AWS Fundamentals of Welding Curriculum in Action: Schedule Your Demo Now!",
         url: "https://app.hubspot.com/contacts/7723471/record/0-29/555868224659",
-        delivered: 6212, opens: 1659, clicks: 190, unsubs: 14 },
-      { n: 3, scheduled: "After Oct 5, 2026" },
-      { n: 4, scheduled: "After Nov 30, 2026" }
+        delivered: 6212, opens: 1661, clicks: 191, unsubs: 14 },
+      { group: "inclusion", sent: "2026-05",
+        subject: "This Week in Welding, 19 May",
+        url: "https://app.hubspot.com/contacts/7723471/record/0-29/557221188021",
+        clicks: 58 },
+      { n: 3, group: "dedicated", scheduled: "After Oct 5, 2026" },
+      { n: 4, group: "dedicated", scheduled: "After Nov 30, 2026" }
     ]
- },
+  },
 
   /* Organic social, complete for calendar 2026. Built from the full platform
      inventory (501 organic posts: LinkedIn 226, Facebook 133, Instagram 142),
@@ -534,7 +562,7 @@ window.CAMPAIGN_DATA = {
        as a click on that link, so scans are inside the 22 and there is no separate
        figure to publish. */
     { channel: "Print ad",       item: "Welding Journal print ad",    due: "2026-08-03", status: "Done",
-      vanity: "weld.ng/curriculum", vanityUrl: "https://weld.ng/curriculum", clicks: 22, sessions: 11,
+      vanity: "weld.ng/curriculum", vanityUrl: "https://weld.ng/curriculum", clicks: 22, sessions: 14,
       headline: "Prepare students for success in welding",
       asset: "EDU_1045_2026_FOWC_AD FP.pdf",
       placement: "Full page, Welding Journal, August 2026 issue",
