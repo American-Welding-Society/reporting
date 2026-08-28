@@ -434,11 +434,13 @@
       /* The last-click explainer below is a sanctioned exception to the
          no-methodology rule, directed by the owner on 28 August 2026: without it a
          non-technical reader assumes assisting channels are counted here. */
-      /* Roque's wording, verbatim and nothing else, 28 August 2026. The prior-year
+      /* Roque's wording, verbatim, 28 August 2026 evening revision. The prior-year
          column names its own basis in its header instead. */
       var explain = (isPurchase ? "Purchase credit" : "Credit") +
-        " goes to the last click before the sign-up. For example, if a user clicked an ad in June, " +
-        "then came back through a search result in August and signed up, the credit will go to search.";
+        " goes to the source with the last click before the sign-up. For example, if a user sees our ad, " +
+        "then comes back later through a Google search and buys, search gets the credit, not the ad. " +
+        "So each channel's count below shows only the sales it closed. A channel may also have assisted " +
+        "sales that ended up credited to another channel, and there is currently no way to measure that.";
       set("attribution", card("Where the " + outLabel.toLowerCase() + " came from", "",
         '<div class="cscope below">' + explain + "</div>" +
         tbl('<th>Source</th><th class="r">Sessions</th><th class="r">' + esc(outLabel) + "</th>" +
@@ -513,7 +515,9 @@
       }
       var cre = P.creatives || [];
       if (cre.length) {
-        body += '<div class="sub hdln">What ran</div><div class="gal ads">' +
+        body += '<div class="sub hdln">What ran</div>' +
+          (P.creativesNote ? '<div class="note">' + esc(P.creativesNote) + "</div>" : "") +
+          '<div class="gal ads">' +
           cre.slice().sort(function (a, b) { return b.spend - a.spend; }).map(function (c) {
             var thumb = has(c.image)
               ? '<div class="thumb wide">' + (c.kind === "video" ? '<div class="play">&#9654;</div>' : "") + '<img src="' + esc(asset(c.image)) + '" alt="" loading="lazy"></div>'
@@ -524,15 +528,15 @@
               figs = [["Spend", money(c.spend)], ["Impressions", int(c.impressions)], ["Video views", int(c.views)],
                       ["View rate", ratio(c.views, c.impressions, 1)], ["Cost / view", (has(c.spend) && c.views) ? "$" + (c.spend / c.views).toFixed(3) : DASH], ["Clicks", int(c.clicks)]];
             } else {
-              figs = [["Spend", money(c.spend)], ["Impressions", int(c.impressions)], ["Clicks", int(c.clicks)],
+              figs = [["Spend", money(c.spend)], ["Impressions", int(c.impressions)], ["Landing page clicks", int(c.clicks)],
                       ["Click rate", ratio(c.clicks, c.impressions, 2)], ["Cost / click", per(c.spend, c.clicks)]];
             }
             var msgs = "";
             if ((c.messages || []).length) {
               var mv = c.kind === "video";
-              msgs = '<div class="tw"><table class="msgs"><thead><tr><th>Message</th><th class="r">Spend</th><th class="r">Impressions</th><th class="r">' + (mv ? "Views" : "Clicks") + "</th></tr></thead><tbody>" +
+              msgs = '<div class="tw"><table class="msgs"><thead><tr><th>Message</th><th class="r">Spend</th><th class="r">Impressions</th><th class="r">' + (mv ? "Views" : "Landing page clicks") + "</th></tr></thead><tbody>" +
                 c.messages.map(function (m) {
-                  return '<tr><td class="name">' + esc(m.message) + '</td><td class="r num">' + money(m.spend) +
+                  return '<tr><td class="name">' + (m.url ? '<a href="' + esc(m.url) + '" target="_blank" rel="noopener">' + esc(m.message) + "</a>" : esc(m.message)) + '</td><td class="r num">' + money(m.spend) +
                     '</td><td class="r num">' + int(m.impressions) + '</td><td class="r num">' + int(mv ? m.views : m.clicks) + "</td></tr>";
                 }).join("") + "</tbody></table></div>";
             }
