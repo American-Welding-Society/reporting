@@ -25,44 +25,47 @@ window.CAMPAIGN_DATA = {
  },
  "flags": {
   "hasPaid": true,
-  "hasOutcome": true
+  "hasOutcome": true,
+  "outcomeType": "purchase",
+  "hasPriorYear": true
  },
  "summary": [
   {
    "channel": "Marketing outcome",
-   "label": "New memberships, last click from marketing",
+   "label": "New memberships from marketing",
    "value": 40,
-   "fmt": "int"
+   "fmt": "int",
+   "sub": "20 in 2025"
   },
   {
    "channel": "Marketing outcome",
-   "label": "Revenue, last click from marketing",
+   "label": "Marketing-attributed revenue",
    "value": 14621,
-   "fmt": "money"
+   "fmt": "money0",
+   "sub": "of $89,944 total new-member revenue"
   },
   {
-   "channel": "Paid media",
-   "label": "Paid spend",
-   "value": 5999.95,
-   "fmt": "money"
+   "channel": "Marketing outcome",
+   "label": "Marketing share of new memberships",
+   "value": 16.7,
+   "fmt": "pct",
+   "sub": "9.0% in 2025"
+  }
+ ],
+ "summarySecondaryLabel": "All new memberships, every source",
+ "summarySecondary": [
+  {
+   "channel": "Overall",
+   "label": "Count",
+   "value": 239,
+   "fmt": "int",
+   "sub": "222 in 2025"
   },
   {
-   "channel": "Paid media",
-   "label": "Landing page clicks",
-   "value": 11143,
-   "fmt": "int"
-  },
-  {
-   "channel": "Marketing email",
-   "label": "Email clicks",
-   "value": 59,
-   "fmt": "int"
-  },
-  {
-   "channel": "Organic social",
-   "label": "Posts published",
-   "value": 2,
-   "fmt": "int"
+   "channel": "Overall",
+   "label": "Revenue",
+   "value": 89944,
+   "fmt": "money0"
   }
  ],
  "goal": {
@@ -70,12 +73,13 @@ window.CAMPAIGN_DATA = {
   "actual": 239
  },
  "outcomeProductsWithheld": true,
+ "trafficNote": "Paid search: this campaign ran no search ads. These visits came from ads for other American Welding Society campaigns that landed people on this page.",
  "landingPage": {
   "sessions": 22085,
   "engaged": 11932,
   "seconds": 732633,
-  "purchases": 239,
-  "revenue": 89944
+  "outcomeUnits": 239,
+  "outcomeRevenue": 89944
  },
  "channels": [
   {
@@ -107,6 +111,7 @@ window.CAMPAIGN_DATA = {
    "sessions": 1174,
    "engaged": 1138,
    "seconds": 98468,
+   "asterisk": true,
    "purchases": 32,
    "revenue": 12019
   },
@@ -468,80 +473,6 @@ window.CAMPAIGN_DATA = {
   "marketingPurchases": 20,
   "marketingRevenue": 7005
  },
- "monthly": [
-  {
-   "m": "Jan 2026",
-   "sessions": 1754,
-   "engaged": 1506,
-   "seconds": 105174,
-   "purchases": 48,
-   "revenue": 15275,
-   "partial": false
-  },
-  {
-   "m": "Feb 2026",
-   "sessions": 1714,
-   "engaged": 1475,
-   "seconds": 105967,
-   "purchases": 31,
-   "revenue": 11965,
-   "partial": false
-  },
-  {
-   "m": "Mar 2026",
-   "sessions": 1646,
-   "engaged": 1452,
-   "seconds": 100482,
-   "purchases": 55,
-   "revenue": 18124,
-   "partial": false
-  },
-  {
-   "m": "Apr 2026",
-   "sessions": 1252,
-   "engaged": 1078,
-   "seconds": 76114,
-   "purchases": 23,
-   "revenue": 10263,
-   "partial": false
-  },
-  {
-   "m": "May 2026",
-   "sessions": 4431,
-   "engaged": 1658,
-   "seconds": 86357,
-   "purchases": 13,
-   "revenue": 3993,
-   "partial": false
-  },
-  {
-   "m": "Jun 2026",
-   "sessions": 5462,
-   "engaged": 2004,
-   "seconds": 113654,
-   "purchases": 23,
-   "revenue": 10618,
-   "partial": false
-  },
-  {
-   "m": "Jul 2026",
-   "sessions": 4778,
-   "engaged": 1914,
-   "seconds": 81351,
-   "purchases": 24,
-   "revenue": 9534,
-   "partial": false
-  },
-  {
-   "m": "Aug 2026",
-   "sessions": 1048,
-   "engaged": 845,
-   "seconds": 63534,
-   "purchases": 22,
-   "revenue": 10172,
-   "partial": true
-  }
- ],
  "pages": [
   {
    "page": "Corporate Membership (main)",
@@ -641,14 +572,13 @@ window.CAMPAIGN_DATA = {
     "revenue": 200
    }
   ],
-  "classifiedByDecision": {
-   "name": "Edu Inst Mbr Dues Product, 1 year, domestic",
-   "units": 75,
-   "revenue": 20475,
-   "ruledBy": "Roque",
-   "ruledOn": "2026-08-27",
-   "why": "the product name carries neither New nor Renew and a separate Renew variant exists"
-  }
+  "rulings": [
+   {
+    "name": "Edu Inst Mbr Dues Product, 1 year, Domestic counted as NEW (75 units, $20,475; the name carries neither New nor Renew and a Renew variant exists)",
+    "ruledBy": "Roque",
+    "ruledOn": "2026-08-27"
+   }
+  ]
  },
  "paid": {
   "platforms": [
@@ -669,124 +599,55 @@ window.CAMPAIGN_DATA = {
     "spend": 2999.98,
     "clicks": 6766,
     "landingPageClicks": 6766,
-    "impressions": 269459,
-    "status": "Completed"
+    "impressions": 269459
    },
    {
     "name": "Corporate",
     "spend": 2999.97,
     "clicks": 4377,
     "landingPageClicks": 4377,
-    "impressions": 152318,
-    "status": "Active"
+    "impressions": 152318
    }
   ],
-  "artworkUnavailable": "LinkedIn returns 403 on the post and share endpoints for this token",
-  "reconciliation": {
-   "label": "LinkedIn landing-page clicks against sessions carrying a LinkedIn token",
-   "months": [
-    {
-     "m": "May 2026",
-     "clicks": 2924,
-     "sessions": 3094
-    },
-    {
-     "m": "Jun 2026",
-     "clicks": 4240,
-     "sessions": 4194
-    },
-    {
-     "m": "Jul 2026",
-     "clicks": 3899,
-     "sessions": 3660
-    },
-    {
-     "m": "Aug 2026",
-     "clicks": 80,
-     "sessions": 175
-    }
-   ],
-   "clicks": 11143,
-   "sessions": 11123,
-   "recordedDirect": 8570
-  }
+  "artworkUnavailable": "LinkedIn returns 403 on the post and share endpoints for this token"
  },
  "email": {
-  "window": "2026 sends only, live from HubSpot, bots excluded",
-  "note": "Only the membership email was updated. The rest of the corporate campaign emails remained the same. Re-enrolment was off and prior contacts were not backfilled, so the updated membership E1 has gone only to newly qualified contacts. That explains its small delivery count against the prior email's historical volume. Both columns here are 2026 sends, so the two are compared on the same year.",
-  "headline": [
-   {
-    "label": "Delivered",
-    "value": 112,
-    "fmt": "int",
-    "sub": "updated email, 2026"
-   },
-   {
-    "label": "Total clicks",
-    "value": 11,
-    "fmt": "int",
-    "sub": "bot-filtered click events"
-   },
-   {
-    "label": "Click rate",
-    "value": 8.04,
-    "fmt": "pct2",
-    "sub": "9 unique clickers / delivered"
-   },
-   {
-    "label": "Unsubscribe rate",
-    "value": 2.68,
-    "fmt": "pct2",
-    "sub": "3 opt-outs across 112 deliveries"
-   }
-  ],
+  "note": "The 2026 email has gone only to newly qualified contacts; existing contacts were not re-enrolled, which is why its volume is small.",
   "compare": {
-   "a": "Updated 2026 email",
-   "aSub": "Live 24 June 2026",
-   "b": "Prior email",
-   "bSub": "2026 sends only, to 26 August",
+   "a": "2026 email",
+   "aUrl": "https://app.hubspot.com/email/7723471/details/215902508376/performance",
+   "b": "Previous version (all time)",
+   "bUrl": "https://app.hubspot.com/email/7723471/details/183562765164/performance",
    "rows": [
     {
      "metric": "Delivered",
      "a": 112,
-     "b": 499,
+     "b": 42630,
      "fmt": "int"
     },
     {
      "metric": "Unique opens",
      "a": 35,
-     "b": 192,
+     "b": 2109,
      "fmt": "int"
     },
     {
      "metric": "Open rate",
      "a": 31.25,
-     "b": 38.48,
-     "fmt": "pct2"
+     "b": 4.95,
+     "fmt": "pct2",
+     "highlight": true
     },
     {
      "metric": "Total clicks",
      "a": 11,
-     "b": 48,
+     "b": 128,
      "fmt": "int"
     },
     {
      "metric": "Click rate",
      "a": 8.04,
-     "b": 6.01,
-     "fmt": "pct2",
-     "highlight": true
-    },
-    {
-     "metric": "Unsubscribes",
-     "a": 3,
-     "b": 2,
-     "fmt": "int"
-    },
-    {
-     "metric": "Unsubscribe rate",
-     "a": 2.68,
-     "b": 0.4,
+     "b": 0.22,
      "fmt": "pct2",
      "highlight": true
     }
@@ -803,6 +664,7 @@ window.CAMPAIGN_DATA = {
     "platform": "LinkedIn",
     "date": "2026-06-01",
     "mediaType": "image",
+    "url": "https://www.linkedin.com/posts/your-company-needs-to-hire-welders-inspectors-share-7467334302314278912-4fiz/",
     "image": "img/2026-06-01-linkedin-jobsinwelding.jpg",
     "caption": "Your company needs to hire welders, inspectors, engineers, and technical professionals, but finding qualified talent can be costly and time-consuming. AWS Corporate Membership gives your company the tools to recruit more efficiently.",
     "impressions": 2085,
@@ -817,8 +679,9 @@ window.CAMPAIGN_DATA = {
     "platform": "LinkedIn",
     "date": "2026-06-30",
     "mediaType": "image",
+    "url": "https://www.linkedin.com/posts/awsmembership-corporatemember-share-7477753001349242880-pHHQ/",
+    "image": "img/2026-06-30-linkedin-testimonial.png",
     "caption": "Organizations across the welding industry rely on AWS Sustaining Company Membership to stay connected, support workforce development, and access the resources needed to strengthen their businesses.",
-    "quote": "This Sustaining Company membership provides valuable access to industry resources, networking opportunities, and strategic engagement. — Emil Pagoaga, ETMS, AWS Sustaining Company Member",
     "impressions": 1983,
     "reach": 1521,
     "engagements": 43,
@@ -829,14 +692,16 @@ window.CAMPAIGN_DATA = {
    },
    {
     "platform": "LinkedIn",
-    "date": "2026-08-31",
+    "date": "2026-08-28",
     "mediaType": "image",
-    "scheduled": true,
+    "awaitingMetrics": true,
+    "url": "https://www.linkedin.com/posts/americanweldingsociety-corporatemembership-share-7499106004626837504-afHz/",
+    "image": "img/2026-08-28-linkedin-didyouknow.jpg",
     "caption": "Did you know? AWS Corporate Membership can do more than connect your company to the welding community—it can deliver benefits across your business."
    }
   ]
  },
- "delivery": [
+ "traditional": [
   {
    "channel": "Banner ad",
    "item": "May Banner Ad, F&M Magazine",
@@ -852,7 +717,7 @@ window.CAMPAIGN_DATA = {
    "placement": "Dedicated eBlast, Fabricator and Manufacturer list",
    "source": "fabricatingandmetalworking.com / email",
    "sessions": 133,
-   "engaged": 15
+   "seconds": 294
   },
   {
    "channel": "Banner ad",
@@ -862,7 +727,7 @@ window.CAMPAIGN_DATA = {
    "placement": "Banner, Fabricator and Manufacturer, July 2026",
    "source": "fabricatingandmetalworking.com / digital ad",
    "sessions": 189,
-   "engaged": 21,
+   "seconds": 96,
    "note": "both banner placements share one source tag"
   },
   {
