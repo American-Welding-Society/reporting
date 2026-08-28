@@ -4,736 +4,742 @@
 <title>Campaign Performance | American Welding Society</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-  * { box-sizing: border-box; }
-  body { margin:0; background:#F2F3F4; font-family:Arial,"Helvetica Neue",Helvetica,sans-serif; -webkit-font-smoothing:antialiased; color:#393B3B; }
-  .num { font-variant-numeric:tabular-nums; }
-  .hdln { font-family:"Helvetica Neue Condensed","HelveticaNeue-CondensedBold","Arial Narrow","Helvetica Neue",Arial,sans-serif; font-stretch:condensed; }
-  a { color:#0074E2; text-decoration:none; }
-  a:hover { color:#003767; text-decoration:underline; }
 
-  .wrap { min-height:100vh; padding:26px 24px 56px; display:flex; justify-content:center; }
-  .col { width:1180px; max-width:100%; display:flex; flex-direction:column; gap:16px; }
+<style>
+  /* Campaign dashboard template v2. The shell contains no numbers: every figure comes
+     from campaign-data.js. Sections render only when their data exists, and the nav is
+     built from what rendered, so a campaign with no paid media reads as complete. */
+  :root {
+    --navy:#001527; --deep:#003767; --blue:#0074E2; --orange:#F56A00;
+    --ink:#2E3132; --mid:#63696B; --faint:#9AA0A3;
+    --line:#E2E5E7; --hair:#EDEFF0; --wash:#F7F8F9; --page:#EBEEF0;
+    --up:#1B7F47; --down:#B93A26; --hold:#9A6B00;
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--page); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; font-size:13px; line-height:1.45; }
+  .num { font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }
+  .hdln { font-family:"Helvetica Neue Condensed","HelveticaNeue-CondensedBold","Arial Narrow","Helvetica Neue",Arial,sans-serif; font-stretch:condensed; }
+  a { color:var(--blue); text-decoration:none; }
+  a:hover { color:var(--deep); text-decoration:underline; }
+
+  .wrap { min-height:100vh; padding:28px 24px 72px; display:flex; justify-content:center; }
+  .col { width:1180px; max-width:100%; display:flex; flex-direction:column; gap:18px; }
 
   /* masthead */
-  .shell { border:1px solid #E3E5E6; border-radius:6px; overflow:hidden; display:flex; flex-direction:column; }
-  .mast { background:#001527; padding:19px 24px 17px; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; }
-  .org { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2.4px; color:#B6BABC; }
-  .ttl { font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:#fff; line-height:1.05; }
-  .through { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#fff; white-space:nowrap; }
-  .nav { background:#fff; display:flex; padding:0 24px; flex-wrap:wrap; gap:0 26px; }
-  .nav a { padding:14px 0 11px; font-size:12px; text-transform:uppercase; letter-spacing:1px; font-weight:600; color:#6E7274; border-bottom:3px solid transparent; white-space:nowrap; }
-  .nav a:hover { color:#003767; border-bottom-color:#F56A00; text-decoration:none; }
-  .scope { background:#FAFAFA; border-top:1px solid #EDEEEF; padding:11px 24px 12px; display:flex; align-items:flex-start; gap:0 30px; flex-wrap:wrap; row-gap:10px; }
-  .sclinks { display:flex; gap:16px; align-items:center; font-size:12px; font-weight:600; }
+  .shell { border-radius:10px; overflow:hidden; box-shadow:0 1px 3px rgba(0,21,39,0.10); }
+  .mast { background:var(--navy); padding:26px 28px 24px; display:flex; align-items:flex-end;
+    justify-content:space-between; gap:28px; border-top:3px solid var(--orange); }
+  .org { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2.6px; color:#8FA0AE; }
+  .ttl { font-size:34px; font-weight:700; text-transform:uppercase; letter-spacing:0.2px; color:#fff; line-height:1.02; margin-top:7px; }
+  .through { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.4px; color:#CBD4DA;
+    white-space:nowrap; border:1px solid rgba(255,255,255,0.22); border-radius:3px; padding:6px 11px; }
+  .links { background:#fff; border-top:1px solid var(--line); padding:12px 28px; display:flex;
+    gap:14px; align-items:center; font-size:12px; font-weight:600; flex-wrap:wrap; }
+  .links a { white-space:nowrap; }
+  .links .sep { color:#C6CBCE; font-weight:400; }
+
+  .navbar { position:sticky; top:0; z-index:30; background:rgba(255,255,255,0.97);
+    border:1px solid var(--line); border-radius:8px; box-shadow:0 1px 2px rgba(0,21,39,0.06); }
+  .nav { display:flex; padding:0 20px; flex-wrap:wrap; gap:0 24px; }
+  .nav a { padding:13px 0 10px; font-size:11px; text-transform:uppercase; letter-spacing:1.3px;
+    font-weight:700; color:var(--mid); border-bottom:2px solid transparent; white-space:nowrap; }
+  .nav a:hover { color:var(--navy); text-decoration:none; border-bottom-color:#C6CBCE; }
+  .nav a.on { color:var(--navy); border-bottom-color:var(--orange); }
+  #traffic, #attribution, #paid, #email, #social, #traditional, #video { scroll-margin-top:64px; }
 
   /* cards */
-  .card { background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:16px 18px; display:flex; flex-direction:column; gap:13px; }
-  .chd { display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; }
-  .ctitle { font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#001527; white-space:nowrap; }
-  .cscope { font-size:10.5px; color:#6E7274; }
-  .sub { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.1px; color:#A7ABAD; padding-top:3px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:8px; padding:0 20px 20px;
+    display:flex; flex-direction:column; gap:16px; box-shadow:0 1px 2px rgba(0,21,39,0.04); }
+  .chd { display:flex; justify-content:space-between; align-items:baseline; gap:14px; flex-wrap:wrap;
+    margin:0 -20px; padding:15px 20px 13px; border-bottom:1px solid var(--hair); }
+  .ctitle { font-size:15px; font-weight:700; text-transform:uppercase; letter-spacing:0.9px; color:var(--navy);
+    white-space:nowrap; flex:0 0 auto; }
+  .cscope { font-size:11.5px; color:var(--mid); line-height:1.55; max-width:78ch; text-wrap:pretty; }
+  .cscope.below { max-width:none; margin-bottom:-2px; }
+  .sub { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.3px; color:var(--faint);
+    padding-top:4px; display:flex; align-items:center; gap:9px; }
+  .sub::after { content:""; flex:1; height:1px; background:var(--hair); }
+  .herolabel { padding-top:2px; padding-bottom:2px; font-size:11px; color:var(--mid); margin-bottom:-12px; }
+  .strip .si.head { background:var(--navy); border-left:none; border-radius:7px 0 0 7px; }
+  .strip .si.head .sil { color:#fff; }
 
-  /* kpi strip */
-  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(178px,1fr)); gap:12px; }
-  .kpi { background:#fff; border:1px solid #E3E5E6; border-radius:4px; padding:15px 16px; display:flex; flex-direction:column; gap:7px; }
-  .kch { font-size:9px; letter-spacing:1.1px; text-transform:uppercase; color:#A7ABAD; font-weight:700; }
-  .klab { font-size:10.5px; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; font-weight:700; }
-  .kval { font-size:29px; font-weight:700; color:#001527; line-height:1; margin-top:auto; }
-  .kpend { font-size:11px; font-weight:700; letter-spacing:0.9px; text-transform:uppercase; color:#A7ABAD; }
+  /* kpi tiles */
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(178px,1fr)); gap:14px; }
+  .kpi { background:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:16px 18px 18px; display:flex; flex-direction:column; gap:5px; min-height:128px;
+    box-shadow:0 1px 2px rgba(0,21,39,0.05); }
+  .kch { font-size:9px; letter-spacing:1.3px; text-transform:uppercase; color:var(--faint); font-weight:700; }
+  .klab { font-size:11.5px; color:var(--mid); font-weight:600; line-height:1.35; }
+  .ksub { font-size:10.5px; color:var(--faint); line-height:1.4; }
+  .kval { font-size:36px; font-weight:700; color:var(--navy); line-height:1; margin-top:auto;
+    padding-top:10px; letter-spacing:-0.5px; }
+  .card.strip { flex-direction:row; flex-wrap:wrap; gap:0; align-items:stretch; padding:0; margin-top:-6px; }
+  .strip .si { padding:12px 22px; display:flex; align-items:baseline; gap:8px; flex:0 1 auto;
+    border-left:1px solid var(--hair); white-space:nowrap; }
+  .strip .si:first-child { border-left:none; }
+  .strip .sil { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.1px; color:var(--faint); }
+  .strip .siv { font-size:17px; font-weight:700; color:var(--navy); }
+  .strip .sis { font-size:10.5px; color:var(--mid); }
 
   /* tables */
   .tw { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
   table { border-collapse:collapse; width:100%; font-size:12.5px; }
-  th { text-align:left; font-size:9.5px; letter-spacing:0.7px; text-transform:uppercase; color:#6E7274; font-weight:700; padding:0 10px 7px 0; border-bottom:1px solid #E3E5E6; white-space:nowrap; }
-  td { padding:9px 10px 9px 0; border-bottom:1px solid #EDEEEF; vertical-align:middle; white-space:nowrap; }
+  table.sortable th { cursor:pointer; user-select:none; }
+  table.sortable th::after { content:"\2195"; margin-left:5px; color:transparent; font-size:9px; }
+  table.sortable th:hover { color:var(--navy); }
+  table.sortable th:hover::after { color:#C6CBCE; }
+  table.sortable th.sorted { color:var(--navy); }
+  table.sortable th.sorted::after { color:var(--blue); }
+  table.sortable th.sorted[data-dir="asc"]::after { content:"\2191"; }
+  table.sortable th.sorted[data-dir="desc"]::after { content:"\2193"; }
+  th { text-align:left; font-size:9.5px; letter-spacing:0.9px; text-transform:uppercase; color:var(--mid);
+    font-weight:700; padding:0 12px 8px 0; border-bottom:1px solid var(--line); white-space:nowrap; }
+  td { padding:10px 12px 10px 0; border-bottom:1px solid var(--hair); vertical-align:middle; white-space:nowrap; }
   tbody tr:last-child td { border-bottom:none; }
+  tbody tr:hover td { background:#F9FAFB; }
   td.r, th.r { text-align:right; padding-right:0; }
-  th.r + th, td.r + td { padding-left:14px; }
-  tr.tot td { font-weight:700; color:#001527; border-top:1.5px solid #001527; border-bottom:none; }
-  .name { font-weight:600; }
-  .dim { color:#6E7274; }
-  .em { color:#A7ABAD; }
-  .id { font-size:11px; color:#A7ABAD; }
-  .msub { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; }
-  .up { color:#1F8A4C; font-weight:700; }
-  .down { color:#C0402B; font-weight:700; }
-  .note { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; }
+  th.r + th, td.r + td { padding-left:16px; }
+  tr.tot td { font-weight:700; color:var(--navy); border-top:1.5px solid var(--navy); border-bottom:none;
+    background:#F5F7F8; padding-top:11px; padding-bottom:11px; }
+  tr.tot:hover td { background:#F1F4F6; }
+  tr.subt td { font-weight:700; color:var(--navy); border-top:1px solid #C6CBCE; }
+  tr.grp td, tr.grp:hover td { background:var(--navy); color:#fff; font-size:9px; font-weight:700;
+    text-transform:uppercase; letter-spacing:1.4px; padding:7px 12px 7px 0; text-indent:12px; }
+  .name { font-weight:600; color:var(--navy); }
+  .dim { color:var(--mid); font-weight:400; }
+  .up { color:var(--up); font-weight:700; }
+  .down { color:var(--down); font-weight:700; }
+  .note { font-size:11px; line-height:1.55; color:var(--mid); font-weight:400; text-wrap:pretty; }
+  .callout { display:block; background:var(--wash); border:1px solid var(--hair); border-radius:6px; padding:11px 13px; }
+  .pill { display:inline-block; font-size:9px; font-weight:700; letter-spacing:0.9px; text-transform:uppercase;
+    border-radius:3px; padding:3px 8px; }
+  .ok { background:#E7F3EC; color:var(--up); }
+  .warn { background:#F6EFDF; color:var(--hold); }
+  .flat { background:#EFF1F2; color:var(--mid); }
+  .chip { font-size:8.5px; font-weight:700; letter-spacing:0.8px; background:#E7F1FC; color:var(--blue); border-radius:2px; padding:2px 5px; vertical-align:1px; }
 
-  .ok { background:#E8F3EC; color:#1F8A4C; }
-  .warn { background:#F3EEE1; color:#B07A00; }
-  .flat { background:#F2F3F4; color:#6E7274; }
-  .bad { background:#FBEDEA; color:#C0402B; }
+  /* share bars */
+  .mshare { display:flex; flex-direction:column; gap:7px; }
+  .msrow { display:flex; justify-content:space-between; font-size:11.5px; color:var(--mid); }
+  .msrow b { color:var(--navy); }
+  .msbar { height:12px; background:var(--hair); border-radius:3px; overflow:hidden; }
+  .msbar i { display:block; height:100%; background:var(--blue); }
+  .sbar { display:block; width:100%; min-width:96px; height:6px; background:#EFF1F2; border-radius:3px; }
+  .sbar i { display:block; height:100%; background:#8DB9E9; border-radius:3px; }
 
-  .rlab { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6E7274; }
-  .rval { font-size:17px; font-weight:700; color:#001527; padding-top:3px; }
-
-  /* share bars in channel table */
-  .sbar { display:block; width:100%; min-width:110px; height:8px; background:#F2F3F4; border-radius:1px; }
-  .sbar i { display:block; height:100%; background:#7FB2E8; border-radius:1px; }
-
-  /* timeline */
-  .tl { display:flex; flex-direction:column; gap:0; }
-  .tlcap { display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:2px 0 7px; }
-  .tlkey { font-size:9px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:#A7ABAD; margin-left:12px; }
-  .tlkey i { display:inline-block; width:14px; height:3px; border-radius:2px; vertical-align:3px; margin-right:5px; }
-  .tlname { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.9px; color:#001527; }
-  .tlmax { font-size:10px; color:#6E7274; }
-  .tlgrid { display:grid; gap:0 8px; }
-  .tlcell { display:flex; flex-direction:column; gap:5px; }
-  .band { display:flex; align-items:flex-end; }
-  .bar { width:100%; border-radius:1px 1px 0 0; min-height:2px; }
-  .bval { font-size:10.5px; text-align:center; color:#393B3B; }
-  .ln { width:100%; height:auto; display:block; overflow:visible; }
-  .tlx { display:grid; gap:0 8px; border-top:1px solid #E3E5E6; padding-top:7px; }
-  .tlm { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#6E7274; text-align:center; }
-  .tlp { font-size:9px; color:#A7ABAD; text-align:center; }
-
-  /* social gallery */
-  .gal { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; }
-  .post { border:1px solid #E3E5E6; border-radius:3px; overflow:hidden; display:flex; flex-direction:column; }
-  .thumb { position:relative; aspect-ratio:1/1; background:#F2F3F4 repeating-linear-gradient(135deg,#EDEEEF 0 6px,#F6F7F7 6px 12px); display:flex; align-items:center; justify-content:center; }
+  /* galleries (organic social, paid creatives, traditional artwork, video) */
+  .gal { display:grid; grid-template-columns:repeat(auto-fill,minmax(196px,1fr)); gap:14px; }
+  .gal.ads { grid-template-columns:repeat(auto-fill,minmax(268px,1fr)); }
+  .post { border:1px solid var(--line); border-radius:7px; overflow:hidden; display:flex; flex-direction:column;
+    background:#fff; transition:border-color .15s, box-shadow .15s; }
+  .post:hover { border-color:#C6CBCE; box-shadow:0 2px 8px rgba(0,21,39,0.07); }
+  .thumb { position:relative; aspect-ratio:1/1; background:#F2F3F4 repeating-linear-gradient(135deg,#E9EBEC 0 6px,#F4F5F6 6px 12px); display:flex; align-items:center; justify-content:center; }
+  .thumb.wide { aspect-ratio:16/10; }
   .thumb img { width:100%; height:100%; object-fit:contain; display:block; background:#FFFFFF; }
-  .thlab { font-size:9px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:#A7ABAD; }
-  .quote { padding:14px; font-size:11.5px; line-height:1.5; color:#6E7274; align-self:center; }
-  .play { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:34px; height:34px; border-radius:50%; background:rgba(0,21,39,0.72); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; padding-left:3px; }
-  .dur { position:absolute; right:6px; bottom:6px; background:rgba(0,21,39,0.78); color:#fff; font-size:9.5px; font-weight:700; padding:2px 5px; border-radius:2px; }
-  .pmeta { padding:9px 10px 10px; display:flex; flex-direction:column; gap:7px; }
-  .pplat { display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#A7ABAD; }
-  .pcap { font-size:11.5px; line-height:1.4; color:#393B3B; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
-  .pfig { display:flex; flex-wrap:wrap; gap:6px 10px; border-top:1px solid #EDEEEF; padding-top:7px; }
+  .quote { padding:16px; font-size:12px; line-height:1.55; color:var(--mid); align-self:center; text-wrap:pretty; }
+  .play { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:38px; height:38px; border-radius:50%; background:rgba(0,21,39,0.72); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; padding-left:3px; }
+  .dur { position:absolute; right:7px; bottom:7px; background:rgba(0,21,39,0.80); color:#fff; font-size:9.5px; font-weight:700; padding:2px 6px; border-radius:3px; }
+  .pmeta { padding:11px 12px 13px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .pplat { display:flex; justify-content:space-between; align-items:baseline; gap:4px 8px; flex-wrap:wrap; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1.1px; color:var(--faint); }
+  .pplat > span, .pplat > a { white-space:nowrap; }
+  .pcap { font-size:11.5px; line-height:1.5; color:var(--ink); display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; text-wrap:pretty; }
+  .adname { font-size:12.5px; font-weight:700; color:var(--navy); line-height:1.35; }
+  .pfig { display:grid; grid-template-columns:repeat(auto-fit,minmax(74px,1fr)); gap:10px 14px;
+    margin-top:auto; padding-top:10px; border-top:1px solid var(--hair); }
   .pf { min-width:0; }
-  .pview { font-size:10px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; }
-  .pf { display:flex; flex-direction:column; gap:1px; }
-  .pfl { font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#A7ABAD; }
-  .pfv { font-size:13px; font-weight:700; color:#001527; }
-  .more { align-self:flex-start; background:#fff; border:1px solid #CFD2D4; border-radius:3px; padding:8px 14px; font:inherit; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.9px; color:#003767; cursor:pointer; }
-  .more:hover { border-color:#003767; }
-  .galsum { display:flex; gap:30px; flex-wrap:wrap; border-bottom:1px solid #EDEEEF; padding-bottom:11px; }
-
-  /* paid creative gallery: same tiles, wider, 16:9 art */
-  .gal.ads { grid-template-columns:repeat(auto-fill,minmax(430px,1fr)); gap:16px; }
-  .post.ad .thumb { aspect-ratio:16/9; }
-  .post.ad.print .thumb { aspect-ratio:3/4; background:#fff; }
-  .post.ad.print .thumb img { object-fit:contain; background:#fff; }
-  .gal.ads.trad { grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); }
-  .gal.ads .post.ad.print { max-width:400px; }
-  .post.ad .thumb { background:#0E1B26; }
-  .post.ad .thumb img { object-fit:contain; background:#0E1B26; }
-  .adkind { font-size:8.5px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:#A7ABAD; }
-  .adcamp { font-size:8.5px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:#0074E2; }
-  .adname { font-size:13.5px; font-weight:700; line-height:1.25; color:#001527; }
-  .pcta { font-size:9.5px; font-weight:700; letter-spacing:0.9px; text-transform:uppercase; color:#6E7274; }
-  .post.ad .tw { margin-top:2px; }
-  .post.ad td, .post.ad th { font-size:11.5px; padding-top:6px; padding-bottom:6px; }
-  .post.ad td.name { white-space:normal; line-height:1.3; }
-  .post.ad table { table-layout:fixed; }
-  .post.ad th:first-child, .post.ad td:first-child { width:38%; }
-  .post.ad th { font-size:9px; letter-spacing:0.4px; }
-  .post.ad th.r, .post.ad td.r { padding-left:6px; }
-  .bought { display:inline-block; align-self:flex-start; font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:3px 7px; border-radius:2px; }
-
-  .pill { display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:3px 8px; border-radius:2px; }
-  .grant { display:flex; justify-content:space-between; align-items:center; gap:12px; background:#FAFAFA; border:1px solid #EDEEEF; border-radius:3px; padding:10px 12px; }
-  .grantl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.9px; color:#6E7274; }
-  .grantn { font-size:10.5px; color:#A7ABAD; }
-  .msp { display:grid; gap:0 8px; }
-  .mspc { display:flex; flex-direction:column; gap:4px; border-left:1px solid #EDEEEF; padding:0 0 0 9px; }
-  .mspm { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#A7ABAD; }
-  .mspv { font-size:12.5px; font-weight:600; color:#393B3B; }
-
-
-  #err { display:none; background:#fff; border:1px solid #E3E5E6; border-left:3px solid #B07A00; border-radius:4px; padding:16px 18px; font-size:12.5px; }
+  .pf .pfl { font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--faint); line-height:1.3; }
+  .pf .pfv { font-size:16px; font-weight:700; color:var(--navy); }
+  .pview { font-size:9px; font-weight:700; letter-spacing:0.9px; text-transform:uppercase; }
+  .galsum { display:flex; flex-wrap:wrap; gap:0; border:1px solid var(--hair); border-radius:7px; background:var(--wash); }
+  .gs { padding:11px 20px; border-left:1px solid var(--hair); flex:0 1 auto; }
+  .gs:first-child { border-left:none; }
+  .gs .l { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.1px; color:var(--faint); }
+  .gs .v { font-size:21px; font-weight:700; color:var(--navy); padding-top:3px; line-height:1.15; white-space:nowrap; }
+  .msgs { font-size:11px; }
+  .msgs th { font-size:8.5px; padding-bottom:6px; }
+  .msgs td { padding:5px 10px 5px 0; }
+  .enote { font-size:11.5px; line-height:1.6; color:var(--mid); border-top:1px solid var(--hair); padding-top:13px; text-wrap:pretty; }
 
   @media (max-width:960px) {
-    .prow { grid-template-columns:118px 1fr 120px; gap:12px; }
+    .kpis { grid-template-columns:repeat(2,1fr); }
+    .ttl { font-size:28px; }
   }
   @media (max-width:520px) {
-    .wrap { padding:14px 12px 40px; }
-    .ttl { font-size:19px; }
-    .mast { flex-direction:column; align-items:flex-start; gap:10px; }
-
-    .prow { grid-template-columns:1fr; gap:7px; }
-    .pval { text-align:left; }
+    .wrap { padding:12px 10px 44px; }
+    .kpis { grid-template-columns:1fr; }
+    .mast { flex-direction:column; align-items:flex-start; gap:12px; padding:20px 18px 18px; }
+    .card { padding:0 14px 16px; }
+    .chd { margin:0 -14px; padding:13px 14px 11px; }
+    .ctitle { white-space:normal; }
+    .links { padding:11px 14px; }
+    .nav { padding:0 14px; }
+    .strip .si { border-left:none; padding:9px 14px; }
+    .gal, .gal.ads { grid-template-columns:1fr; }
   }
 </style>
-
-</head>
-<body>
+</head><body>
 <div class="wrap"><div class="col">
-
   <div class="shell">
     <div class="mast">
-      <div style="display:flex; flex-direction:column; gap:5px;">
+      <div>
         <div class="org">American Welding Society</div>
-        <div class="ttl hdln" id="mTitle"></div>
+        <div class="ttl hdln" id="title"></div>
       </div>
-      <div class="through hdln num" id="mThrough"></div>
+      <div class="through num" id="through"></div>
     </div>
-    <div class="nav" id="nav"></div>
-    <div class="scope" id="scope"></div>
+    <div class="links" id="hlinks"></div>
   </div>
+  <div class="navbar" id="navbar"><div class="nav" id="nav"></div></div>
 
-  <div id="err">No data file loaded. This page renders from a generated <code>&lt;campaign&gt;-data.js</code> in the same directory.</div>
-
-  <div class="kpis" id="summary"></div>
+  <div class="kpis" id="kpis"></div>
+  <div id="attribution"></div>
   <div id="traffic"></div>
-  <div id="timeline"></div>
   <div id="paid"></div>
   <div id="email"></div>
   <div id="social"></div>
-  <div id="delivery"></div>
-
+  <div id="traditional"></div>
+  <div id="video"></div>
 </div></div>
 
 <script>
 (function () {
-  var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  var DASH = '<span class="em">&mdash;</span>';
+  "use strict";
+  var DASH = "—";
+  var NAVY = "#001527", BLUE = "#0074E2", ORANGE = "#F56A00", GREY = "#B6BABC",
+      LIGHT = "#EDEEEF", DIM = "#6E7274";
 
-  function has(v) { return v !== null && v !== undefined && v !== ""; }
+  function has(v) { return v !== undefined && v !== null; }
+  function asset(u) {
+    var id = (window.__assetMap || {})[u];
+    return (id && window.__resources && window.__resources[id]) || u;
+  }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
   function int(v) { return has(v) ? Math.round(v).toLocaleString("en-US") : DASH; }
   function money(v) { return has(v) ? "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : DASH; }
   function money0(v) { return has(v) ? "$" + Math.round(v).toLocaleString("en-US") : DASH; }
   function pct(v, d) { return has(v) ? v.toFixed(d === undefined ? 1 : d) + "%" : DASH; }
-  function ratio(a, b, d) { return has(a) && has(b) && b ? pct(a / b * 100, d) : DASH; }
-  function per(a, b) { return has(a) && has(b) && b ? "$" + (a / b).toFixed(2) : DASH; }
-  /* GA4 gives total engagement seconds; the average is seconds divided by the
-     session count printed in the same row, so a reader can reproduce it. */
-  function dur(sec, n) {
-    if (!has(sec) || !has(n) || !n) return DASH;
-    var v = Math.round(sec / n);
-    if (v < 60) return v + "s";
-    var m = Math.floor(v / 60), r = v % 60;
-    return m + "m " + (r < 10 ? "0" : "") + r + "s";
+  function ratio(a, b, d) { return (has(a) && has(b) && b) ? pct(100 * a / b, d) : DASH; }
+  function per(spend, n) { return (has(spend) && has(n) && n) ? money(spend / n) : DASH; }
+  function dur(seconds, sessions) {
+    if (!has(seconds) || !sessions) return DASH;
+    var s = Math.round(seconds / sessions);
+    return s >= 60 ? Math.floor(s / 60) + "m " + String(s % 60).padStart(2, "0") + "s" : s + "s";
   }
-  function fmt(v, f) { return f === "money" ? money(v) : f === "money0" ? money0(v) : f === "pct" ? pct(v, 1) : f === "pct2" ? pct(v, 2) : int(v); }
-  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
-  function day(iso) {
-    if (!has(iso)) return "";
-    var p = iso.split("-");
-    return MONTHS[+p[1] - 1] + " " + (+p[2]) + ", " + p[0];
+  function fmtv(v, f) {
+    return f === "money" ? money(v) : f === "money0" ? money0(v)
+      : f === "pct" ? pct(v) : f === "pct2" ? pct(v, 2) : int(v);
   }
+  var MO = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   function dayShort(iso) {
     if (!has(iso)) return DASH;
     var p = String(iso).split("-");
-    if (p.length < 2) return String(iso);
-    if (p.length === 2) return MONTHS[+p[1] - 1] + " " + p[0];
-    return MONTHS[+p[1] - 1] + " " + (+p[2]);
+    return p.length >= 3 ? MO[+p[1] - 1] + " " + (+p[2]) : esc(iso);
   }
-  function mlab(iso) { var p = String(iso).split("-"); return MONTHS[+p[1] - 1]; }
+  function longDate(iso) {
+    var p = String(iso).split("-");
+    return MO[+p[1] - 1].toUpperCase() + " " + (+p[2]) + ", " + p[0];
+  }
+  /* Percentage change. A missing or zero base renders a dash: never an invented or
+     infinite change. */
+  function chg(now, was) {
+    if (!has(now) || !has(was) || !was) return DASH;
+    var d = (now - was) / was * 100;
+    var cls = Math.abs(d) < 0.05 ? "" : d > 0 ? "up" : "down";
+    return '<span class="' + cls + ' num">' + (d > 0 ? "+" : d < 0 ? "−" : "") + Math.abs(d).toFixed(1) + "%</span>";
+  }
   function set(id, html) { document.getElementById(id).innerHTML = html; }
   function card(title, scope, body) {
-    return '<div class="card"><div class="chd"><div class="ctitle hdln">' + title + '</div>' +
-      (scope ? '<div class="cscope">' + scope + "</div>" : "") + "</div>" + body + "</div>";
+    return '<div class="card"><div class="chd"><div class="ctitle hdln">' + esc(title) +
+      '</div><div class="cscope">' + scope + "</div></div>" + body + "</div>";
   }
-  function tbl(head, rows, foot) {
-    return '<div class="tw"><table><thead><tr>' + head + "</tr></thead><tbody>" + rows + "</tbody>" +
-      (foot ? "<tfoot>" + foot + "</tfoot>" : "") + "</table></div>";
+  function tbl(head, rows, foot, sortable) {
+    return '<div class="tw"><table' + (sortable ? ' class="sortable"' : "") + '><thead><tr>' + head +
+      "</tr></thead><tbody>" + rows + (foot || "") + "</tbody></table></div>";
   }
-  function link(url, text) { return has(url) ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + text + "</a>" : text; }
+  /* Click a column heading to sort. Totals rows stay pinned at the bottom; tables with
+     group headers are never sortable because sorting would scramble the groups. */
+  function cellVal(td) {
+    var t = td.textContent.replace(/[$,%\s]/g, "");
+    if (t === "" || t === "\u2014") return -Infinity;
+    var n = parseFloat(t);
+    return isNaN(n) ? td.textContent.trim().toLowerCase() : n;
+  }
+  document.addEventListener("click", function (ev) {
+    var th = ev.target.closest("table.sortable th");
+    if (!th) return;
+    var table = th.closest("table"), body = table.tBodies[0];
+    var idx = [].indexOf.call(th.parentNode.children, th);
+    var dir = th.getAttribute("data-dir") === "desc" ? 1 : -1;
+    [].forEach.call(th.parentNode.children, function (h) { h.removeAttribute("data-dir"); h.classList.remove("sorted"); });
+    th.setAttribute("data-dir", dir === 1 ? "asc" : "desc");
+    th.classList.add("sorted");
+    var rows = [].slice.call(body.rows);
+    var pinned = rows.filter(function (r) { return r.classList.contains("tot"); });
+    var live = rows.filter(function (r) { return !r.classList.contains("tot"); });
+    live.sort(function (a, b) {
+      var va = cellVal(a.cells[idx]), vb = cellVal(b.cells[idx]);
+      return va < vb ? dir : va > vb ? -dir : 0;
+    });
+    live.concat(pinned).forEach(function (r) { body.appendChild(r); });
+  });
+  /* Monday vocabulary never reaches the page. */
+  function state(v) {
+    var t = String(v || "").toLowerCase();
+    if (/done|deliver|publish|sent|live|complete/.test(t)) return "Done";
+    if (/progress|stuck|review|draft|schedul|working/.test(t)) return "In progress";
+    return "Not started";
+  }
+  function pillFor(st) {
+    return '<span class="pill ' + (st === "Done" ? "ok" : st === "In progress" ? "warn" : "flat") + '">' + st + "</span>";
+  }
 
   function render() {
     var D = window.CAMPAIGN_DATA;
-    if (!D) { document.getElementById("err").style.display = "block"; return; }
-    var M = D.meta || {}, F = D.flags || {};
-    var paid = F.hasPaid && D.paid, outcome = F.hasOutcome;
+    if (!D) return;
+    var F = D.flags || {};
+    var isPurchase = F.outcomeType === "purchase";
+    var outLabel = (D.outcome && D.outcome.label) || (isPurchase ? "Purchases" : "Submissions");
+    var hasYo = !!F.hasPriorYear && !!D.prior;
 
-    document.title = M.campaign + " | Campaign Performance | American Welding Society";
-    set("mTitle", esc(M.campaign));
-    set("mThrough", "Data through " + day(M.dataThrough));
-
-    /* nav: only sections that render */
-    var secs = [];
-    if (D.channels && D.channels.length) secs.push(["Traffic", "traffic"]);
-    if ((D.monthly || []).length) secs.push(["Timeline", "timeline"]);
-    if (paid) secs.push(["Paid Media", "paid"]);
-    if ((D.email && D.email.sends || []).length) secs.push(["Email", "email"]);
-    if (D.social && (D.social.posts || []).length) secs.push(["Organic Social", "social"]);
-    if ((D.delivery || []).length) secs.push(["What Ran", "delivery"]);
-    set("nav", secs.map(function (s) { return '<a href="#' + s[1] + '">' + s[0] + "</a>"; }).join(""));
-
-    /* Header links only. The dashboard carries one date, the data-through stamp
-       in the masthead. Campaign window, landing page live date and the paid
-       spend cut-off were removed on 20 Aug 2026 at Roque's instruction. */
+    /* masthead */
+    set("title", esc(D.meta.campaign));
+    set("through", "DATA THROUGH " + longDate(D.meta.dataThrough));
     var links = [];
-    if (M.landingPage) links.push(link(M.landingPage, esc(M.landingPath || "Landing page")));
-    if (M.formUrl) links.push(link(M.formUrl, "Form"));
-    if (M.mondayBoard) links.push(link(M.mondayBoard, "Monday board"));
-    set("scope", links.length ? '<div class="sclinks">' + links.join('<span style="color:#CFD2D4;">&#124;</span>') + "</div>" : "");
-    if (!links.length) document.getElementById("scope").style.display = "none";
+    if (D.meta.landingPage) links.push('<a href="' + esc(D.meta.landingPage) + '" target="_blank" rel="noopener">' + esc(D.meta.landingPath || "Landing page") + "</a>");
+    if (D.meta.formUrl) links.push('<a href="' + esc(D.meta.formUrl) + '" target="_blank" rel="noopener">Form</a>');
+    if (D.meta.mondayBoard) links.push('<a href="' + esc(D.meta.mondayBoard) + '" target="_blank" rel="noopener">Monday board</a>');
+    set("hlinks", links.join('<span class="sep">|</span>'));
 
-    /* 1. channel summary */
-    set("summary", (D.summary || []).map(function (s) {
-      return '<div class="kpi"><div class="kch">' + esc(s.channel) + "</div>" +
-        '<div class="klab hdln">' + esc(s.label) + "</div>" +
-        '<div class="kval num hdln">' + (s.pending ? '<span class="kpend">not connected</span>' : fmt(s.value, s.fmt)) + "</div></div>";
-    }).join(""));
+    /* 1. summary tiles. The PRIMARY row is marketing and its impact, always; overall
+       figures such as the all-in outcome and total sessions live in the secondary row
+       below it. Owner direction, given more than once, 27-28 August 2026. */
+    /* The tiles in the hero row are one class of figure. When they share a channel the
+       row carries that name once, instead of stamping the same word on every tile; a
+       tile from a different channel still says so. */
+    var tileCount = {}, rowLabel = "";
+    (D.summary || []).forEach(function (t) { tileCount[t.channel] = (tileCount[t.channel] || 0) + 1; });
+    Object.keys(tileCount).forEach(function (k) { if (!rowLabel || tileCount[k] > tileCount[rowLabel]) rowLabel = k; });
+    if ((tileCount[rowLabel] || 0) < 2) rowLabel = "";
+    function tile(t) {
+      return '<div class="kpi">' +
+        (t.channel && t.channel !== rowLabel ? '<div class="kch">' + esc(t.channel) + "</div>" : "") +
+        '<div class="klab">' + esc(t.label) + '</div><div class="kval num">' + fmtv(t.value, t.fmt) + "</div>" +
+        (t.sub ? '<div class="ksub">' + esc(t.sub) + "</div>" : "") + "</div>";
+    }
+    set("kpis", (D.summary || []).map(tile).join(""));
+    var kEl0 = document.getElementById("kpis");
+    var oldLabel = document.getElementById("herolabel");
+    if (oldLabel) oldLabel.remove();
+    if (rowLabel) {
+      var hl = document.createElement("div");
+      hl.className = "sub hdln herolabel"; hl.id = "herolabel"; hl.textContent = rowLabel;
+      kEl0.parentNode.insertBefore(hl, kEl0);
+    }
+    /* The overall figures read as one slim context strip under the hero row, so the
+       page opens on marketing's story without a second wall of boxes. */
+    var sec = D.summarySecondary || [];
+    var kEl = document.getElementById("kpis");
+    var old = document.getElementById("kpis2");
+    if (old) old.remove();
+    if (sec.length) {
+      var div = document.createElement("div");
+      div.className = "card strip"; div.id = "kpis2";
+      div.innerHTML = (D.summarySecondaryLabel ? '<span class="si head"><span class="sil">' + esc(D.summarySecondaryLabel) + "</span></span>" : "") +
+        sec.map(function (t) {
+        return '<span class="si"><span class="sil">' + esc(t.label) + '</span> <span class="siv num">' +
+          fmtv(t.value, t.fmt) + "</span>" + (t.sub ? ' <span class="sis">' + esc(t.sub) + "</span>" : "") + "</span>";
+      }).join('<span class="sep"></span>');
+      kEl.parentNode.insertBefore(div, kEl.nextSibling);
+    }
 
-    /* 3. how people reached the page, then the conversion step */
+    /* 3. how people reached the page */
     (function () {
       var ch = D.channels || [];
       if (!ch.length) { set("traffic", ""); return; }
-      var tot = ch.reduce(function (a, c) { return { s: a.s + (c.sessions || 0), e: a.e + (c.engaged || 0), d: a.d + (c.seconds || 0) }; }, { s: 0, e: 0, d: 0 });
-      var hasDur = ch.some(function (c) { return has(c.seconds); });
-      var mx = Math.max.apply(null, ch.map(function (c) { return c.sessions || 0; }));
-      var hasSub = ch.some(function (c) { return has(c.submissions); });
-      var totSub = hasSub ? ch.reduce(function (a, c) { return a + (c.submissions || 0); }, 0) : null;
-      /* Two comparisons, added 20 August on Miguel's recommendation. Month on month is
-         the last two complete months, named in the card scope so nobody has to guess.
-         Year on year is the same window in the prior year, same filter, same four
-         dimension construction. A channel with no prior-year row renders a dash: the
-         change from nothing is not a percentage. */
-      var hasMoM = ch.some(function (c) { return has(c.m1) && has(c.m2); });
-      var hasYoY = ch.some(function (c) { return has(c.prior); });
-      function chg(now, was) {
-        if (!has(now) || !has(was) || !was) return DASH;
-        var d = (now - was) / was * 100;
-        var cls = Math.abs(d) < 0.05 ? "flat" : d > 0 ? "up" : "down";
-        return '<span class="' + cls + '">' + (d > 0 ? "+" : d < 0 ? "\u2212" : "") +
-               Math.abs(d).toFixed(1) + "%</span>";
-      }
+      var tot = { s: 0, e: 0, d: 0, u: 0, v: 0 };
+      ch.forEach(function (c) {
+        tot.s += c.sessions; tot.e += c.engaged; tot.d += (c.seconds || 0);
+        tot.u += (c.purchases || 0); tot.v += (c.revenue || 0);
+      });
+      var mx = ch.reduce(function (m, c) { return Math.max(m, c.sessions); }, 0);
+      var MIN_N = 100;   /* fewest sessions before a conversion rate is worth printing */
+      var showOut = F.hasOutcome && ch.some(function (c) { return has(c.purchases); });
       var head = '<th>Channel</th><th class="r">Sessions</th><th class="r">Share</th><th></th>' +
-        (hasMoM ? '<th class="r">MoM</th>' : "") +
-        (hasYoY ? '<th class="r">YoY</th>' : "") +
-        (hasDur ? '<th class="r">Avg engagement time</th>' : '<th class="r">Engaged sessions</th>') +
-        '<th class="r">Engagement rate</th>' +
-        (hasSub ? '<th class="r">' + esc(D.goal ? D.goal.label : "Submissions") + '</th><th class="r">Conversion rate</th>' : "");
+        '<th class="r">Average engagement time</th>' +
+        (showOut ? '<th class="r">' + esc(outLabel) + "</th>" +
+          (isPurchase ? '<th class="r">Revenue</th>' : "") + '<th class="r">Conversion rate</th>' : "");
       var rows = ch.slice().sort(function (a, b) { return b.sessions - a.sessions; }).map(function (c) {
-        return '<tr><td class="name">' + esc(c.channel) + "</td>" +
+        return "<tr><td class=\"name\">" + esc(c.channel) + (c.asterisk ? "*" : "") + "</td>" +
           '<td class="r num">' + int(c.sessions) + "</td>" +
           '<td class="r num">' + ratio(c.sessions, tot.s) + "</td>" +
           '<td style="width:14%; padding-left:14px;"><span class="sbar"><i style="width:' + (mx ? (c.sessions / mx * 100).toFixed(1) : 0) + '%"></i></span></td>' +
-          (hasMoM ? '<td class="r num">' + chg(c.m2, c.m1) + "</td>" : "") +
-          (hasYoY ? '<td class="r num">' + chg(c.sessions, c.prior) + "</td>" : "") +
-          '<td class="r num">' + (hasDur ? dur(c.seconds, c.sessions) : int(c.engaged)) + "</td>" +
-          '<td class="r num">' + ratio(c.engaged, c.sessions) + "</td>" +
-          (hasSub ? '<td class="r num">' + int(c.submissions) + '</td><td class="r num">' + ratio(c.submissions, c.sessions, 2) + "</td>" : "") +
+          '<td class="r num">' + dur(c.seconds, c.sessions) + "</td>" +
+          (showOut ? '<td class="r num">' + int(c.purchases || 0) + "</td>" +
+            (isPurchase ? '<td class="r num">' + money(c.revenue || 0) + "</td>" : "") +
+            '<td class="r num">' + (c.sessions >= MIN_N ? ratio(c.purchases || 0, c.sessions, 2) : DASH) + "</td>" : "") +
           "</tr>";
       }).join("");
-      var sumk = function (k) { return ch.reduce(function (a, c) { return a + (has(c[k]) ? c[k] : 0); }, 0); };
-      var foot = '<tr class="tot"><td>All sources</td><td class="r num">' + int(tot.s) + '</td><td class="r num">' + pct(100) +
-        '</td><td></td>' +
-        (hasMoM ? '<td class="r num">' + chg(sumk("m2"), sumk("m1")) + "</td>" : "") +
-        (hasYoY ? '<td class="r num">' + chg(tot.s, D.prior ? D.prior.sessions : null) + "</td>" : "") +
-        '<td class="r num">' + (hasDur ? dur(tot.d, tot.s) : int(tot.e)) + '</td><td class="r num">' + ratio(tot.e, tot.s) + "</td>" +
-        (hasSub ? '<td class="r num">' + int(totSub) + '</td><td class="r num">' + ratio(totSub, tot.s, 2) + "</td>" : "") +
-        "</tr>";
-
-      set("traffic", card("How people reached the page",
-        (hasMoM
-          ? "sessions that reached the page; month on month is " + mlab(prevM(1)) + " against " + mlab(prevM(2))
-          : "sessions that reached the page"),
-        tbl(head, rows, foot)));
-
-      /* The two complete months the MoM column compares, named rather than assumed. */
-      function prevM(back) {
-        var mm = (D.monthly || []).filter(function (r) { return !r.partial; });
-        var r = mm[mm.length - back];
-        return r ? r.m : "";
-      }
+      var foot = '<tr class="tot"><td>All sources</td><td class="r num">' + int(tot.s) +
+        '</td><td class="r num">' + pct(100) + "</td><td></td>" +
+        '<td class="r num">' + dur(tot.d, tot.s) + "</td>" +
+        (showOut ? '<td class="r num">' + int(tot.u) + "</td>" +
+          (isPurchase ? '<td class="r num">' + money(tot.v) + "</td>" : "") +
+          '<td class="r num">' + ratio(tot.u, tot.s, 2) + "</td>" : "") + "</tr>";
+      /* An optional campaign-specific note, for cases where a channel's presence needs
+         one plain sentence to read correctly, such as paid search traffic arriving from
+         other campaigns' ads. Sanctioned like the click-to-session line. */
+      set("traffic", card("How people reached the page", "",
+        tbl(head, rows, foot, true) +
+        (D.trafficNote ? '<div class="note callout">' +
+          (String(D.trafficNote).charAt(0) === "*" ? "" : "* ") + esc(D.trafficNote) + "</div>" : "")));
     })();
 
-    /* 4. timeline */
+    /* 5. where the outcome came from */
     (function () {
-      var m = D.monthly || [];
-      if (!m.length) { set("timeline", ""); return; }
-      var showSub = outcome && m.some(function (r) { return has(r.submissions); });
-      var W = 1000, PX = 26, PY = 16;
-
-      /* Monotone cubic interpolation. A plain Catmull-Rom spline overshoots on a series
-         that jumps two orders of magnitude in a month and would draw negative sessions
-         between April and May, so the tangents are clamped to preserve monotonicity. */
-      function smooth(pts) {
-        var n = pts.length;
-        if (n < 2) return "";
-        if (n === 2) return "M" + f(pts[0]) + " L" + f(pts[1]);
-        var dx = [], dy = [], mSl = [];
-        for (var i = 0; i < n - 1; i++) {
-          dx.push(pts[i + 1].x - pts[i].x);
-          dy.push(pts[i + 1].y - pts[i].y);
-          mSl.push(dy[i] / (dx[i] || 1));
-        }
-        var t = [mSl[0]];
-        for (var j = 1; j < n - 1; j++) {
-          if (mSl[j - 1] * mSl[j] <= 0) { t.push(0); }
-          else {
-            var w1 = 2 * dx[j] + dx[j - 1], w2 = dx[j] + 2 * dx[j - 1];
-            t.push((w1 + w2) / (w1 / mSl[j - 1] + w2 / mSl[j]));
-          }
-        }
-        t.push(mSl[n - 2]);
-        var d = "M" + f(pts[0]);
-        for (var k = 0; k < n - 1; k++) {
-          var h = dx[k];
-          d += " C" + (pts[k].x + h / 3).toFixed(1) + " " + (pts[k].y + t[k] * h / 3).toFixed(1) +
-               " " + (pts[k + 1].x - h / 3).toFixed(1) + " " + (pts[k + 1].y - t[k + 1] * h / 3).toFixed(1) +
-               " " + f(pts[k + 1]);
-        }
-        return d;
-        function f(p) { return p.x.toFixed(1) + " " + p.y.toFixed(1); }
+      var A = D.attribution || [];
+      if (!F.hasOutcome || !A.length) { set("attribution", ""); return; }
+      var mk = A.filter(function (r) { return r.marketing; });
+      var er = A.filter(function (r) { return !r.marketing; });
+      var totU = 0, totV = 0;
+      A.forEach(function (r) { totU += r.purchases; totV += (r.revenue || 0); });
+      var mkU = mk.reduce(function (a, r) { return a + r.purchases; }, 0);
+      var cols = 3 + (isPurchase ? 1 : 0) + (hasYo ? 2 : 0);
+      function line(r) {
+        return '<tr><td class="name">' + esc(r.group) + "</td>" +
+          '<td class="r num">' + int(r.sessions) + "</td>" +
+          '<td class="r num">' + int(r.purchases) + "</td>" +
+          (hasYo ? '<td class="r num">' + int(r.priorPurchases) + '</td><td class="r num">' + chg(r.purchases, r.priorPurchases) + "</td>" : "") +
+          (isPurchase ? '<td class="r num">' + money(r.revenue || 0) + "</td>" : "") + "</tr>";
       }
-
-      function points(vals, mx, h) {
-        var n = vals.length, iw = W - PX * 2, ih = h - PY * 2;
-        var step = n > 1 ? iw / (n - 1) : 0;
-        return vals.map(function (v, i) {
-          return { x: PX + i * step, y: PY + ih - (v === null ? 0 : v / mx * ih), v: v, i: i };
-        });
+      function subtotal(label, rows) {
+        var u = 0, v = 0, se = 0, pu = 0;
+        rows.forEach(function (r) { u += r.purchases; v += (r.revenue || 0); se += r.sessions; pu += (r.priorPurchases || 0); });
+        return '<tr class="subt"><td>' + label + "</td>" +
+          '<td class="r num">' + int(se) + '</td><td class="r num">' + int(u) + "</td>" +
+          (hasYo ? '<td class="r num">' + int(pu) + '</td><td class="r num">' + chg(u, pu) + "</td>" : "") +
+          (isPurchase ? '<td class="r num">' + money(v) + "</td>" : "") + "</tr>";
       }
-
-      /* A prior-year line shares the axis with this year, so the scale is the larger
-         of the two. Drawn behind, thinner and grey, with no point labels: it is a
-         reference, not a second reading. */
-      function single(key, color, label, h, priorKey) {
-        var vals = m.map(function (r) { return has(r[key]) ? r[key] : null; });
-        var pv = priorKey ? m.map(function (r) { return has(r[priorKey]) ? r[priorKey] : null; }) : null;
-        var hasPrior = pv && pv.some(function (v) { return v !== null; });
-        var mx = Math.max.apply(null, vals.map(function (v) { return v || 0; })) || 1;
-        if (hasPrior) mx = Math.max(mx, Math.max.apply(null, pv.map(function (v) { return v || 0; })));
-        var pts = points(vals, mx, h).filter(function (p) { return p.v !== null; });
-        var d = smooth(pts);
-        var ih = h - PY * 2;
-        var area = d ? d + " L" + pts[pts.length - 1].x.toFixed(1) + " " + (PY + ih) +
-                       " L" + pts[0].x.toFixed(1) + " " + (PY + ih) + " Z" : "";
-        var pd = "";
-        if (hasPrior) {
-          var ppts = points(pv, mx, h).filter(function (p) { return p.v !== null; });
-          pd = smooth(ppts);
-        }
-        return '<div class="tlcap"><div class="tlname hdln">' + esc(label) +
-          (hasPrior ? '<span class="tlkey"><i style="background:' + color + '"></i>' + esc(M.year || "") +
-            '<i style="background:#C4C8CA;margin-left:12px;"></i>' + esc(D.prior ? D.prior.year : "") + "</span>" : "") +
-          '</div><div class="tlmax num">peak ' + int(mx) + "</div></div>" +
-          '<svg class="ln" viewBox="0 0 ' + W + " " + h + '" preserveAspectRatio="none" role="img">' +
-          grid(h) +
-          (pd ? '<path d="' + pd + '" fill="none" stroke="#C4C8CA" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' : "") +
-          (area ? '<path d="' + area + '" fill="' + color + '" fill-opacity="0.10"/>' : "") +
-          (d ? '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' : "") +
-          pts.map(function (p) {
-            return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="3.5" fill="#fff" stroke="' +
-              color + '" stroke-width="2"' + (m[p.i].partial ? ' stroke-dasharray="2 2"' : "") + "/>";
-          }).join("") +
-          pts.map(function (p) {
-            var a = p.x < PX + 30 ? "start" : p.x > W - PX - 30 ? "end" : "middle";
-            return '<text x="' + p.x.toFixed(1) + '" y="' + Math.max(11, p.y - 9).toFixed(1) +
-              '" text-anchor="' + a + '" font-size="11" font-family="Arial,Helvetica,sans-serif" fill="#393B3B">' +
-              int(p.v) + "</text>";
-          }).join("") + "</svg>";
-      }
-
-      function grid(h) {
-        var ih = h - PY * 2;
-        return [0, 0.5, 1].map(function (fr) {
-          var y = PY + ih * fr;
-          return '<line x1="' + PX + '" x2="' + (W - PX) + '" y1="' + y + '" y2="' + y +
-                 '" stroke="#EDEEEF" stroke-width="1"/>';
-        }).join("");
-      }
-
-      var cols = "grid-template-columns:repeat(" + m.length + ",minmax(0,1fr));";
-      var body = '<div class="tl">' + single("sessions", "#0074E2", "Sessions on the page", 168);
-      if (showSub) body += '<div style="height:14px;"></div>' +
-        single("submissions", "#003767", D.goal ? D.goal.label : "Submissions", 118);
-      body += '<div class="tlx" style="' + cols + '">' + m.map(function (r) {
-        return '<div><div class="tlm hdln">' + mlab(r.m) + '</div>' +
-          (r.partial ? '<div class="tlp">to ' + dayShort(M.dataThrough) + "</div>" : "") + "</div>";
-      }).join("") + "</div></div>";
-      set("timeline", card("Timeline", "monthly", body));
+      var body = '<tr class="grp"><td colspan="' + cols + '">Marketing sources</td></tr>' +
+        mk.map(line).join("") + subtotal("Marketing subtotal", mk) +
+        '<tr class="grp"><td colspan="' + cols + '">Not marketing</td></tr>' +
+        er.map(line).join("") + subtotal("Not marketing subtotal", er);
+      var foot = '<tr class="tot"><td>All ' + esc(outLabel).toLowerCase() + "</td>" +
+        '<td class="r num">' + int(A.reduce(function (a, r) { return a + r.sessions; }, 0)) + "</td>" +
+        '<td class="r num">' + int(totU) + "</td>" +
+        (hasYo ? '<td class="r num">' + int(D.prior.purchases) + '</td><td class="r num">' + chg(totU, D.prior.purchases) + "</td>" : "") +
+        (isPurchase ? '<td class="r num">' + money(totV) + "</td>" : "") + "</tr>";
+      /* The last-click explainer below is a sanctioned exception to the
+         no-methodology rule, directed by the owner on 28 August 2026: without it a
+         non-technical reader assumes assisting channels are counted here. */
+      /* Roque's wording, verbatim and nothing else, 28 August 2026. The prior-year
+         column names its own basis in its header instead. */
+      var explain = (isPurchase ? "Purchase credit" : "Credit") +
+        " goes to the last click before the sign-up. For example, if a user clicked an ad in June, " +
+        "then came back through a search result in August and signed up, the credit will go to search.";
+      set("attribution", card("Where the " + outLabel.toLowerCase() + " came from", "",
+        '<div class="cscope below">' + explain + "</div>" +
+        tbl('<th>Source</th><th class="r">Sessions</th><th class="r">' + esc(outLabel) + "</th>" +
+          (hasYo ? '<th class="r">' + D.prior.year + ' YTD</th><th class="r">Change</th>' : "") +
+          (isPurchase ? '<th class="r">Revenue</th>' : ""), body, foot)));
     })();
 
-    /* 5. paid media */
+    /* 6. paid media */
     (function () {
-      if (!paid) { set("paid", ""); return; }
-      var P = D.paid, pl = P.platforms || [], pt = P.placements || [];
-
-      function tot(list) {
-        return list.reduce(function (a, r) {
-          return { spend: a.spend + (r.spend || 0),
-                   clicks: a.clicks + (r.clicks || 0),
-                   imp: has(r.impressions) ? a.imp + r.impressions : a.imp,
-                   impN: has(r.impressions) ? a.impN + 1 : a.impN,
-                   sess: has(r.sessions) ? a.sess + r.sessions : a.sess,
-                   sessN: has(r.sessions) ? a.sessN + 1 : a.sessN };
-        }, { spend: 0, clicks: 0, imp: 0, impN: 0, sess: 0, sessN: 0 });
-      }
-      /* A total is only shown when every row contributed to it. A partial sum under a
-         complete-looking heading is the same failure as an invented figure. */
-      function rollup(list) {
-        var t = tot(list);
-        return { spend: t.spend, clicks: t.clicks,
-                 impressions: t.impN === list.length ? t.imp : null,
-                 sessions: t.sessN === list.length ? t.sess : null };
-      }
-
-      /* Sessions are decided per table, not once for the card. The platform table
-         allocates sessions by analytics source, which is exact. The placement table
-         would need a campaign name join, which is the one fragile join on the page,
-         so it carries the buy only: spend, impressions and clicks. */
-      function hasSess(list) { return list.some(function (r) { return has(r.sessions); }); }
-      /* A video buy is not bought on clicks. Showing its cost per click without its
-         views reads as catastrophic inefficiency and would drive the wrong decision,
-         so where a row reports views the column appears and stays blank elsewhere. */
-      function hasViews(list) { return list.some(function (r) { return has(r.views); }); }
+      if (!F.hasPaid || !D.paid) { set("paid", ""); return; }
+      var P = D.paid, pl = P.platforms || [];
+      function hasK(list, k) { return list.some(function (r) { return has(r[k]); }); }
+      var plSess = hasK(pl, "sessions"), plView = hasK(pl, "views");
       function head(ss, vw) {
         return '<th class="r">Spend</th><th class="r">Impressions</th>' +
-               (vw ? '<th class="r">Video views</th>' : "") +
-               '<th class="r">Landing page clicks</th><th class="r">Click rate</th>' +
-               '<th class="r">Cost / click</th>' +
-               (ss ? '<th class="r">Sessions</th><th class="r">Click to session</th><th class="r">Cost / session</th>' : "");
+          (vw ? '<th class="r">Video views</th>' : "") +
+          '<th class="r">Landing page clicks</th><th class="r">Click rate</th><th class="r">Cost / click</th>' +
+          (ss ? '<th class="r">Sessions</th><th class="r">Click to session</th><th class="r">Cost / session</th>' : "");
       }
       function cells(r, ss, vw) {
         return '<td class="r num">' + money(r.spend) + "</td>" +
-               '<td class="r num">' + int(r.impressions) + "</td>" +
-               (vw ? '<td class="r num">' + int(r.views) + "</td>" : "") +
-               '<td class="r num">' + int(r.clicks) + "</td>" +
-               '<td class="r num">' + ratio(r.clicks, r.impressions, 2) + "</td>" +
-               '<td class="r num">' + per(r.spend, r.clicks) + "</td>" +
-               (ss ? '<td class="r num">' + int(r.sessions) + "</td>" +
-                     '<td class="r num">' + ratio(r.sessions, r.clicks, 1) + "</td>" +
-                     '<td class="r num">' + per(r.spend, r.sessions) + "</td>" : "");
+          '<td class="r num">' + int(r.impressions) + "</td>" +
+          (vw ? '<td class="r num">' + int(r.views) + "</td>" : "") +
+          '<td class="r num">' + int(r.landingPageClicks) + "</td>" +
+          '<td class="r num">' + ratio(r.landingPageClicks, r.impressions, 2) + "</td>" +
+          '<td class="r num">' + per(r.spend, r.landingPageClicks) + "</td>" +
+          (ss ? '<td class="r num">' + int(r.sessions) + "</td>" +
+            '<td class="r num">' + ratio(r.sessions, r.landingPageClicks, 1) + "</td>" +
+            '<td class="r num">' + per(r.spend, r.sessions) + "</td>" : "");
       }
-
-      var plSess = hasSess(pl), plView = hasViews(pl);
-      var tp = rollup(pl);
-      var plRows = pl.map(function (r) {
-        return '<tr><td class="name">' + esc(r.platform) + "</td>" + cells(r, plSess, plView) + "</tr>";
-      }).join("");
-      var plFoot = '<tr class="tot"><td>All platforms</td>' + cells(tp, plSess, plView) + "</tr>";
-
-      /* By ad set. This campaign group holds TWO ad sets. Earlier reporting counted
-         only the first, so half the paid delivery went unreported. Both are shown,
-         and the render gate fails if either stops reaching the reader. */
-      var asBlock = "";
+      function roll(list) {
+        var t = { spend: 0, impressions: 0, landingPageClicks: 0, views: 0, vn: 0, sessions: 0, sn: 0 };
+        list.forEach(function (r) {
+          t.spend += r.spend; t.impressions += r.impressions; t.landingPageClicks += r.landingPageClicks;
+          if (has(r.views)) { t.views += r.views; t.vn++; }
+          if (has(r.sessions)) { t.sessions += r.sessions; t.sn++; }
+        });
+        if (t.vn !== list.length) t.views = undefined;
+        if (t.sn !== list.length) t.sessions = undefined;
+        return t;
+      }
+      var body;
       var asets = P.adSets || [];
-      if (asets.length) {
-        var asRows = asets.slice().sort(function (a, b) { return b.spend - a.spend; })
-          .map(function (r) {
-            return '<tr><td class="name">' + esc(r.name) + "</td>" + cells(r, false, false) + "</tr>";
-          }).join("");
-        var asFoot = '<tr class="tot"><td>All ad sets</td>' +
-          cells(rollup(asets), false, false) + "</tr>";
-        asBlock = '<div class="sub hdln">By ad set</div>' +
-          tbl('<th>Ad set</th>' + head(false, false), asRows, asFoot);
-      }
-
-      /* By placement type. A campaign name means nothing to a reader; the buy type does. */
-      var ptBlock = "";
-      if (pt.length) {
-        var ptSess = hasSess(pt), ptView = hasViews(pt);
-        var tc = rollup(pt);
-        var ptRows = pt.slice().sort(function (a, b) { return b.spend - a.spend; }).map(function (r) {
-          return '<tr><td class="name">' + esc(r.placement) + '</td><td class="dim">' + esc(r.platforms || "") + "</td>" +
-            cells(r, ptSess, ptView) + "</tr>";
+      if (pl.length === 1 && asets.length) {
+        /* One platform: platform and ad-set tables would repeat each other, so the ad
+           sets carry the table and the platform's own figures sit as a summary line. */
+        var p0 = pl[0];
+        var asRows = asets.slice().sort(function (a, b) { return b.spend - a.spend; }).map(function (r) {
+          return '<tr><td class="name">' + esc(r.name) + "</td>" + cells(r, false, hasK(asets, "views")) + "</tr>";
         }).join("");
-        var ptFoot = '<tr class="tot"><td>All placements</td><td></td>' + cells(tc, ptSess, ptView) + "</tr>";
-        ptBlock = '<div class="sub hdln">By placement type</div>' +
-          tbl('<th>Placement</th><th>Platform</th>' + head(ptSess, ptView), ptRows, ptFoot);
+        var asFoot = '<tr class="tot"><td>All ' + esc(p0.platform) + "</td>" + cells(roll(asets), false, hasK(asets, "views")) + "</tr>";
+        /* No session summary strip on the paid card: owner direction, 28 August 2026,
+           second time of asking. Paid's session side lives in the traffic table. */
+        body = tbl('<th>' + esc(p0.platform) + ' ad set</th>' + head(false, hasK(asets, "views")), asRows, asFoot, true);
+      } else {
+        var plRows = pl.map(function (r) {
+          return '<tr><td class="name">' + esc(r.platform) + "</td>" + cells(r, plSess, plView) + "</tr>";
+        }).join("");
+        var plFoot = '<tr class="tot"><td>All platforms</td>' + cells(roll(pl), plSess, plView) + "</tr>";
+        body = '<div class="sub hdln">By platform</div>' +
+          tbl("<th>Platform</th>" + head(plSess, plView), plRows, plFoot, true);
+        if (plSess) body += '<div class="note callout">The ad platform counts a click when someone taps the ad; analytics counts a session only when the page actually opens. The two never match, because some people block tracking or leave before the page loads. Close to 100% means nearly everyone who clicked arrived.</div>';
+        if (asets.length) {
+          var asSess = hasK(asets, "sessions"), asView = hasK(asets, "views");
+          body += '<div class="sub hdln">By ad set</div>' +
+            tbl("<th>Ad set</th>" + head(asSess, asView),
+              asets.slice().sort(function (a, b) { return b.spend - a.spend; }).map(function (r) {
+                return '<tr><td class="name">' + esc(r.name) + "</td>" + cells(r, asSess, asView) + "</tr>";
+              }).join(""),
+              '<tr class="tot"><td>All ad sets</td>' + cells(roll(asets), asSess, asView) + "</tr>", true);
+        }
       }
-
-      /* What actually ran. A placement row says a video buy exists; it cannot show
-         that the video was bought for views, nor that four different messages ran
-         behind the same picture. Each asset card leads with the metric its own buy
-         was optimised for, and a cost per click is printed only where somebody bid
-         for clicks. */
-      var creBlock = "";
-      var cre = (D.paid && D.paid.creatives) || [];
+      var cre = P.creatives || [];
       if (cre.length) {
-        creBlock = '<div class="sub hdln">What ran</div><div class="gal ads">' +
-          cre.slice().sort(function (a, b) { return b.spend - a.spend; }).map(adCard).join("") + "</div>";
+        body += '<div class="sub hdln">What ran</div><div class="gal ads">' +
+          cre.slice().sort(function (a, b) { return b.spend - a.spend; }).map(function (c) {
+            var thumb = has(c.image)
+              ? '<div class="thumb wide">' + (c.kind === "video" ? '<div class="play">&#9654;</div>' : "") + '<img src="' + esc(asset(c.image)) + '" alt="" loading="lazy"></div>'
+              : '<div class="thumb wide">' + (c.kind === "video" ? '<div class="play">&#9654;</div>' : '<div class="quote">' + esc(c.name) + "</div>") + "</div>";
+            /* Figures follow the buy type: a video buy never shows cost per click. */
+            var figs;
+            if (c.kind === "video") {
+              figs = [["Spend", money(c.spend)], ["Impressions", int(c.impressions)], ["Video views", int(c.views)],
+                      ["View rate", ratio(c.views, c.impressions, 1)], ["Cost / view", (has(c.spend) && c.views) ? "$" + (c.spend / c.views).toFixed(3) : DASH], ["Clicks", int(c.clicks)]];
+            } else {
+              figs = [["Spend", money(c.spend)], ["Impressions", int(c.impressions)], ["Clicks", int(c.clicks)],
+                      ["Click rate", ratio(c.clicks, c.impressions, 2)], ["Cost / click", per(c.spend, c.clicks)]];
+            }
+            var msgs = "";
+            if ((c.messages || []).length) {
+              var mv = c.kind === "video";
+              msgs = '<div class="tw"><table class="msgs"><thead><tr><th>Message</th><th class="r">Spend</th><th class="r">Impressions</th><th class="r">' + (mv ? "Views" : "Clicks") + "</th></tr></thead><tbody>" +
+                c.messages.map(function (m) {
+                  return '<tr><td class="name">' + esc(m.message) + '</td><td class="r num">' + money(m.spend) +
+                    '</td><td class="r num">' + int(m.impressions) + '</td><td class="r num">' + int(mv ? m.views : m.clicks) + "</td></tr>";
+                }).join("") + "</tbody></table></div>";
+            }
+            return '<div class="post">' + thumb + '<div class="pmeta">' +
+              '<div class="pplat"><span>' + esc(c.kind || "ad").toUpperCase() + " AD</span><span>" + esc(c.campaign || "") + "</span>" +
+              (has(c.url) ? '<a class="pview" href="' + esc(c.url) + '" target="_blank" rel="noopener">View</a>' : "") + "</div>" +
+              '<div class="adname">' + esc(c.name) + "</div>" +
+              (c.asset ? '<div class="pcap dim">' + esc(c.asset) + "</div>" : "") +
+              '<div class="pfig">' + figs.map(function (f) {
+                return '<div class="pf"><div class="pfl">' + f[0] + '</div><div class="pfv num">' + f[1] + "</div></div>";
+              }).join("") + "</div>" + msgs + "</div></div>";
+          }).join("") + "</div>";
       }
-
-      set("paid", card("Paid media", "paid channels only",
-        '<div class="sub hdln">By platform</div>' +
-        tbl('<th>Platform</th>' + head(plSess, plView), plRows, plFoot) +
-        asBlock + ptBlock + creBlock));
-
-      function fig(l, v) { return '<div class="pf"><div class="pfl">' + l + '</div><div class="pfv num">' + v + "</div></div>"; }
-      function adCard(c) {
-        var views = c.boughtFor === "views";
-        var msgs = (c.messages || []).slice().sort(function (x, y) { return y.spend - x.spend; });
-        var thumb = has(c.image)
-          ? '<div class="thumb"><img src="' + esc(c.image) + '" alt="" loading="lazy">' +
-            (views ? '<div class="play">&#9654;</div>' : "") + "</div>"
-          : '<div class="thumb">' + (views ? '<div class="play">&#9654;</div>' : "") + "</div>";
-        var figs = fig("Spend", money(c.spend)) + fig("Impressions", int(c.impressions));
-        if (views) {
-          figs += fig("Video views", int(c.views)) +
-                  fig("View rate", ratio(c.views, c.impressions, 1)) +
-                  fig("Cost / view", has(c.spend) && c.views ? "$" + (c.spend / c.views).toFixed(3) : DASH) +
-                  fig("Clicks", int(c.clicks));
-        } else {
-          figs += fig("Clicks", int(c.clicks)) +
-                  fig("Click rate", ratio(c.clicks, c.impressions, 2)) +
-                  fig("Cost / click", per(c.spend, c.clicks));
-        }
-        var mt = "";
-        if (msgs.length) {
-          var mhead = "<th>Message</th><th class=\"r\">Spend</th><th class=\"r\">Impressions</th>" +
-            (views ? "<th class=\"r\">Views</th>"
-                   : "<th class=\"r\">Clicks</th><th class=\"r\">Cost / click</th>");
-          var mrows = msgs.map(function (m) {
-            return '<tr><td class="name">' + esc(m.name) + "</td>" +
-              '<td class="r num">' + money(m.spend) + "</td>" +
-              '<td class="r num">' + int(m.impressions) + "</td>" +
-              (views
-                ? '<td class="r num">' + int(m.views) + "</td>"
-                : '<td class="r num">' + int(m.clicks) + "</td>" +
-                  '<td class="r num">' + per(m.spend, m.clicks) + "</td>") +
-              "</tr>";
-          }).join("");
-          mt = tbl(mhead, mrows);
-        }
-        return '<div class="post ad">' + thumb + '<div class="pmeta">' +
-          '<div class="pplat"><span class="adkind">' + esc(c.kind || "") + '</span>' +
-          '<span class="adcamp">' + esc(c.campaign || "") + "</span></div>" +
-          (has(c.asset) ? '<div class="adname">' + esc(c.asset) + "</div>" : "") +
-          '<div class="pfig">' + figs + "</div>" +
-          (has(c.cta) ? '<div class="pcta">' + esc(c.cta) + "</div>" : "") +
-          mt +
-          "</div></div>";
-      }
-    })();
-    /* 6. email */
-    (function () {
-      var s = (D.email && D.email.sends) || [];
-      if (!s.length) { set("email", ""); return; }
-      var t = s.reduce(function (a, r) {
-        return { d: a.d + (r.delivered || 0), o: a.o + (r.opens || 0), c: a.c + (r.clicks || 0), u: a.u + (r.unsubs || 0),
-                 n: a.n + (has(r.delivered) ? 1 : 0) };
-      }, { d: 0, o: 0, c: 0, u: 0, n: 0 });
-      var rows = s.map(function (r) {
-        var subj = has(r.subject) ? link(r.url, esc(r.subject))
-                 : '<span class="dim">Scheduled for ' + esc(r.scheduled || "TBD") + "</span>";
-        return '<tr><td class="name">' + subj + "</td>" +
-          '<td class="dim num">' + dayShort(r.sent) + "</td>" +
-          '<td class="r num">' + int(r.delivered) + "</td>" +
-          '<td class="r num">' + int(r.opens) + "</td>" +
-          '<td class="r num">' + ratio(r.opens, r.delivered, 2) + "</td>" +
-          '<td class="r num">' + int(r.clicks) + "</td>" +
-          '<td class="r num">' + ratio(r.clicks, r.delivered, 2) + "</td>" +
-          '<td class="r num">' + int(r.unsubs) + "</td>" +
-          '<td class="r num">' + ratio(r.unsubs, r.delivered, 2) + "</td></tr>";
-      }).join("");
-      var foot = '<tr class="tot"><td>All sends</td><td></td>' +
-        '<td class="r num">' + int(t.d) + '</td><td class="r num">' + int(t.o) + '</td><td class="r num">' + ratio(t.o, t.d, 2) +
-        '</td><td class="r num">' + int(t.c) + '</td><td class="r num">' + ratio(t.c, t.d, 2) +
-        '</td><td class="r num">' + int(t.u) + '</td><td class="r num">' + ratio(t.u, t.d, 2) + "</td></tr>";
-      set("email", card("Email", s.length + " sends planned, " + t.n + " sent",
-        tbl('<th>Subject</th><th>Sent</th><th class="r">Delivered</th><th class="r">Opens</th><th class="r">Open rate</th><th class="r">Clicks</th><th class="r">Click rate</th><th class="r">Unsubs</th><th class="r">Unsub rate</th>', rows, foot)));
+      set("paid", card("Paid media", "", body));
     })();
 
-    /* 7. organic social */
+    /* 7. email */
     (function () {
-      var posts = (D.social && D.social.posts) || [];
+      var E = D.email;
+      if (!E) { set("email", ""); return; }
+      var body, scope;
+      if (E.compare) {
+        /* A rebuild: updated version against the one it replaced, same period both
+           sides. Column heads are plain names linking to each email's own page. */
+        scope = "";
+        var colHead = function (label, url) {
+          return url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(label) + "</a>" : esc(label);
+        };
+        body = tbl('<th>Metric</th><th class="r">' + colHead(E.compare.a, E.compare.aUrl) + "</th>" +
+            '<th class="r">' + colHead(E.compare.b, E.compare.bUrl) + "</th>",
+          (E.compare.rows || []).map(function (r) {
+            var f = function (v) { return r.fmt === "pct2" ? pct(v, 2) : int(v); };
+            var aC = "", bC = "";
+            if (r.highlight) { if (r.a > r.b) aC = "up"; else if (r.b > r.a) bC = "up"; }
+            return "<tr" + (r.highlight ? ' style="background:#F5F7F8;font-weight:700"' : "") + '><td class="name">' + esc(r.metric) +
+              '</td><td class="r num"><span class="' + aC + '">' + f(r.a) + '</span></td>' +
+              '<td class="r num"><span class="' + bC + '">' + f(r.b) + "</span></td></tr>";
+          }).join(""), "");
+        if (E.note) body += '<div class="enote">' + esc(E.note) + "</div>";
+      } else {
+        var sends = E.sends || [];
+        if (!sends.length) { set("email", ""); return; }
+        var sent = sends.filter(function (s) { return has(s.delivered); });
+        scope = sent.length + " of " + sends.length + " sends have gone out";
+        var t = { d: 0, o: 0, c: 0 };
+        sent.forEach(function (s) { t.d += s.delivered; t.o += s.opens; t.c += s.clicks; });
+        var rows = sends.map(function (s) {
+          var subj = has(s.url) ? '<a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.subject) + "</a>" : esc(s.subject);
+          if (!has(s.delivered)) {
+            return '<tr><td class="name">' + subj + '</td><td class="r num dim">' + esc(s.sent || DASH) + "</td>" +
+              '<td class="r num">' + DASH + '</td><td class="r num">' + DASH + '</td><td class="r num">' + DASH +
+              '</td><td class="r num">' + DASH + '</td><td class="r num">' + DASH + "</td></tr>";
+          }
+          return '<tr><td class="name">' + subj + '</td><td class="r num">' + esc(s.sent) + "</td>" +
+            '<td class="r num">' + int(s.delivered) + '</td><td class="r num">' + int(s.opens) + "</td>" +
+            '<td class="r num">' + ratio(s.opens, s.delivered, 2) + "</td>" +
+            '<td class="r num">' + int(s.clicks) + '</td><td class="r num">' + ratio(s.clicks, s.delivered, 2) + "</td></tr>";
+        }).join("");
+        /* Totals recomputed from sums, never averaged rates. */
+        var foot = '<tr class="tot"><td>All sends</td><td></td><td class="r num">' + int(t.d) +
+          '</td><td class="r num">' + int(t.o) + '</td><td class="r num">' + ratio(t.o, t.d, 2) +
+          '</td><td class="r num">' + int(t.c) + '</td><td class="r num">' + ratio(t.c, t.d, 2) + "</td></tr>";
+        body = tbl('<th>Subject</th><th class="r">Sent</th><th class="r">Delivered</th><th class="r">Opens</th><th class="r">Open rate</th>' +
+          '<th class="r">Clicks</th><th class="r">Click rate</th>', rows, foot);
+      }
+      set("email", card("Email", scope, body));
+    })();
+
+    /* 8. organic social */
+    (function () {
+      var S = D.social, posts = (S && S.posts) || [];
       if (!posts.length) { set("social", ""); return; }
-      var CAP = 10;
-      /* A total is only shown when every post contributed to it. Facebook impressions are
-         not available today, so summing what exists would publish a total that silently
-         covers one post in four. */
-      /* Every post now carries a delivery figure, so the total is a real total.
-         LinkedIn calls it impressions and Meta calls it views; both count times
-         the content was put in front of someone, which is why the heading names
-         both rather than picking one and quietly covering the other. */
+      var pub = posts.filter(function (p) { return !p.scheduled; });
+      var measured = pub.filter(function (p) { return !p.awaitingMetrics; });
+      /* A total renders only when every published post contributed to it; the platforms
+         report different delivery bases and a partial sum would silently cover less than
+         it appears to. */
       function complete(list, fn) {
-        var n = 0, s = 0;
-        list.forEach(function (p) { var v = fn(p); if (has(v)) { n++; s += v; } });
-        return (list.length && n === list.length) ? s : null;
+        var n = 0, t = 0;
+        list.forEach(function (p) { var v = fn(p); if (has(v)) { n++; t += v; } });
+        return (list.length && n === list.length) ? t : null;
       }
-      var seenTot = complete(posts, dval);
-      var engTot = complete(posts, function (p) { return p.engagements; });
-      /* LinkedIn reports impressions, Instagram reports views, Facebook reports
-         neither: every metric in the post_impressions family is withdrawn. The
-         cell is left empty rather than filled from a different basis. */
-      function dlab(p) { return has(p.impressions) ? "Impressions" : has(p.views) ? "Views" : "Impressions"; }
-      function dval(p) { return has(p.impressions) ? p.impressions : has(p.views) ? p.views : null; }
-
+      function dlab(p) { return has(p.impressions) ? "Impressions" : "Views"; }
+      function dval(p) { return has(p.impressions) ? p.impressions : p.views; }
+      var seen = complete(measured, dval), eng = complete(measured, function (p) { return p.engagements; });
       function tile(p) {
         var thumb;
-        if (has(p.image)) thumb = '<div class="thumb"><img src="' + esc(p.image) + '" alt="" loading="lazy"></div>';
+        if (has(p.image)) thumb = '<div class="thumb">' + (p.mediaType === "video" ? '<div class="play">&#9654;</div>' : "") + '<img src="' + esc(asset(p.image)) + '" alt="" loading="lazy"></div>';
         else if (p.mediaType === "video") thumb = '<div class="thumb"><div class="play">&#9654;</div>' + (p.duration ? '<div class="dur num">' + esc(p.duration) + "</div>" : "") + "</div>";
-        else thumb = '<div class="thumb" style="background:#FAFAFA;"><div class="quote">&ldquo;' + esc(p.caption) + "&rdquo;</div></div>";
+        else thumb = '<div class="thumb" style="background:#FAFAFA;"><div class="quote">&ldquo;' + esc(p.quote || p.caption) + "&rdquo;</div></div>";
+        /* When the caption itself stands in for missing artwork, printing it twice adds
+           nothing: the card shows it once, in the artwork slot. */
+        var capShown = has(p.image) || p.mediaType === "video" || has(p.quote);
+        var figs;
+        if (p.scheduled)
+          figs = '<div class="pfig"><div class="pf"><div class="pfl">Status</div><div class="pfv" style="font-size:13px;color:var(--hold);">Scheduled &middot; ' + dayShort(p.date) + "</div></div></div>";
+        else if (p.awaitingMetrics)
+          /* Just published: figures exist but have not been pulled, which is different
+             from unavailable and very different from zero. */
+          figs = '<div class="pfig"><div class="pf"><div class="pfl">Status</div><div class="pfv" style="font-size:13px;color:var(--up);">Published &middot; ' + dayShort(p.date) + ' &middot; metrics to follow</div></div></div>';
+        else
+          figs = '<div class="pfig"><div class="pf"><div class="pfl">' + dlab(p) + '</div><div class="pfv num">' + int(dval(p)) + "</div></div>" +
+            '<div class="pf"><div class="pfl">Engagements</div><div class="pfv num">' + int(p.engagements) + "</div></div></div>";
         return '<div class="post">' + thumb + '<div class="pmeta">' +
-          '<div class="pplat"><span>' + esc(p.platform) + '</span><span class="num">' + dayShort(p.date) +
-          (has(p.url) ? '</span><a class="pview" href="' + esc(p.url) + '" target="_blank" rel="noopener">View</a>' : "</span>") + "</div>" +
-          '<div class="pcap">' + esc(p.caption) + "</div>" +
-          '<div class="pfig"><div class="pf"><div class="pfl">' + dlab(p) + '</div><div class="pfv num">' +
-            int(dval(p)) + "</div></div>" +
-          '<div class="pf"><div class="pfl">Engagements</div><div class="pfv num">' + int(p.engagements) + "</div></div>" +
-          "</div></div></div>";
+          '<div class="pplat"><span>' + (p.url ? '<a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.platform) + "</a>" : esc(p.platform)) + '</span><span class="num">' + (p.scheduled ? "SCHEDULED" : dayShort(p.date)) + "</span>" +
+          (has(p.url) ? '<a class="pview" href="' + esc(p.url) + '" target="_blank" rel="noopener">View</a>' : "") + "</div>" +
+          (capShown ? '<div class="pcap">' + esc(p.caption) + "</div>" : "") + figs + "</div></div>";
       }
       var body = '<div class="galsum">' +
-        sum("Posts published", int(posts.length)) +
-        sum("Impressions and views", int(seenTot)) +
-        sum("Engagements", int(engTot)) +
-        sum("Engagement rate", ratio(engTot, seenTot, 2)) + "</div>" +
-        '<div class="gal" id="gal">' + posts.slice(0, CAP).map(tile).join("") + "</div>" +
-        (posts.length > CAP ? '<button class="more" id="galMore">Show all ' + posts.length + " posts</button>" : "");
-      set("social", card("Organic social", (D.social.mockup ? "mockup, data not connected; figures are placeholders" : "platform reported"), body));
-      var btn = document.getElementById("galMore");
-      if (btn) btn.onclick = function () {
-        document.getElementById("gal").innerHTML = posts.map(tile).join("");
-        btn.parentNode.removeChild(btn);
-      };
-      function sum(l, v) { return '<div class="pf"><div class="rlab">' + l + '</div><div class="rval num">' + v + "</div></div>"; }
+        '<div class="gs"><div class="l">Posts published</div><div class="v num">' + pub.length + (posts.length > pub.length ? " of " + posts.length : "") + "</div></div>" +
+        '<div class="gs"><div class="l">Impressions and views</div><div class="v num">' + int(seen) +
+          (measured.length < pub.length && seen !== null ? ' <span class="note">first ' + measured.length + ' posts</span>' : "") + "</div></div>" +
+        '<div class="gs"><div class="l">Engagements</div><div class="v num">' + int(eng) + "</div></div>" +
+        '<div class="gs"><div class="l">Engagement rate</div><div class="v num">' + ratio(eng, seen, 2) + "</div></div></div>" +
+        '<div class="gal">' + posts.map(tile).join("") + "</div>";
+      set("social", card("Organic social", "", body));
     })();
 
-    /* 8. traditional media */
+    /* 9. traditional media */
     (function () {
-      var d = D.delivery || [];
-      if (!d.length) { set("delivery", ""); return; }
-      /* Three states only. Project-board vocabulary such as Stuck or Working on it does not
-         belong on a performance report; it describes the board, not the delivery. */
-      function state(v) {
-        var t = String(v || "").toLowerCase();
-        if (/done|deliver|publish|sent|live|complete/.test(t)) return "Done";
-        if (/progress|stuck|review|draft|schedul|working/.test(t)) return "In progress";
-        return "Not started";
-      }
+      var d = (D.traditional || []).slice().sort(function (a, b) { return String(a.due) < String(b.due) ? -1 : 1; });
+      if (!d.length) { set("traditional", ""); return; }
       var done = d.filter(function (r) { return state(r.status) === "Done"; }).length;
-      /* Same treatment the paid buy gets: show the thing that ran, then what it did.
-         Only items that carry artwork render a card. */
       var art = d.filter(function (r) { return has(r.image); });
-      var artBlock = art.length ? '<div class="sub hdln">What ran</div><div class="gal ads trad">' +
+      var artBlock = art.length ? '<div class="sub hdln">What ran</div><div class="gal ads">' +
         art.map(function (r) {
-          return '<div class="post ad print">' +
-            '<div class="thumb"><img src="' + esc(r.image) + '" alt="" loading="lazy"></div>' +
-            '<div class="pmeta">' +
-            '<div class="pplat"><span class="adkind">' + esc(r.channel) + "</span>" +
-            (has(r.placement) ? '<span class="adcamp">' + esc(r.placement) + "</span>" : "") + "</div>" +
-            (has(r.headline) ? '<div class="adname">' + esc(r.headline) + "</div>" : "") +
-            (has(r.asset) ? '<div class="pcta">' + esc(r.asset) + "</div>" : "") +
+          return '<div class="post"><div class="thumb wide"><img src="' + esc(asset(r.image)) + '" alt="" loading="lazy"></div><div class="pmeta">' +
+            '<div class="pplat"><span>' + esc(r.channel).toUpperCase() + "</span><span>" + esc(r.placement || "") + "</span></div>" +
+            '<div class="adname">' + esc(r.headline || r.item) + "</div>" +
             '<div class="pfig">' +
-            '<div class="pf"><div class="pfl">Short link clicks</div><div class="pfv num">' + int(r.clicks) + "</div></div>" +
-            '<div class="pf"><div class="pfl">Sessions</div><div class="pfv num">' + int(r.sessions) + "</div></div>" +
+            (has(r.clicks) ? '<div class="pf"><div class="pfl">Short link clicks</div><div class="pfv num">' + int(r.clicks) + "</div></div>" : "") +
+            (has(r.sessions) ? '<div class="pf"><div class="pfl">Sessions</div><div class="pfv num">' + int(r.sessions) + "</div></div>" : "") +
             "</div></div></div>";
         }).join("") + "</div>" : "";
-      set("delivery", card("What ran", done + " of " + d.length + " delivered",
-        artBlock +
-        tbl('<th>Channel</th><th>Item</th><th>Date</th><th>Status</th><th>Tracking</th>',
-          d.map(function (r) {
-            var st = state(r.status);
-            var cls = st === "Done" ? "ok" : st === "In progress" ? "warn" : "flat";
-            var tr = "";
-            if (r.vanity) {
-              tr = '<a href="' + esc(r.vanityUrl || "#") + '" target="_blank" rel="noopener">' + esc(r.vanity) + "</a>";
-              if (has(r.clicks)) tr += ' <span class="dim num">' + int(r.clicks) + " clicks</span>";
-              if (has(r.sessions)) tr += ' <span class="dim num">&middot; ' + int(r.sessions) + " sessions</span>";
-            } else {
-              tr = '<span class="dim">not trackable</span>';
-            }
-            return '<tr><td class="dim">' + esc(r.channel) + '</td><td class="name">' + esc(r.item) + "</td>" +
-              '<td class="num">' + dayShort(r.due) + '</td><td><span class="pill ' + cls + '">' + st + "</span></td>" +
-              "<td>" + tr + "</td></tr>";
-          }).join("")) + (artBlock ? "" : "")));
+      var hasMeasure = d.some(function (r) { return has(r.sessions); });
+      /* Terminus short-link clicks are the print channel's own delivery figure and must
+         reach the table, not only an artwork card that may not exist. */
+      var hasClicks = d.some(function (r) { return has(r.clicks); });
+      var rows = d.map(function (r) {
+        var st = state(r.status);
+        return '<tr><td class="dim">' + esc(r.channel) + '</td><td class="name">' + esc(r.item) + "</td>" +
+          '<td class="r num">' + dayShort(r.due) + "</td><td>" + pillFor(st) + "</td>" +
+          (hasClicks ? '<td class="r num">' + int(r.clicks) + "</td>" : "") +
+          (hasMeasure ? '<td class="r num">' + int(r.sessions) + '</td><td class="r num">' + dur(r.seconds, r.sessions) + "</td>" : "") +
+          "</tr>";
+      }).join("");
+      set("traditional", card("Traditional media", done + " of " + d.length + " published",
+        artBlock + tbl('<th>Channel</th><th>Item</th><th class="r">Date</th><th>Status</th>' +
+          (hasClicks ? '<th class="r">Short link clicks</th>' : "") +
+          (hasMeasure ? '<th class="r">Sessions</th><th class="r">Average engagement time</th>' : ""), rows, "")));
     })();
+
+    /* 10. video assets */
+    (function () {
+      var V = D.video, assets = (V && V.assets) || [];
+      if (!assets.length) { set("video", ""); return; }
+      /* Shorts and long form count views on different bases and are never totalled
+         together. */
+      var long = assets.filter(function (a) { return a.kind !== "short"; });
+      var shorts = assets.filter(function (a) { return a.kind === "short"; });
+      function sumViews(list) { return list.reduce(function (a, x) { return a + (x.views || 0); }, 0); }
+      var body = '<div class="galsum">' +
+        '<div class="gs"><div class="l">Assets live</div><div class="v num">' + assets.length + "</div></div>" +
+        (long.length ? '<div class="gs"><div class="l">Long form views</div><div class="v num">' + int(sumViews(long)) + ' <span class="note">across ' + long.length + "</span></div></div>" : "") +
+        (shorts.length ? '<div class="gs"><div class="l">Short views</div><div class="v num">' + int(sumViews(shorts)) + ' <span class="note">across ' + shorts.length + "</span></div></div>" : "") +
+        "</div>" +
+        '<div class="gal">' + assets.map(function (a) {
+          return '<div class="post"><div class="thumb"><div class="play">&#9654;</div>' +
+            (a.duration ? '<div class="dur num">' + esc(a.duration) + "</div>" : "") + "</div>" +
+            '<div class="pmeta"><div class="pplat"><span>' + (a.kind === "short" ? "SHORT" : "LONG FORM") +
+            (a.year ? " &middot; " + a.year : "") + "</span>" +
+            (has(a.url) ? '<a class="pview" href="' + esc(a.url) + '" target="_blank" rel="noopener">Watch</a>' : "") + "</div>" +
+            '<div class="pcap">' + esc(a.title) + "</div>" +
+            '<div class="pfig"><div class="pf"><div class="pfl">Lifetime views</div><div class="pfv num">' + int(a.views) + "</div></div></div>" +
+            "</div></div>";
+        }).join("") + "</div>";
+      set("video", card("Video assets", "Views are lifetime totals.", body));
+    })();
+
+    /* nav, from what rendered */
+    var secs = [];
+    [["attribution", "Attribution"], ["traffic", "Traffic"], ["paid", "Paid media"], ["email", "Email"],
+     ["social", "Organic social"], ["traditional", "Traditional media"], ["video", "Video"]]
+      .forEach(function (s) {
+        if (document.getElementById(s[0]).innerHTML) secs.push('<a href="#' + s[0] + '">' + s[1] + "</a>");
+      });
+    set("nav", secs.join(""));
+    var navbar = document.getElementById("navbar");
+    if (navbar) navbar.style.display = secs.length ? "" : "none";
+    /* Highlight the section the reader is in. Purely an orientation aid: it adds no
+       figure and no date to the page. */
+    var navLinks = [].slice.call(document.querySelectorAll(".nav a"));
+    function spy() {
+      var cur = null;
+      navLinks.forEach(function (a) {
+        var el = document.getElementById(a.getAttribute("href").slice(1));
+        if (el && el.getBoundingClientRect().top <= 96) cur = a;
+      });
+      navLinks.forEach(function (a) { a.classList.toggle("on", a === cur); });
+    }
+    window.addEventListener("scroll", function () { window.requestAnimationFrame(spy); }, { passive: true });
+    spy();
   }
 
   window.__renderCampaign = render;
-  /* data file loads after this script; see the loader at the end of the document */
 })();
 </script>
-
 <script src="corporate-membership-data.js"></script>
 <script>window.__renderCampaign();</script>
 
