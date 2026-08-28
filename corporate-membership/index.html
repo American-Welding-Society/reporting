@@ -434,12 +434,13 @@
       /* The last-click explainer below is a sanctioned exception to the
          no-methodology rule, directed by the owner on 28 August 2026: without it a
          non-technical reader assumes assisting channels are counted here. */
-      /* Roque's wording, verbatim and nothing else, 28 August 2026. The prior-year
+      /* Roque's wording, verbatim, 28 August 2026 evening revision. The prior-year
          column names its own basis in its header instead. */
       var explain = (isPurchase ? "Purchase credit" : "Credit") +
-        " goes to the last click before the sign-up. For example, if a user clicked an ad in June, " +
-        "then came back through a search result in August and signed up, the credit will go to search. " +
-        "Other channels may have assisted along the way; there is currently no reliable way to quantify that.";
+        " goes to the source with the last click before the sign-up. For example, if a user sees our ad, " +
+        "then comes back later through a Google search and buys, search gets the credit, not the ad. " +
+        "So each channel's count below shows only the sales it closed. A channel may also have assisted " +
+        "sales that ended up credited to another channel, and there is currently no way to measure that.";
       set("attribution", card("Where the " + outLabel.toLowerCase() + " came from", "",
         '<div class="cscope below">' + explain + "</div>" +
         tbl('<th>Source</th><th class="r">Sessions</th><th class="r">' + esc(outLabel) + "</th>" +
