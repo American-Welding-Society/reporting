@@ -438,7 +438,8 @@
          column names its own basis in its header instead. */
       var explain = (isPurchase ? "Purchase credit" : "Credit") +
         " goes to the last click before the sign-up. For example, if a user clicked an ad in June, " +
-        "then came back through a search result in August and signed up, the credit will go to search.";
+        "then came back through a search result in August and signed up, the credit will go to search. " +
+        "Other channels may have assisted along the way; there is currently no reliable way to quantify that.";
       set("attribution", card("Where the " + outLabel.toLowerCase() + " came from", "",
         '<div class="cscope below">' + explain + "</div>" +
         tbl('<th>Source</th><th class="r">Sessions</th><th class="r">' + esc(outLabel) + "</th>" +
