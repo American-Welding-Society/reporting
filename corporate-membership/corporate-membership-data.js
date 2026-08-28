@@ -802,8 +802,7 @@ window.CAMPAIGN_DATA = {
    "item": "May Banner Ad, F&M Magazine",
    "due": "2026-05-05",
    "status": "Done",
-   "placement": "Banner, Fabricator and Manufacturer, May 2026",
-   "image": "img/2026-fm-banner-ad.png"
+   "placement": "Banner, Fabricator and Manufacturer, May 2026"
   },
   {
    "channel": "eBlast",
@@ -822,6 +821,7 @@ window.CAMPAIGN_DATA = {
    "due": "2026-06-18",
    "status": "Done",
    "placement": "Banner, Fabricator and Manufacturer, July 2026",
+   "headline": "Banner Ad, F&M Magazine, May and July",
    "image": "img/2026-fm-banner-ad.png",
    "source": "fabricatingandmetalworking.com / digital ad",
    "sessions": 189,
