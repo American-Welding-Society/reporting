@@ -823,6 +823,16 @@ window.CAMPAIGN_DATA = {
    "status": "Done",
    "placement": "Banner, Fabricator and Manufacturer, July 2026",
    "headline": "Banner Ad, F&M Magazine, May and July",
+   "publisher": [
+    {
+     "label": "Newsletter delivered, 12 May issue",
+     "value": 21516
+    },
+    {
+     "label": "Banner clicks, 12 May issue",
+     "value": 33
+    }
+   ],
    "image": "img/2026-fm-banner-ad.png",
    "source": "fabricatingandmetalworking.com / digital ad",
    "sessions": 189,

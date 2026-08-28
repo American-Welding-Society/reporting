@@ -669,6 +669,9 @@
             '<div class="pfig">' +
             (has(r.clicks) ? '<div class="pf"><div class="pfl">Short link clicks</div><div class="pfv num">' + int(r.clicks) + "</div></div>" : "") +
             (has(r.sessions) ? '<div class="pf"><div class="pfl">Sessions</div><div class="pfv num">' + int(r.sessions) + "</div></div>" : "") +
+            (r.publisher || []).map(function (f) {
+              return '<div class="pf"><div class="pfl">' + esc(f.label) + '</div><div class="pfv num">' + int(f.value) + "</div></div>";
+            }).join("") +
             "</div></div></div>";
         }).join("") + "</div>" : "";
       var hasMeasure = d.some(function (r) { return has(r.sessions); });
