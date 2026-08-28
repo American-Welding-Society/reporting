@@ -609,7 +609,102 @@ window.CAMPAIGN_DATA = {
     "impressions": 152318
    }
   ],
-  "artworkUnavailable": "LinkedIn returns 403 on the post and share endpoints for this token"
+  "creatives": [
+   {
+    "name": "Educational carousel",
+    "campaign": "Educational",
+    "kind": "carousel",
+    "image": "img/creatives/carousel-lead-card.jpg",
+    "url": "https://www.linkedin.com/feed/update/urn:li:share:7459702624867581952/",
+    "spend": 2999.98,
+    "impressions": 269459,
+    "clicks": 6766,
+    "messages": [
+     {
+      "message": "Support instructors and students with trusted AWS resources. From curriculum support to certification pathways, membership helps elevate training quality and career readiness.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7459702624867581952/",
+      "spend": 1276.9,
+      "impressions": 85061,
+      "clicks": 2919
+     },
+     {
+      "message": "Do more with your program budget. AWS Educational Institutions Membership delivers practical benefits—like major bookstore savings and tools designed to support training the next generation of welding professionals.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7459662792397066240/",
+      "spend": 642.49,
+      "impressions": 63358,
+      "clicks": 1394
+     },
+     {
+      "message": "Build a stronger workforce pipeline. AWS Educational Institutions Membership supports program growth with resources, discounts, and industry alignment that students and employers recognize.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7459708170316382208/",
+      "spend": 412.76,
+      "impressions": 45755,
+      "clicks": 957
+     },
+     {
+      "message": "Stand out as an institution committed to welding excellence. AWS membership helps strengthen credibility and visibility while supporting the people behind your program.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7459704441370206208/",
+      "spend": 353.43,
+      "impressions": 37601,
+      "clicks": 741
+     },
+     {
+      "message": "Strengthen your welding program with the resources and recognition of AWS. Educational Institutions Membership helps you align curriculum, credentials, and student preparation with industry expectations.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7459692255520489472/",
+      "spend": 314.41,
+      "impressions": 37684,
+      "clicks": 755
+     }
+    ]
+   },
+   {
+    "name": "Corporate carousel",
+    "campaign": "Corporate",
+    "kind": "carousel",
+    "image": "img/creatives/carousel-lead-card.jpg",
+    "url": "https://www.linkedin.com/feed/update/urn:li:share:7459642378895716353/",
+    "spend": 2999.97,
+    "impressions": 152318,
+    "clicks": 4377,
+    "messages": [
+     {
+      "message": "Align your organization with the global leader in welding. AWS Corporate Membership strengthens credibility while supporting your workforce.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7459642378895716353/",
+      "spend": 1611.52,
+      "impressions": 65653,
+      "clicks": 2386
+     },
+     {
+      "message": "Reduce costs while increasing capability. AWS Corporate Membership helps your organization save on training, certifications, and industry resources.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7459638290527358976/",
+      "spend": 441.2,
+      "impressions": 26492,
+      "clicks": 614
+     },
+     {
+      "message": "Build a stronger, more skilled workforce with AWS Corporate Membership. Unlock training, certifications, and resources designed for long-term growth.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7459637174536290304/",
+      "spend": 337.26,
+      "impressions": 20121,
+      "clicks": 483
+     },
+     {
+      "message": "Your AWS Corporate Membership isn’t just an expense—it’s a strategic investment in your workforce. See how organizations turn member benefits into measurable impact.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7459636497663614977/",
+      "spend": 330.16,
+      "impressions": 21324,
+      "clicks": 473
+     },
+     {
+      "message": "Maximize the value of your membership. Explore how AWS Corporate Membership benefits your team, your budget, and your business.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7459645445879902208/",
+      "spend": 279.83,
+      "impressions": 18728,
+      "clicks": 421
+     }
+    ]
+   }
+  ]
  },
  "email": {
   "note": "The 2026 email has gone only to newly qualified contacts; existing contacts were not re-enrolled, which is why its volume is small.",
@@ -707,7 +802,8 @@ window.CAMPAIGN_DATA = {
    "item": "May Banner Ad, F&M Magazine",
    "due": "2026-05-05",
    "status": "Done",
-   "placement": "Banner, Fabricator and Manufacturer, May 2026"
+   "placement": "Banner, Fabricator and Manufacturer, May 2026",
+   "image": "img/2026-fm-banner-ad.png"
   },
   {
    "channel": "eBlast",
@@ -715,6 +811,7 @@ window.CAMPAIGN_DATA = {
    "due": "2026-05-14",
    "status": "Done",
    "placement": "Dedicated eBlast, Fabricator and Manufacturer list",
+   "image": "img/2026-05-14-fm-eblast.png",
    "source": "fabricatingandmetalworking.com / email",
    "sessions": 133,
    "seconds": 294
@@ -725,6 +822,7 @@ window.CAMPAIGN_DATA = {
    "due": "2026-06-18",
    "status": "Done",
    "placement": "Banner, Fabricator and Manufacturer, July 2026",
+   "image": "img/2026-fm-banner-ad.png",
    "source": "fabricatingandmetalworking.com / digital ad",
    "sessions": 189,
    "seconds": 96,

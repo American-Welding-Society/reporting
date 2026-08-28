@@ -524,15 +524,15 @@
               figs = [["Spend", money(c.spend)], ["Impressions", int(c.impressions)], ["Video views", int(c.views)],
                       ["View rate", ratio(c.views, c.impressions, 1)], ["Cost / view", (has(c.spend) && c.views) ? "$" + (c.spend / c.views).toFixed(3) : DASH], ["Clicks", int(c.clicks)]];
             } else {
-              figs = [["Spend", money(c.spend)], ["Impressions", int(c.impressions)], ["Clicks", int(c.clicks)],
+              figs = [["Spend", money(c.spend)], ["Impressions", int(c.impressions)], ["Landing page clicks", int(c.clicks)],
                       ["Click rate", ratio(c.clicks, c.impressions, 2)], ["Cost / click", per(c.spend, c.clicks)]];
             }
             var msgs = "";
             if ((c.messages || []).length) {
               var mv = c.kind === "video";
-              msgs = '<div class="tw"><table class="msgs"><thead><tr><th>Message</th><th class="r">Spend</th><th class="r">Impressions</th><th class="r">' + (mv ? "Views" : "Clicks") + "</th></tr></thead><tbody>" +
+              msgs = '<div class="tw"><table class="msgs"><thead><tr><th>Message</th><th class="r">Spend</th><th class="r">Impressions</th><th class="r">' + (mv ? "Views" : "Landing page clicks") + "</th></tr></thead><tbody>" +
                 c.messages.map(function (m) {
-                  return '<tr><td class="name">' + esc(m.message) + '</td><td class="r num">' + money(m.spend) +
+                  return '<tr><td class="name">' + (m.url ? '<a href="' + esc(m.url) + '" target="_blank" rel="noopener">' + esc(m.message) + "</a>" : esc(m.message)) + '</td><td class="r num">' + money(m.spend) +
                     '</td><td class="r num">' + int(m.impressions) + '</td><td class="r num">' + int(mv ? m.views : m.clicks) + "</td></tr>";
                 }).join("") + "</tbody></table></div>";
             }
