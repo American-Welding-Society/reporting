@@ -513,7 +513,9 @@
       }
       var cre = P.creatives || [];
       if (cre.length) {
-        body += '<div class="sub hdln">What ran</div><div class="gal ads">' +
+        body += '<div class="sub hdln">What ran</div>' +
+          (P.creativesNote ? '<div class="note">' + esc(P.creativesNote) + "</div>" : "") +
+          '<div class="gal ads">' +
           cre.slice().sort(function (a, b) { return b.spend - a.spend; }).map(function (c) {
             var thumb = has(c.image)
               ? '<div class="thumb wide">' + (c.kind === "video" ? '<div class="play">&#9654;</div>' : "") + '<img src="' + esc(asset(c.image)) + '" alt="" loading="lazy"></div>'

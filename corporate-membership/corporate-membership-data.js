@@ -609,6 +609,7 @@ window.CAMPAIGN_DATA = {
     "impressions": 152318
    }
   ],
+  "creativesNote": "Ten ads ran, five per ad set. All ten opened with the same carousel image; only the intro message varied. Each message links to its live ad.",
   "creatives": [
    {
     "name": "Educational carousel",
