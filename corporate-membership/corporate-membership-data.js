@@ -799,11 +799,16 @@ window.CAMPAIGN_DATA = {
  },
  "traditional": [
   {
-   "channel": "Banner ad",
+   "channel": "Newsletter banner",
    "item": "May Banner Ad, F&M Magazine",
    "due": "2026-05-05",
    "status": "Done",
-   "placement": "Banner, Fabricator and Manufacturer, May 2026"
+   "placement": "Fabrication Showcase e-Newsletter, 12 May issue",
+   "headline": "Banner Ad, Fabrication Showcase e-Newsletter",
+   "image": "img/2026-fm-banner-ad.png",
+   "pubDelivered": 21516,
+   "pubRead": 3758,
+   "pubClicks": 33
   },
   {
    "channel": "eBlast",
@@ -813,40 +818,31 @@ window.CAMPAIGN_DATA = {
    "placement": "Dedicated eBlast, Fabricator and Manufacturer list",
    "image": "img/2026-05-14-fm-eblast.png",
    "source": "fabricatingandmetalworking.com / email",
+   "pubDelivered": 20742,
+   "pubRead": 3867,
+   "pubClicks": 540,
    "sessions": 133,
    "seconds": 294
   },
   {
-   "channel": "Banner ad",
+   "channel": "Newsletter banner",
    "item": "July Banner Ad, F&M Magazine",
    "due": "2026-06-18",
    "status": "Done",
-   "placement": "Banner, Fabricator and Manufacturer, July 2026",
-   "headline": "Banner Ad, F&M Magazine, May and July",
-   "publisher": [
-    {
-     "label": "Newsletter delivered, 12 May issue",
-     "value": 21516
-    },
-    {
-     "label": "Banner clicks, 12 May issue",
-     "value": 33
-    }
-   ],
-   "image": "img/2026-fm-banner-ad.png",
+   "placement": "Fabrication Showcase e-Newsletter, July issue",
    "source": "fabricatingandmetalworking.com / digital ad",
    "sessions": 189,
    "seconds": 96,
    "note": "both banner placements share one source tag"
   },
   {
-   "channel": "Banner ad",
+   "channel": "Newsletter banner",
    "item": "September Banner Ad, F&M Magazine",
    "due": "2026-08-18",
    "status": "In-Progress"
   },
   {
-   "channel": "Banner ad",
+   "channel": "Newsletter banner",
    "item": "October Banner Ad, F&M Magazine",
    "due": "2026-09-17",
    "status": "Not Started"
@@ -864,7 +860,7 @@ window.CAMPAIGN_DATA = {
    "status": "Not Started"
   },
   {
-   "channel": "Banner ad",
+   "channel": "Newsletter banner",
    "item": "November Banner Ad, F&M Magazine",
    "due": "2026-10-16",
    "status": "Not Started"

@@ -667,27 +667,28 @@
             '<div class="pplat"><span>' + esc(r.channel).toUpperCase() + "</span><span>" + esc(r.placement || "") + "</span></div>" +
             '<div class="adname">' + esc(r.headline || r.item) + "</div>" +
             '<div class="pfig">' +
-            (has(r.clicks) ? '<div class="pf"><div class="pfl">Short link clicks</div><div class="pfv num">' + int(r.clicks) + "</div></div>" : "") +
-            (has(r.sessions) ? '<div class="pf"><div class="pfl">Sessions</div><div class="pfv num">' + int(r.sessions) + "</div></div>" : "") +
-            (r.publisher || []).map(function (f) {
-              return '<div class="pf"><div class="pfl">' + esc(f.label) + '</div><div class="pfv num">' + int(f.value) + "</div></div>";
-            }).join("") +
             "</div></div></div>";
         }).join("") + "</div>" : "";
       var hasMeasure = d.some(function (r) { return has(r.sessions); });
       /* Terminus short-link clicks are the print channel's own delivery figure and must
          reach the table, not only an artwork card that may not exist. */
       var hasClicks = d.some(function (r) { return has(r.clicks); });
+      /* Publisher-reported delivery for placements the publisher measures: the
+         figures come from the publisher's own results, relayed on the campaign
+         board, and sit beside the GA4 columns so both sides of the journey show. */
+      var hasPub = d.some(function (r) { return has(r.pubDelivered); });
       var rows = d.map(function (r) {
         var st = state(r.status);
         return '<tr><td class="dim">' + esc(r.channel) + '</td><td class="name">' + esc(r.item) + "</td>" +
           '<td class="r num">' + dayShort(r.due) + "</td><td>" + pillFor(st) + "</td>" +
+          (hasPub ? '<td class="r num">' + int(r.pubDelivered) + '</td><td class="r num">' + int(r.pubRead) + '</td><td class="r num">' + int(r.pubClicks) + "</td>" : "") +
           (hasClicks ? '<td class="r num">' + int(r.clicks) + "</td>" : "") +
           (hasMeasure ? '<td class="r num">' + int(r.sessions) + '</td><td class="r num">' + dur(r.seconds, r.sessions) + "</td>" : "") +
           "</tr>";
       }).join("");
       set("traditional", card("Traditional media", done + " of " + d.length + " published",
         artBlock + tbl('<th>Channel</th><th>Item</th><th class="r">Date</th><th>Status</th>' +
+          (hasPub ? '<th class="r">Publisher delivered</th><th class="r">Publisher read</th><th class="r">Publisher clicks</th>' : "") +
           (hasClicks ? '<th class="r">Short link clicks</th>' : "") +
           (hasMeasure ? '<th class="r">Sessions</th><th class="r">Average engagement time</th>' : ""), rows, "")));
     })();
