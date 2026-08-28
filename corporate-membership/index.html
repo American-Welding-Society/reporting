@@ -58,6 +58,10 @@
   .msub { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; }
   .up { color:#1F8A4C; font-weight:700; }
   .down { color:#C0402B; font-weight:700; }
+  .enote { font-size:11.5px; line-height:1.55; color:#6E7274; border-top:1px solid #EDEEEF; padding-top:11px; }
+  tr.grp td { background:#F6F7F7; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6E7274; padding:8px 10px 8px 0; }
+  tr.sub td { font-weight:700; color:#001527; border-top:1px solid #C9CDCF; }
+  tr.hl td { background:#FAFAFA; font-weight:700; color:#001527; }
   .note { font-size:10.5px; color:#6E7274; font-weight:400; text-transform:none; letter-spacing:0; }
 
   .ok { background:#E8F3EC; color:#1F8A4C; }
@@ -177,6 +181,7 @@
   <div id="err">No data file loaded. This page renders from a generated <code>&lt;campaign&gt;-data.js</code> in the same directory.</div>
 
   <div class="kpis" id="summary"></div>
+  <div id="attribution"></div>
   <div id="traffic"></div>
   <div id="timeline"></div>
   <div id="paid"></div>
@@ -196,6 +201,16 @@
   function money(v) { return has(v) ? "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : DASH; }
   function money0(v) { return has(v) ? "$" + Math.round(v).toLocaleString("en-US") : DASH; }
   function pct(v, d) { return has(v) ? v.toFixed(d === undefined ? 1 : d) + "%" : DASH; }
+  /* Percentage change, shared. It was defined inside the traffic section only, so the
+     attribution table above it could not use it. A missing or zero base reads as a dash,
+     never as an infinite or fabricated change. */
+  function chg(now, was) {
+    if (!has(now) || !has(was) || !was) return DASH;
+    var d = (now - was) / was * 100;
+    var cls = Math.abs(d) < 0.05 ? "flat" : d > 0 ? "up" : "down";
+    return '<span class="' + cls + '">' + (d > 0 ? "+" : d < 0 ? "−" : "") +
+           Math.abs(d).toFixed(1) + "%</span>";
+  }
   function ratio(a, b, d) { return has(a) && has(b) && b ? pct(a / b * 100, d) : DASH; }
   function per(a, b) { return has(a) && has(b) && b ? "$" + (a / b).toFixed(2) : DASH; }
   /* GA4 gives total engagement seconds; the average is seconds divided by the
@@ -248,9 +263,9 @@
     if (D.channels && D.channels.length) secs.push(["Traffic", "traffic"]);
     if ((D.monthly || []).length) secs.push(["Timeline", "timeline"]);
     if (paid) secs.push(["Paid Media", "paid"]);
-    if ((D.email && D.email.sends || []).length) secs.push(["Email", "email"]);
+    if (D.email && D.email.compare) secs.push(["Email", "email"]);
     if (D.social && (D.social.posts || []).length) secs.push(["Organic Social", "social"]);
-    if ((D.delivery || []).length) secs.push(["What Ran", "delivery"]);
+    if ((D.delivery || []).length) secs.push(["Traditional Media", "delivery"]);
     set("nav", secs.map(function (s) { return '<a href="#' + s[1] + '">' + s[0] + "</a>"; }).join(""));
 
     /* Header links only. The dashboard carries one date, the data-through stamp
@@ -270,6 +285,63 @@
         '<div class="kval num hdln">' + (s.pending ? '<span class="kpend">not connected</span>' : fmt(s.value, s.fmt)) + "</div></div>";
     }).join(""));
 
+    /* 2c. where the memberships came from, source by source. Marketing sources first
+       and marked, everything else below the rule. "Paid media" as one line hid that
+       LinkedIn Ads sold none of it while Google Ads sold 22, so each source is named. */
+    (function () {
+      var A = D.attribution || [];
+      if (!A.length) { set("attribution", ""); return; }
+      var hasYo = !!D.prior && A.every(function (r) { return has(r.priorPurchases); });
+      var mk = A.filter(function (r) { return r.marketing; });
+      var er = A.filter(function (r) { return !r.marketing; });
+      var tot = A.reduce(function (a, r) {
+        return { s: a.s + r.sessions, e: a.e + r.engaged, p: a.p + r.purchases, v: a.v + r.revenue };
+      }, { s: 0, e: 0, p: 0, v: 0 });
+
+      function line(r) {
+        return '<tr><td class="name">' + esc(r.group) + "</td>" +
+          '<td class="dim">' + esc(r.sources.join(", ")) + "</td>" +
+          '<td class="r num">' + int(r.sessions) + "</td>" +
+          '<td class="r num">' + (r.sessions ? ratio(r.engaged, r.sessions) : DASH) + "</td>" +
+          '<td class="r num">' + int(r.purchases) + "</td>" +
+          (hasYo ? '<td class="r num">' + int(r.priorPurchases) + "</td>" +
+                   '<td class="r num">' + chg(r.purchases, r.priorPurchases) + "</td>" : "") +
+          '<td class="r num">' + money(r.revenue) + "</td></tr>";
+      }
+      function subtotal(label, rows, cls) {
+        var t = rows.reduce(function (a, r) {
+          return { s: a.s + r.sessions, e: a.e + r.engaged, p: a.p + r.purchases,
+                   v: a.v + r.revenue, pp: a.pp + (r.priorPurchases || 0) };
+        }, { s: 0, e: 0, p: 0, v: 0, pp: 0 });
+        return '<tr class="' + cls + '"><td>' + label + "</td><td></td>" +
+          '<td class="r num">' + int(t.s) + "</td>" +
+          '<td class="r num">' + ratio(t.e, t.s) + "</td>" +
+          '<td class="r num">' + int(t.p) + "</td>" +
+          (hasYo ? '<td class="r num">' + int(t.pp) + "</td>" +
+                   '<td class="r num">' + chg(t.p, t.pp) + "</td>" : "") +
+          '<td class="r num">' + money(t.v) + "</td></tr>";
+      }
+
+      var body = '<tr class="grp"><td colspan="' + (hasYo ? 8 : 6) + '">Marketing sources</td></tr>' +
+        mk.map(line).join("") + subtotal("Marketing subtotal", mk, "sub") +
+        '<tr class="grp"><td colspan="' + (hasYo ? 8 : 6) + '">Not marketing</td></tr>' +
+        er.map(line).join("") + subtotal("Not marketing subtotal", er, "sub");
+      var foot = '<tr class="tot"><td>All new corporate memberships</td><td></td>' +
+        '<td class="r num">' + int(tot.s) + '</td><td class="r num">' + ratio(tot.e, tot.s) + "</td>" +
+        '<td class="r num">' + int(tot.p) + "</td>" +
+        (hasYo ? '<td class="r num">' + int(D.prior.purchases) + "</td>" +
+                 '<td class="r num">' + chg(tot.p, D.prior.purchases) + "</td>" : "") +
+        '<td class="r num">' + money(tot.v) + "</td></tr>";
+
+      set("attribution", card("Where the memberships came from",
+        "last click; " + D.marketingAttributed.purchases + " of " + tot.p + " from a marketing source" +
+        (hasYo ? "; " + D.prior.year + " is the same window a year earlier" : ""),
+        tbl('<th>Source</th><th>Source / medium</th><th class="r">Sessions</th>' +
+            '<th class="r">Engagement rate</th><th class="r">Memberships</th>' +
+            (hasYo ? '<th class="r">' + D.prior.year + '</th><th class="r">Change</th>' : "") +
+            '<th class="r">Revenue</th>', body, foot)));
+    })();
+
     /* 3. how people reached the page, then the conversion step */
     (function () {
       var ch = D.channels || [];
@@ -277,8 +349,14 @@
       var tot = ch.reduce(function (a, c) { return { s: a.s + (c.sessions || 0), e: a.e + (c.engaged || 0), d: a.d + (c.seconds || 0) }; }, { s: 0, e: 0, d: 0 });
       var hasDur = ch.some(function (c) { return has(c.seconds); });
       var mx = Math.max.apply(null, ch.map(function (c) { return c.sessions || 0; }));
-      var hasSub = ch.some(function (c) { return has(c.submissions); });
-      var totSub = hasSub ? ch.reduce(function (a, c) { return a + (c.submissions || 0); }, 0) : null;
+      /* The conversion this campaign is judged on is a corporate membership purchase,
+         not a form submission. Revenue rides beside it because a channel that brings
+         one Sustaining membership outperforms one that brings three Affiliates. */
+      /* Fewest sessions a source needs before its conversion rate is worth printing. */
+      var MIN_N = 100;
+      var hasSub = ch.some(function (c) { return has(c.purchases); });
+      var totSub = hasSub ? ch.reduce(function (a, c) { return a + (c.purchases || 0); }, 0) : null;
+      var totRev = hasSub ? ch.reduce(function (a, c) { return a + (c.revenue || 0); }, 0) : null;
       /* Two comparisons, added 20 August on Miguel's recommendation. Month on month is
          the last two complete months, named in the card scope so nobody has to guess.
          Year on year is the same window in the prior year, same filter, same four
@@ -298,7 +376,7 @@
         (hasYoY ? '<th class="r">YoY</th>' : "") +
         (hasDur ? '<th class="r">Avg engagement time</th>' : '<th class="r">Engaged sessions</th>') +
         '<th class="r">Engagement rate</th>' +
-        (hasSub ? '<th class="r">' + esc(D.goal ? D.goal.label : "Submissions") + '</th><th class="r">Conversion rate</th>' : "");
+        (hasSub ? '<th class="r">' + esc(D.goal ? D.goal.label : "Purchases") + '</th><th class="r">Revenue</th><th class="r">Conversion rate</th>' : "");
       var rows = ch.slice().sort(function (a, b) { return b.sessions - a.sessions; }).map(function (c) {
         return '<tr><td class="name">' + esc(c.channel) + "</td>" +
           '<td class="r num">' + int(c.sessions) + "</td>" +
@@ -308,7 +386,8 @@
           (hasYoY ? '<td class="r num">' + chg(c.sessions, c.prior) + "</td>" : "") +
           '<td class="r num">' + (hasDur ? dur(c.seconds, c.sessions) : int(c.engaged)) + "</td>" +
           '<td class="r num">' + ratio(c.engaged, c.sessions) + "</td>" +
-          (hasSub ? '<td class="r num">' + int(c.submissions) + '</td><td class="r num">' + ratio(c.submissions, c.sessions, 2) + "</td>" : "") +
+          (hasSub ? '<td class="r num">' + int(c.purchases) + '</td><td class="r num">' + money(c.revenue) +
+                    '</td><td class="r num">' + (c.sessions >= MIN_N ? ratio(c.purchases, c.sessions, 2) : "&mdash;") + "</td>" : "") +
           "</tr>";
       }).join("");
       var sumk = function (k) { return ch.reduce(function (a, c) { return a + (has(c[k]) ? c[k] : 0); }, 0); };
@@ -317,7 +396,7 @@
         (hasMoM ? '<td class="r num">' + chg(sumk("m2"), sumk("m1")) + "</td>" : "") +
         (hasYoY ? '<td class="r num">' + chg(tot.s, D.prior ? D.prior.sessions : null) + "</td>" : "") +
         '<td class="r num">' + (hasDur ? dur(tot.d, tot.s) : int(tot.e)) + '</td><td class="r num">' + ratio(tot.e, tot.s) + "</td>" +
-        (hasSub ? '<td class="r num">' + int(totSub) + '</td><td class="r num">' + ratio(totSub, tot.s, 2) + "</td>" : "") +
+        (hasSub ? '<td class="r num">' + int(totSub) + '</td><td class="r num">' + money(totRev) + '</td><td class="r num">' + ratio(totSub, tot.s, 2) + "</td>" : "") +
         "</tr>";
 
       set("traffic", card("How people reached the page",
@@ -338,7 +417,7 @@
     (function () {
       var m = D.monthly || [];
       if (!m.length) { set("timeline", ""); return; }
-      var showSub = outcome && m.some(function (r) { return has(r.submissions); });
+      var showSub = outcome && m.some(function (r) { return has(r.purchases); });
       var W = 1000, PX = 26, PY = 16;
 
       /* Monotone cubic interpolation. A plain Catmull-Rom spline overshoots on a series
@@ -538,7 +617,7 @@
          for clicks. */
       var creBlock = "";
       var cre = (D.paid && D.paid.creatives) || [];
-      if (cre.length) {
+      if (cre.length && cre[0].image) {
         creBlock = '<div class="sub hdln">What ran</div><div class="gal ads">' +
           cre.slice().sort(function (a, b) { return b.spend - a.spend; }).map(adCard).join("") + "</div>";
       }
@@ -594,33 +673,35 @@
           "</div></div>";
       }
     })();
-    /* 6. email */
+    /* 6. email. Two versions of one email, compared on the same year, in the shape of
+       the mid-campaign report Claudia already has: four figures for the updated email,
+       then a like-for-like table against the version it replaced. */
     (function () {
-      var s = (D.email && D.email.sends) || [];
-      if (!s.length) { set("email", ""); return; }
-      var t = s.reduce(function (a, r) {
-        return { d: a.d + (r.delivered || 0), o: a.o + (r.opens || 0), c: a.c + (r.clicks || 0), u: a.u + (r.unsubs || 0),
-                 n: a.n + (has(r.delivered) ? 1 : 0) };
-      }, { d: 0, o: 0, c: 0, u: 0, n: 0 });
-      var rows = s.map(function (r) {
-        var subj = has(r.subject) ? link(r.url, esc(r.subject))
-                 : '<span class="dim">Scheduled for ' + esc(r.scheduled || "TBD") + "</span>";
-        return '<tr><td class="name">' + subj + "</td>" +
-          '<td class="dim num">' + dayShort(r.sent) + "</td>" +
-          '<td class="r num">' + int(r.delivered) + "</td>" +
-          '<td class="r num">' + int(r.opens) + "</td>" +
-          '<td class="r num">' + ratio(r.opens, r.delivered, 2) + "</td>" +
-          '<td class="r num">' + int(r.clicks) + "</td>" +
-          '<td class="r num">' + ratio(r.clicks, r.delivered, 2) + "</td>" +
-          '<td class="r num">' + int(r.unsubs) + "</td>" +
-          '<td class="r num">' + ratio(r.unsubs, r.delivered, 2) + "</td></tr>";
+      var E = D.email;
+      if (!E || !E.compare) { set("email", ""); return; }
+      var f = function (v, fmt) {
+        return fmt === "money" ? money(v) : fmt === "pct2" ? pct(v, 2) : int(v);
+      };
+      var tiles = '<div class="kpis">' + E.headline.map(function (h) {
+        return '<div class="kpi"><div class="klab">' + esc(h.label) + "</div>" +
+          '<div class="kval num">' + f(h.value, h.fmt) + "</div>" +
+          '<div class="kch">' + esc(h.sub) + "</div></div>";
+      }).join("") + "</div>";
+
+      var C = E.compare;
+      var rows = C.rows.map(function (r) {
+        return '<tr' + (r.highlight ? ' class="hl"' : "") + '><td class="name">' + esc(r.metric) + "</td>" +
+          '<td class="r num">' + f(r.a, r.fmt) + "</td>" +
+          '<td class="r num">' + f(r.b, r.fmt) + "</td></tr>";
       }).join("");
-      var foot = '<tr class="tot"><td>All sends</td><td></td>' +
-        '<td class="r num">' + int(t.d) + '</td><td class="r num">' + int(t.o) + '</td><td class="r num">' + ratio(t.o, t.d, 2) +
-        '</td><td class="r num">' + int(t.c) + '</td><td class="r num">' + ratio(t.c, t.d, 2) +
-        '</td><td class="r num">' + int(t.u) + '</td><td class="r num">' + ratio(t.u, t.d, 2) + "</td></tr>";
-      set("email", card("Email", s.length + " sends planned, " + t.n + " sent",
-        tbl('<th>Subject</th><th>Sent</th><th class="r">Delivered</th><th class="r">Opens</th><th class="r">Open rate</th><th class="r">Clicks</th><th class="r">Click rate</th><th class="r">Unsubs</th><th class="r">Unsub rate</th>', rows, foot)));
+      var head = '<th>Metric</th>' +
+        '<th class="r">' + esc(C.a) + '<span class="msub"><br>' + esc(C.aSub) + "</span></th>" +
+        '<th class="r">' + esc(C.b) + '<span class="msub"><br>' + esc(C.bSub) + "</span></th>";
+
+      set("email", card("Email", E.window,
+        tiles + '<div class="sub hdln">Updated against the email it replaced</div>' +
+        tbl(head, rows, "") +
+        (E.note ? '<div class="enote">' + esc(E.note) + "</div>" : "")));
     })();
 
     /* 7. organic social */
@@ -640,8 +721,12 @@
         list.forEach(function (p) { var v = fn(p); if (has(v)) { n++; s += v; } });
         return (list.length && n === list.length) ? s : null;
       }
-      var seenTot = complete(posts, dval);
-      var engTot = complete(posts, function (p) { return p.engagements; });
+      /* The scheduled post has no metrics BECAUSE IT HAS NOT RUN. Totals cover the
+         published posts, and the caption says how many that is, so a queued post
+         neither blanks the totals nor inflates the denominator. */
+      var pub = posts.filter(function (p) { return !p.scheduled; });
+      var seenTot = complete(pub, dval);
+      var engTot = complete(pub, function (p) { return p.engagements; });
       /* LinkedIn reports impressions, Instagram reports views, Facebook reports
          neither: every metric in the post_impressions family is withdrawn. The
          cell is left empty rather than filled from a different basis. */
@@ -652,18 +737,25 @@
         var thumb;
         if (has(p.image)) thumb = '<div class="thumb"><img src="' + esc(p.image) + '" alt="" loading="lazy"></div>';
         else if (p.mediaType === "video") thumb = '<div class="thumb"><div class="play">&#9654;</div>' + (p.duration ? '<div class="dur num">' + esc(p.duration) + "</div>" : "") + "</div>";
-        else thumb = '<div class="thumb" style="background:#FAFAFA;"><div class="quote">&ldquo;' + esc(p.caption) + "&rdquo;</div></div>";
+        /* A text or quote post renders its own words as the artwork, as FOWC does. The
+           testimonial's pull quote is used when the platform image cannot be pulled. */
+        else thumb = '<div class="thumb" style="background:#FAFAFA;"><div class="quote">&ldquo;' + esc(p.quote || p.caption) + "&rdquo;</div></div>";
+        /* A queued post shows its go-live date where metrics would sit. Dashes there
+           would read as a measurement failure; "scheduled" is the true state. */
+        var figs = p.scheduled
+          ? '<div class="pfig"><div class="pf"><div class="pfl">Status</div><div class="pfv" style="font-size:13px;color:#B07A00;">Scheduled &middot; ' + dayShort(p.date) + "</div></div></div>"
+          : '<div class="pfig"><div class="pf"><div class="pfl">' + dlab(p) + '</div><div class="pfv num">' +
+              int(dval(p)) + "</div></div>" +
+            '<div class="pf"><div class="pfl">Engagements</div><div class="pfv num">' + int(p.engagements) + "</div></div>" +
+            "</div>";
         return '<div class="post">' + thumb + '<div class="pmeta">' +
-          '<div class="pplat"><span>' + esc(p.platform) + '</span><span class="num">' + dayShort(p.date) +
+          '<div class="pplat"><span>' + esc(p.platform) + "</span><span class=\"num\">" +
+          (p.scheduled ? "SCHEDULED" : dayShort(p.date)) +
           (has(p.url) ? '</span><a class="pview" href="' + esc(p.url) + '" target="_blank" rel="noopener">View</a>' : "</span>") + "</div>" +
-          '<div class="pcap">' + esc(p.caption) + "</div>" +
-          '<div class="pfig"><div class="pf"><div class="pfl">' + dlab(p) + '</div><div class="pfv num">' +
-            int(dval(p)) + "</div></div>" +
-          '<div class="pf"><div class="pfl">Engagements</div><div class="pfv num">' + int(p.engagements) + "</div></div>" +
-          "</div></div></div>";
+          '<div class="pcap">' + esc(p.caption) + "</div>" + figs + "</div></div>";
       }
       var body = '<div class="galsum">' +
-        sum("Posts published", int(posts.length)) +
+        sum("Posts published", int(pub.length) + (posts.length > pub.length ? " of " + posts.length : "")) +
         sum("Impressions and views", int(seenTot)) +
         sum("Engagements", int(engTot)) +
         sum("Engagement rate", ratio(engTot, seenTot, 2)) + "</div>" +
@@ -688,6 +780,10 @@
         var t = String(v || "").toLowerCase();
         if (/done|deliver|publish|sent|live|complete/.test(t)) return "Done";
         if (/progress|stuck|review|draft|schedul|working/.test(t)) return "In progress";
+        /* Cancelled work is not work that has yet to start. Eight supplier directory
+           listings were cancelled here; reading that as "not started" tells a reader
+           the plan is still coming. It is not. */
+        if (/cancel/.test(t)) return "Cancelled";
         return "Not started";
       }
       var done = d.filter(function (r) { return state(r.status) === "Done"; }).length;
@@ -708,12 +804,15 @@
             '<div class="pf"><div class="pfl">Sessions</div><div class="pfv num">' + int(r.sessions) + "</div></div>" +
             "</div></div></div>";
         }).join("") + "</div>" : "";
-      set("delivery", card("What ran", done + " of " + d.length + " delivered",
+      var hasVanity = d.some(function (r) { return !!r.vanity; });
+      set("delivery", card("Traditional media", done + " of " + d.length + " published",
         artBlock +
-        tbl('<th>Channel</th><th>Item</th><th>Date</th><th>Status</th><th>Tracking</th>',
+        tbl('<th>Channel</th><th>Item</th><th>Date</th><th>Status</th>' +
+            (hasVanity ? '<th>Tracking</th>' : ""),
           d.map(function (r) {
             var st = state(r.status);
-            var cls = st === "Done" ? "ok" : st === "In progress" ? "warn" : "flat";
+            var cls = st === "Done" ? "ok" : st === "In progress" ? "warn"
+                      : st === "Cancelled" ? "bad" : "flat";
             var tr = "";
             if (r.vanity) {
               tr = '<a href="' + esc(r.vanityUrl || "#") + '" target="_blank" rel="noopener">' + esc(r.vanity) + "</a>";
@@ -724,7 +823,7 @@
             }
             return '<tr><td class="dim">' + esc(r.channel) + '</td><td class="name">' + esc(r.item) + "</td>" +
               '<td class="num">' + dayShort(r.due) + '</td><td><span class="pill ' + cls + '">' + st + "</span></td>" +
-              "<td>" + tr + "</td></tr>";
+              (hasVanity ? "<td>" + tr + "</td>" : "") + "</tr>";
           }).join("")) + (artBlock ? "" : "")));
     })();
   }
