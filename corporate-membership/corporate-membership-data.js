@@ -806,8 +806,6 @@ window.CAMPAIGN_DATA = {
    "placement": "Fabrication Showcase e-Newsletter, 12 May issue",
    "headline": "Banner Ad, Fabrication Showcase e-Newsletter",
    "image": "img/2026-fm-banner-ad.png",
-   "pubDelivered": 21516,
-   "pubRead": 3758,
    "pubClicks": 33
   },
   {
@@ -818,8 +816,6 @@ window.CAMPAIGN_DATA = {
    "placement": "Dedicated eBlast, Fabricator and Manufacturer list",
    "image": "img/2026-05-14-fm-eblast.png",
    "source": "fabricatingandmetalworking.com / email",
-   "pubDelivered": 20742,
-   "pubRead": 3867,
    "pubClicks": 540,
    "sessions": 133,
    "seconds": 294

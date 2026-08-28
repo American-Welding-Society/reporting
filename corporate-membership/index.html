@@ -676,19 +676,19 @@
       /* Publisher-reported delivery for placements the publisher measures: the
          figures come from the publisher's own results, relayed on the campaign
          board, and sit beside the GA4 columns so both sides of the journey show. */
-      var hasPub = d.some(function (r) { return has(r.pubDelivered); });
+      var hasPub = d.some(function (r) { return has(r.pubClicks); });
       var rows = d.map(function (r) {
         var st = state(r.status);
         return '<tr><td class="dim">' + esc(r.channel) + '</td><td class="name">' + esc(r.item) + "</td>" +
           '<td class="r num">' + dayShort(r.due) + "</td><td>" + pillFor(st) + "</td>" +
-          (hasPub ? '<td class="r num">' + int(r.pubDelivered) + '</td><td class="r num">' + int(r.pubRead) + '</td><td class="r num">' + int(r.pubClicks) + "</td>" : "") +
+          (hasPub ? '<td class="r num">' + int(r.pubClicks) + "</td>" : "") +
           (hasClicks ? '<td class="r num">' + int(r.clicks) + "</td>" : "") +
           (hasMeasure ? '<td class="r num">' + int(r.sessions) + '</td><td class="r num">' + dur(r.seconds, r.sessions) + "</td>" : "") +
           "</tr>";
       }).join("");
       set("traditional", card("Traditional media", done + " of " + d.length + " published",
         artBlock + tbl('<th>Channel</th><th>Item</th><th class="r">Date</th><th>Status</th>' +
-          (hasPub ? '<th class="r">Publisher delivered</th><th class="r">Publisher read</th><th class="r">Publisher clicks</th>' : "") +
+          (hasPub ? '<th class="r">Publisher clicks</th>' : "") +
           (hasClicks ? '<th class="r">Short link clicks</th>' : "") +
           (hasMeasure ? '<th class="r">Sessions</th><th class="r">Average engagement time</th>' : ""), rows, "")));
     })();
