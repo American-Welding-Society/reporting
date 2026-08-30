@@ -48,7 +48,7 @@
     font-weight:700; color:var(--mid); border-bottom:2px solid transparent; white-space:nowrap; }
   .nav a:hover { color:var(--navy); text-decoration:none; border-bottom-color:#C6CBCE; }
   .nav a.on { color:var(--navy); border-bottom-color:var(--orange); }
-  #traffic, #attribution, #paid, #email, #social, #traditional, #video { scroll-margin-top:64px; }
+  #traffic, #attribution, #tiers, #paid, #email, #social, #traditional, #video { scroll-margin-top:64px; }
 
   /* cards */
   .card { background:#fff; border:1px solid var(--line); border-radius:8px; padding:0 20px 20px;
@@ -196,6 +196,7 @@
 
   <div class="kpis" id="kpis"></div>
   <div id="attribution"></div>
+  <div id="tiers"></div>
   <div id="traffic"></div>
   <div id="paid"></div>
   <div id="email"></div>
@@ -446,6 +447,38 @@
         tbl('<th>Source</th><th class="r">Sessions</th><th class="r">' + esc(outLabel) + "</th>" +
           (hasYo ? '<th class="r">' + D.prior.year + ' YTD</th><th class="r">Change</th>' : "") +
           (isPurchase ? '<th class="r">Revenue</th>' : ""), body, foot)));
+    })();
+
+    /* 5b. interest and sales by type. The rows pair each type's own page traffic with
+       sales of that type; the note is owner wording, approved 28 August 2026. */
+    (function () {
+      var TR = D.tiers;
+      if (!TR || !(TR.rows || []).length) { set("tiers", ""); return; }
+      var rows = TR.rows.slice().sort(function (a, b) {
+        return (a.noTier ? 1 : 0) - (b.noTier ? 1 : 0) || b.sessions - a.sessions;
+      });
+      var totS = 0, totU = 0, totV = 0;
+      rows.forEach(function (r) { totS += r.sessions; totU += (r.units || 0); totV += (r.revenue || 0); });
+      var mx = rows.reduce(function (m, r) { return r.noTier ? m : Math.max(m, (100 * r.units / r.sessions)); }, 0);
+      var body = rows.map(function (r) {
+        var rate = r.noTier ? null : 100 * r.units / r.sessions;
+        return '<tr><td class="name">' + esc(r.tier) + "</td>" +
+          '<td class="r num">' + int(r.sessions) + "</td>" +
+          '<td class="r num">' + (r.noTier ? DASH : int(r.units)) + "</td>" +
+          (isPurchase ? '<td class="r num">' + (r.noTier ? DASH : money0(r.revenue)) + "</td>" : "") +
+          '<td class="r num">' + (rate === null ? DASH :
+            '<span class="' + (rate === mx ? "up" : "") + '">' + rate.toFixed(1) + "</span>") + "</td></tr>";
+      }).join("");
+      var foot = '<tr class="tot"><td>All</td><td class="r num">' + int(totS) +
+        '</td><td class="r num">' + int(totU) + "</td>" +
+        (isPurchase ? '<td class="r num">' + money0(totV) + "</td>" : "") +
+        '<td class="r num"></td></tr>';
+      set("tiers", card("Interest and sales by membership type", "",
+        '<div class="cscope below">' + esc(TR.note || "") + "</div>" +
+        tbl("<th>Membership type</th>" +
+          '<th class="r">Sessions on its page</th><th class="r">' + esc(outLabel) + " sold</th>" +
+          (isPurchase ? '<th class="r">Revenue</th>' : "") +
+          '<th class="r">Sold per 100 sessions</th>', body, foot, true)));
     })();
 
     /* 6. paid media */
@@ -722,7 +755,7 @@
 
     /* nav, from what rendered */
     var secs = [];
-    [["attribution", "Attribution"], ["traffic", "Traffic"], ["paid", "Paid media"], ["email", "Email"],
+    [["attribution", "Attribution"], ["tiers", "Membership types"], ["traffic", "Traffic"], ["paid", "Paid media"], ["email", "Email"],
      ["social", "Organic social"], ["traditional", "Traditional media"], ["video", "Video"]]
       .forEach(function (s) {
         if (document.getElementById(s[0]).innerHTML) secs.push('<a href="#' + s[0] + '">' + s[1] + "</a>");

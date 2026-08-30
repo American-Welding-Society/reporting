@@ -451,6 +451,46 @@ window.CAMPAIGN_DATA = {
    "priorRevenue": 9435
   }
  ],
+ "tiers": {
+  "note": "Each row pairs a membership type's page traffic with new sales of that type over the same period, renewals excluded. Sold per 100 sessions shows how readily that interest becomes a purchase. A buyer does not have to visit a tier's page to buy it, so this pairs interest with sales by type rather than tracing a page-to-purchase path. The main page has no tier of its own, so its sales cells are dashes.",
+  "rows": [
+   {
+    "tier": "Educational Institution",
+    "sessions": 3214,
+    "units": 83,
+    "revenue": 22659
+   },
+   {
+    "tier": "Sustaining",
+    "sessions": 1774,
+    "units": 39,
+    "revenue": 35490
+   },
+   {
+    "tier": "Affiliate",
+    "sessions": 1146,
+    "units": 88,
+    "revenue": 17600
+   },
+   {
+    "tier": "Supporting",
+    "sessions": 1013,
+    "units": 19,
+    "revenue": 8645
+   },
+   {
+    "tier": "Welding Distributor",
+    "sessions": 566,
+    "units": 10,
+    "revenue": 5550
+   },
+   {
+    "tier": "Corporate Membership (main page)",
+    "sessions": 14372,
+    "noTier": true
+   }
+  ]
+ },
  "marketingAttributed": {
   "purchases": 40,
   "revenue": 14621,
