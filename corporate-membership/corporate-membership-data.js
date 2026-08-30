@@ -73,6 +73,7 @@ window.CAMPAIGN_DATA = {
   "actual": 239
  },
  "outcomeProductsWithheld": true,
+ "trafficTimeNote": "** Excluding the largest channel, the average engagement time is 1m 01s across 10,940 sessions.",
  "trafficNote": "Paid search: this campaign ran no search ads. These visits came from ads for other American Welding Society campaigns that landed people on this page.",
  "landingPage": {
   "sessions": 22085,
@@ -452,7 +453,7 @@ window.CAMPAIGN_DATA = {
   }
  ],
  "tiers": {
-  "note": "Each row pairs a membership type's page traffic with new sales of that type over the same period, renewals excluded. Sold per 100 sessions shows how readily that interest becomes a purchase. A buyer does not have to visit a tier's page to buy it, so this pairs interest with sales by type rather than tracing a page-to-purchase path. The main page has no tier of its own, so its sales cells are dashes.",
+  "note": "Each row pairs a membership type's page traffic with new sales of that type over the same period, renewals excluded. Sold per 100 sessions shows how readily that interest becomes a purchase. A buyer does not have to visit a tier's page to buy it, so this pairs interest with sales by type rather than tracing a page-to-purchase path.",
   "rows": [
    {
     "tier": "Educational Institution",
@@ -483,11 +484,47 @@ window.CAMPAIGN_DATA = {
     "sessions": 566,
     "units": 10,
     "revenue": 5550
+   }
+  ]
+ },
+ "seo": {
+  "note": "Completed May 2026 on the corporate membership pages: title tags, meta descriptions, headings, and schema markup. Each card shows the page's search listing as it serves today.",
+  "completed": "May 2026",
+  "pages": [
+   {
+    "label": "Corporate Membership (main)",
+    "url": "https://www.aws.org/membership/corporate/",
+    "title": "AWS Welding Membership Options: Join the American Welding Society",
+    "description": "Shape industry standards and develop your team with AWS corporate membership plans. Learn more from American Welding Society.",
+    "previousTitle": "AWS Membership | Corporate Membership"
    },
    {
-    "tier": "Corporate Membership (main page)",
-    "sessions": 14372,
-    "noTier": true
+    "label": "Affiliate",
+    "url": "https://www.aws.org/membership/corporate/affiliate",
+    "title": "AWS Affiliate Company Welding Membership | American Welding Society",
+    "description": "Access essential technical resources and growth opportunities tailored for smaller fabrication shops. Learn more from American Welding Society.",
+    "previousTitle": "AWS Affiliate Company Membership | American Welding Society"
+   },
+   {
+    "label": "Supporting",
+    "url": "https://www.aws.org/membership/corporate/supporting",
+    "title": "AWS Supporting Company Welding Membership | American Welding Society",
+    "description": "Empower your mid-sized company with technical information and tools to increase overall productivity. Learn more from American Welding Society.",
+    "previousTitle": "AWS Supporting Company Membership | American Welding Society"
+   },
+   {
+    "label": "Sustaining",
+    "url": "https://www.aws.org/membership/corporate/sustaining",
+    "title": "AWS Sustaining Company Welding Membership | American Welding Society",
+    "description": "Unlock exclusive benefits and shape the future of welding as a top-tier AWS corporate partner. Learn more from American Welding Society.",
+    "previousTitle": "AWS Sustaining Company Membership | American Welding Society"
+   },
+   {
+    "label": "Welding Distributor",
+    "url": "https://www.aws.org/membership/corporate/welding-distributor",
+    "title": "AWS Welding Distributor Membership | American Welding Society",
+    "description": "Connect with manufacturers and increase visibility through the AWS welding distributor locator list. Learn more from American Welding Society.",
+    "titleUnchanged": true
    }
   ]
  },
