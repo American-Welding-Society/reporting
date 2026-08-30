@@ -73,6 +73,7 @@ window.CAMPAIGN_DATA = {
   "actual": 239
  },
  "outcomeProductsWithheld": true,
+ "trafficTimeNote": "** Excluding the largest channel, the average engagement time is 1m 01s across 10,940 sessions.",
  "trafficNote": "Paid search: this campaign ran no search ads. These visits came from ads for other American Welding Society campaigns that landed people on this page.",
  "landingPage": {
   "sessions": 22085,
@@ -451,6 +452,82 @@ window.CAMPAIGN_DATA = {
    "priorRevenue": 9435
   }
  ],
+ "tiers": {
+  "note": "Each row pairs a membership type's page traffic with new sales of that type over the same period, renewals excluded. Sold per 100 sessions shows how readily that interest becomes a purchase. A buyer does not have to visit a tier's page to buy it, so this pairs interest with sales by type rather than tracing a page-to-purchase path.",
+  "rows": [
+   {
+    "tier": "Educational Institution",
+    "sessions": 3214,
+    "units": 83,
+    "revenue": 22659
+   },
+   {
+    "tier": "Sustaining",
+    "sessions": 1774,
+    "units": 39,
+    "revenue": 35490
+   },
+   {
+    "tier": "Affiliate",
+    "sessions": 1146,
+    "units": 88,
+    "revenue": 17600
+   },
+   {
+    "tier": "Supporting",
+    "sessions": 1013,
+    "units": 19,
+    "revenue": 8645
+   },
+   {
+    "tier": "Welding Distributor",
+    "sessions": 566,
+    "units": 10,
+    "revenue": 5550
+   }
+  ]
+ },
+ "seo": {
+  "note": "Completed May 2026 on the corporate membership pages: title tags, meta descriptions, headings, and schema markup. Each card shows the page's search listing as it serves today.",
+  "completed": "May 2026",
+  "pages": [
+   {
+    "label": "Corporate Membership (main)",
+    "url": "https://www.aws.org/membership/corporate/",
+    "title": "AWS Welding Membership Options: Join the American Welding Society",
+    "description": "Shape industry standards and develop your team with AWS corporate membership plans. Learn more from American Welding Society.",
+    "previousTitle": "AWS Membership | Corporate Membership"
+   },
+   {
+    "label": "Affiliate",
+    "url": "https://www.aws.org/membership/corporate/affiliate",
+    "title": "AWS Affiliate Company Welding Membership | American Welding Society",
+    "description": "Access essential technical resources and growth opportunities tailored for smaller fabrication shops. Learn more from American Welding Society.",
+    "previousTitle": "AWS Affiliate Company Membership | American Welding Society"
+   },
+   {
+    "label": "Supporting",
+    "url": "https://www.aws.org/membership/corporate/supporting",
+    "title": "AWS Supporting Company Welding Membership | American Welding Society",
+    "description": "Empower your mid-sized company with technical information and tools to increase overall productivity. Learn more from American Welding Society.",
+    "previousTitle": "AWS Supporting Company Membership | American Welding Society"
+   },
+   {
+    "label": "Sustaining",
+    "url": "https://www.aws.org/membership/corporate/sustaining",
+    "title": "AWS Sustaining Company Welding Membership | American Welding Society",
+    "description": "Unlock exclusive benefits and shape the future of welding as a top-tier AWS corporate partner. Learn more from American Welding Society.",
+    "previousTitle": "AWS Sustaining Company Membership | American Welding Society"
+   },
+   {
+    "label": "Welding Distributor",
+    "url": "https://www.aws.org/membership/corporate/welding-distributor",
+    "title": "AWS Welding Distributor Membership | American Welding Society",
+    "description": "Connect with manufacturers and increase visibility through the AWS welding distributor locator list. Learn more from American Welding Society.",
+    "titleUnchanged": true
+   }
+  ]
+ },
  "marketingAttributed": {
   "purchases": 40,
   "revenue": 14621,
@@ -799,11 +876,14 @@ window.CAMPAIGN_DATA = {
  },
  "traditional": [
   {
-   "channel": "Banner ad",
+   "channel": "Newsletter banner",
    "item": "May Banner Ad, F&M Magazine",
    "due": "2026-05-05",
    "status": "Done",
-   "placement": "Banner, Fabricator and Manufacturer, May 2026"
+   "placement": "Fabrication Showcase e-Newsletter, 12 May issue",
+   "headline": "Banner Ad, Fabrication Showcase e-Newsletter",
+   "image": "img/2026-fm-banner-ad.png",
+   "pubClicks": 33
   },
   {
    "channel": "eBlast",
@@ -813,30 +893,29 @@ window.CAMPAIGN_DATA = {
    "placement": "Dedicated eBlast, Fabricator and Manufacturer list",
    "image": "img/2026-05-14-fm-eblast.png",
    "source": "fabricatingandmetalworking.com / email",
+   "pubClicks": 540,
    "sessions": 133,
    "seconds": 294
   },
   {
-   "channel": "Banner ad",
+   "channel": "Newsletter banner",
    "item": "July Banner Ad, F&M Magazine",
    "due": "2026-06-18",
    "status": "Done",
-   "placement": "Banner, Fabricator and Manufacturer, July 2026",
-   "headline": "Banner Ad, F&M Magazine, May and July",
-   "image": "img/2026-fm-banner-ad.png",
+   "placement": "Fabrication Showcase e-Newsletter, July issue",
    "source": "fabricatingandmetalworking.com / digital ad",
    "sessions": 189,
    "seconds": 96,
    "note": "both banner placements share one source tag"
   },
   {
-   "channel": "Banner ad",
+   "channel": "Newsletter banner",
    "item": "September Banner Ad, F&M Magazine",
    "due": "2026-08-18",
    "status": "In-Progress"
   },
   {
-   "channel": "Banner ad",
+   "channel": "Newsletter banner",
    "item": "October Banner Ad, F&M Magazine",
    "due": "2026-09-17",
    "status": "Not Started"
@@ -854,7 +933,7 @@ window.CAMPAIGN_DATA = {
    "status": "Not Started"
   },
   {
-   "channel": "Banner ad",
+   "channel": "Newsletter banner",
    "item": "November Banner Ad, F&M Magazine",
    "due": "2026-10-16",
    "status": "Not Started"

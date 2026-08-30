@@ -48,7 +48,7 @@
     font-weight:700; color:var(--mid); border-bottom:2px solid transparent; white-space:nowrap; }
   .nav a:hover { color:var(--navy); text-decoration:none; border-bottom-color:#C6CBCE; }
   .nav a.on { color:var(--navy); border-bottom-color:var(--orange); }
-  #traffic, #attribution, #paid, #email, #social, #traditional, #video { scroll-margin-top:64px; }
+  #traffic, #attribution, #tiers, #seo, #paid, #email, #social, #traditional, #video { scroll-margin-top:64px; }
 
   /* cards */
   .card { background:#fff; border:1px solid var(--line); border-radius:8px; padding:0 20px 20px;
@@ -162,6 +162,13 @@
   .msgs th { font-size:8.5px; padding-bottom:6px; }
   .msgs td { padding:5px 10px 5px 0; }
   .enote { font-size:11.5px; line-height:1.6; color:var(--mid); border-top:1px solid var(--hair); padding-top:13px; text-wrap:pretty; }
+  .gal.serps { grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); }
+  .serp { border:1px solid var(--line); border-radius:7px; padding:14px 16px; background:#fff; }
+  .serp .sl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1.1px; color:var(--faint); margin-bottom:8px; }
+  .serp .su { font-size:11px; color:var(--up); word-break:break-all; }
+  .serp .st { font-size:15px; color:#1a0dab; line-height:1.35; margin:2px 0 3px; text-wrap:pretty; }
+  .serp .sd { font-size:12px; color:#4d5156; line-height:1.5; text-wrap:pretty; }
+  .serp .sp { font-size:10.5px; color:var(--faint); margin-top:8px; border-top:1px solid var(--hair); padding-top:7px; }
 
   @media (max-width:960px) {
     .kpis { grid-template-columns:repeat(2,1fr); }
@@ -197,6 +204,8 @@
   <div class="kpis" id="kpis"></div>
   <div id="attribution"></div>
   <div id="traffic"></div>
+  <div id="tiers"></div>
+  <div id="seo"></div>
   <div id="paid"></div>
   <div id="email"></div>
   <div id="social"></div>
@@ -384,7 +393,7 @@
       }).join("");
       var foot = '<tr class="tot"><td>All sources</td><td class="r num">' + int(tot.s) +
         '</td><td class="r num">' + pct(100) + "</td><td></td>" +
-        '<td class="r num">' + dur(tot.d, tot.s) + "</td>" +
+        '<td class="r num">' + dur(tot.d, tot.s) + (D.trafficTimeNote ? "**" : "") + "</td>" +
         (showOut ? '<td class="r num">' + int(tot.u) + "</td>" +
           (isPurchase ? '<td class="r num">' + money(tot.v) + "</td>" : "") +
           '<td class="r num">' + ratio(tot.u, tot.s, 2) + "</td>" : "") + "</tr>";
@@ -393,8 +402,12 @@
          other campaigns' ads. Sanctioned like the click-to-session line. */
       set("traffic", card("How people reached the page", "",
         tbl(head, rows, foot, true) +
-        (D.trafficNote ? '<div class="note callout">' +
-          (String(D.trafficNote).charAt(0) === "*" ? "" : "* ") + esc(D.trafficNote) + "</div>" : "")));
+        (function () {
+          var notes = [];
+          if (D.trafficNote) notes.push((String(D.trafficNote).charAt(0) === "*" ? "" : "* ") + esc(D.trafficNote));
+          if (D.trafficTimeNote) notes.push(esc(D.trafficTimeNote));
+          return notes.length ? '<div class="note callout">' + notes.join("<br>") + "</div>" : "";
+        })()));
     })();
 
     /* 5. where the outcome came from */
@@ -446,6 +459,58 @@
         tbl('<th>Source</th><th class="r">Sessions</th><th class="r">' + esc(outLabel) + "</th>" +
           (hasYo ? '<th class="r">' + D.prior.year + ' YTD</th><th class="r">Change</th>' : "") +
           (isPurchase ? '<th class="r">Revenue</th>' : ""), body, foot)));
+    })();
+
+    /* 5b. interest and sales by type. The rows pair each type's own page traffic with
+       sales of that type; the note is owner wording, approved 28 August 2026. */
+    (function () {
+      var TR = D.tiers;
+      if (!TR || !(TR.rows || []).length) { set("tiers", ""); return; }
+      var rows = TR.rows.slice().sort(function (a, b) {
+        return (a.noTier ? 1 : 0) - (b.noTier ? 1 : 0) || b.sessions - a.sessions;
+      });
+      var totS = 0, totU = 0, totV = 0;
+      rows.forEach(function (r) { totS += r.sessions; totU += (r.units || 0); totV += (r.revenue || 0); });
+      var mx = rows.reduce(function (m, r) { return r.noTier ? m : Math.max(m, (100 * r.units / r.sessions)); }, 0);
+      var body = rows.map(function (r) {
+        var rate = r.noTier ? null : 100 * r.units / r.sessions;
+        return '<tr><td class="name">' + esc(r.tier) + "</td>" +
+          '<td class="r num">' + int(r.sessions) + "</td>" +
+          '<td class="r num">' + (r.noTier ? DASH : int(r.units)) + "</td>" +
+          (isPurchase ? '<td class="r num">' + (r.noTier ? DASH : money0(r.revenue)) + "</td>" : "") +
+          '<td class="r num">' + (rate === null ? DASH :
+            '<span class="' + (rate === mx ? "up" : "") + '">' + rate.toFixed(1) + "</span>") + "</td></tr>";
+      }).join("");
+      var foot = '<tr class="tot"><td>All</td><td class="r num">' + int(totS) +
+        '</td><td class="r num">' + int(totU) + "</td>" +
+        (isPurchase ? '<td class="r num">' + money0(totV) + "</td>" : "") +
+        '<td class="r num"></td></tr>';
+      set("tiers", card("Interest and sales by membership type", "",
+        '<div class="cscope below">' + esc(TR.note || "") + "</div>" +
+        tbl("<th>Membership type</th>" +
+          '<th class="r">Sessions on its page</th><th class="r">' + esc(outLabel) + " sold</th>" +
+          (isPurchase ? '<th class="r">Revenue</th>' : "") +
+          '<th class="r">Sold per 100 sessions</th>', body, foot, true)));
+    })();
+
+    /* 5c. search optimizations: the work itself, shown as each page's live search
+       listing. No trend figures and no analysis; the cards are the record. */
+    (function () {
+      var SEO = D.seo;
+      if (!SEO || !(SEO.pages || []).length) { set("seo", ""); return; }
+      var strip = '<div class="galsum">' +
+        '<div class="gs"><div class="l">Pages optimized</div><div class="v num">' + SEO.pages.length + "</div></div>" +
+        (SEO.completed ? '<div class="gs"><div class="l">Completed</div><div class="v num">' + esc(SEO.completed) + "</div></div>" : "") +
+        "</div>";
+      var cards = '<div class="gal serps">' + SEO.pages.map(function (pg) {
+        return '<div class="serp"><div class="sl">' + esc(pg.label) + "</div>" +
+          '<div class="su">' + esc(pg.url.replace(/^https:\/\//, "")) + "</div>" +
+          '<div class="st">' + esc(pg.title) + "</div>" +
+          '<div class="sd">' + esc(pg.description) + "</div>" +
+          '<div class="sp">' + (pg.titleUnchanged ? "Title unchanged" : "Previously: " + esc(pg.previousTitle)) + "</div></div>";
+      }).join("") + "</div>";
+      set("seo", card("Search optimizations", "",
+        '<div class="cscope below">' + esc(SEO.note || "") + "</div>" + strip + cards));
     })();
 
     /* 6. paid media */
@@ -667,24 +732,28 @@
             '<div class="pplat"><span>' + esc(r.channel).toUpperCase() + "</span><span>" + esc(r.placement || "") + "</span></div>" +
             '<div class="adname">' + esc(r.headline || r.item) + "</div>" +
             '<div class="pfig">' +
-            (has(r.clicks) ? '<div class="pf"><div class="pfl">Short link clicks</div><div class="pfv num">' + int(r.clicks) + "</div></div>" : "") +
-            (has(r.sessions) ? '<div class="pf"><div class="pfl">Sessions</div><div class="pfv num">' + int(r.sessions) + "</div></div>" : "") +
             "</div></div></div>";
         }).join("") + "</div>" : "";
       var hasMeasure = d.some(function (r) { return has(r.sessions); });
       /* Terminus short-link clicks are the print channel's own delivery figure and must
          reach the table, not only an artwork card that may not exist. */
       var hasClicks = d.some(function (r) { return has(r.clicks); });
+      /* Publisher-reported delivery for placements the publisher measures: the
+         figures come from the publisher's own results, relayed on the campaign
+         board, and sit beside the GA4 columns so both sides of the journey show. */
+      var hasPub = d.some(function (r) { return has(r.pubClicks); });
       var rows = d.map(function (r) {
         var st = state(r.status);
         return '<tr><td class="dim">' + esc(r.channel) + '</td><td class="name">' + esc(r.item) + "</td>" +
           '<td class="r num">' + dayShort(r.due) + "</td><td>" + pillFor(st) + "</td>" +
+          (hasPub ? '<td class="r num">' + int(r.pubClicks) + "</td>" : "") +
           (hasClicks ? '<td class="r num">' + int(r.clicks) + "</td>" : "") +
           (hasMeasure ? '<td class="r num">' + int(r.sessions) + '</td><td class="r num">' + dur(r.seconds, r.sessions) + "</td>" : "") +
           "</tr>";
       }).join("");
       set("traditional", card("Traditional media", done + " of " + d.length + " published",
         artBlock + tbl('<th>Channel</th><th>Item</th><th class="r">Date</th><th>Status</th>' +
+          (hasPub ? '<th class="r">Publisher clicks</th>' : "") +
           (hasClicks ? '<th class="r">Short link clicks</th>' : "") +
           (hasMeasure ? '<th class="r">Sessions</th><th class="r">Average engagement time</th>' : ""), rows, "")));
     })();
@@ -718,7 +787,7 @@
 
     /* nav, from what rendered */
     var secs = [];
-    [["attribution", "Attribution"], ["traffic", "Traffic"], ["paid", "Paid media"], ["email", "Email"],
+    [["attribution", "Attribution"], ["traffic", "Traffic"], ["tiers", "Membership types"], ["seo", "Search optimizations"], ["paid", "Paid media"], ["email", "Email"],
      ["social", "Organic social"], ["traditional", "Traditional media"], ["video", "Video"]]
       .forEach(function (s) {
         if (document.getElementById(s[0]).innerHTML) secs.push('<a href="#' + s[0] + '">' + s[1] + "</a>");
