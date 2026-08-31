@@ -180,10 +180,12 @@
     .mast { flex-direction:column; align-items:flex-start; gap:12px; padding:20px 18px 18px; }
     .card { padding:0 14px 16px; }
     .chd { margin:0 -14px; padding:13px 14px 11px; }
-    .ctitle { white-space:normal; }
+    .ctitle { white-space:normal; flex:1 1 auto; min-width:0; }
     .links { padding:11px 14px; }
     .nav { padding:0 14px; }
+    .card.strip { flex-direction:column; }
     .strip .si { border-left:none; padding:9px 14px; }
+    .strip .si.head { border-radius:7px 7px 0 0; }
     .gal, .gal.ads { grid-template-columns:1fr; }
   }
 </style>
