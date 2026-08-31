@@ -488,7 +488,7 @@ window.CAMPAIGN_DATA = {
   ]
  },
  "seo": {
-  "note": "Completed May 2026 on the corporate membership pages: title tags, meta descriptions, headings, and schema markup. Each card shows the page's search listing as it serves today.",
+  "note": "Completed May 2026 on the corporate membership pages: title tags rewritten on four of the five pages to lead with welding terms, meta descriptions rewritten on all five, and on every page an H1 heading and FAQ schema markup, all verified on the live pages. Each card shows the page's search listing as it serves today.",
   "completed": "May 2026",
   "pages": [
    {
@@ -891,7 +891,7 @@ window.CAMPAIGN_DATA = {
    "due": "2026-05-14",
    "status": "Done",
    "placement": "Dedicated eBlast, Fabricator and Manufacturer list",
-   "image": "img/2026-05-14-fm-eblast.png",
+   "image": "img/2026-05-14-fm-eblast.jpg",
    "source": "fabricatingandmetalworking.com / email",
    "pubClicks": 540,
    "sessions": 133,
