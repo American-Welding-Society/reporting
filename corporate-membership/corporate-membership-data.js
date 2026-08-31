@@ -867,10 +867,16 @@ window.CAMPAIGN_DATA = {
     "platform": "LinkedIn",
     "date": "2026-08-28",
     "mediaType": "image",
-    "awaitingMetrics": true,
     "url": "https://www.linkedin.com/posts/americanweldingsociety-corporatemembership-share-7499106004626837504-afHz/",
     "image": "img/2026-08-28-linkedin-didyouknow.jpg",
-    "caption": "Did you know? AWS Corporate Membership can do more than connect your company to the welding community—it can deliver benefits across your business."
+    "caption": "Did you know? AWS Corporate Membership can do more than connect your company to the welding community—it can deliver benefits across your business.",
+    "impressions": 1597,
+    "reach": 1196,
+    "engagements": 51,
+    "likes": 31,
+    "comments": 1,
+    "shares": 0,
+    "clicks": 19
    }
   ]
  },
