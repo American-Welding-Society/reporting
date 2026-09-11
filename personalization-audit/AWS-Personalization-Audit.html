@@ -1,6 +1,404 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en" data-scribe-recorder-ready="true"><head>
+    <script>
+      (function() {
+        // Capture host references before any artifact code runs: Window.parent
+        // is [Replaceable] (a top-level `var parent` in artifact code would
+        // replace the accessor with a data property), and a top-level
+        // `const crypto` would shadow the global — either would otherwise
+        // silently break the bridge for artifacts that worked before.
+        const realParent = window.parent;
+        const cryptoObj = window.crypto;
+        // html-to-image is only used by takeScreenshot: fetched on first use, not as a
+        // parser-blocking tag. Native fetch, captured before the proxy override below.
+        const realFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+        const HTML_TO_IMAGE_SRC = "https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.13/html-to-image.min.js";
+        const HTML_TO_IMAGE_INTEGRITY = "sha512-iZ2ORl595Wx6miw+GuadDet4WQbdSWS3JLMoNfY8cRGoEFy6oT3G9IbcrBeL6AfkgpA51ETt/faX6yLV+/gFJg==";
+        let htmlToImageLoad = null;
+        const loadHtmlToImage = () => {
+          if (!htmlToImageLoad) {
+            htmlToImageLoad = (realFetch
+              ? realFetch(HTML_TO_IMAGE_SRC, { integrity: HTML_TO_IMAGE_INTEGRITY, credentials: 'omit', referrerPolicy: 'no-referrer' })
+              : Promise.reject(new Error('fetch unavailable'))
+            )
+              .then((res) => {
+                if (!res.ok) throw new Error('html-to-image failed to load (' + res.status + ')');
+                return res.text();
+              })
+              .then((source) => {
+                // UMD bundle: hide the artifact's AMD/CommonJS globals so it takes the
+                // window-global branch; inline script text runs synchronously on insert.
+                const hidden = ['define', 'module', 'exports'].map((k) => {
+                  const entry = { k, own: Object.prototype.hasOwnProperty.call(window, k), v: window[k] };
+                  try { window[k] = undefined; } catch (e) {}
+                  return entry;
+                });
+                try {
+                  const el = document.createElement('script');
+                  el.text = source;
+                  (document.head || document.documentElement).appendChild(el);
+                } finally {
+                  hidden.forEach(({ k, own, v }) => {
+                    try { if (own) { window[k] = v; } else { delete window[k]; } } catch (e) {}
+                  });
+                }
+                if (!window.htmlToImage) throw new Error('html-to-image unavailable after load');
+                return window.htmlToImage;
+              });
+            // A failed load may be transient; let the next screenshot retry.
+            htmlToImageLoad.catch(() => { htmlToImageLoad = null; });
+          }
+          return htmlToImageLoad;
+        };
+        // crypto.randomUUID exists only in Secure Contexts; fall back to a
+        // unique non-crypto id elsewhere (http://LAN-IP dev flows) —
+        // uniqueness is what the bridge needs, unpredictability is
+        // defense-in-depth on top of the source guards.
+        const newRequestId =
+          cryptoObj && typeof cryptoObj.randomUUID === "function"
+            ? function () { return cryptoObj.randomUUID(); }
+            : function () { return Date.now() + "-" + Math.random(); };
+        const originalConsole = window.console;
+        window.console = {
+          log: (...args) => {
+            originalConsole.log(...args);
+            realParent.postMessage({ type: 'console', message: args.join(' ') }, '*');
+          },
+          error: (...args) => {
+            originalConsole.error(...args);
+            realParent.postMessage({ type: 'console', message: 'Error: ' + args.join(' ') }, '*');
+          },
+          warn: (...args) => {
+            originalConsole.warn(...args);
+            realParent.postMessage({ type: 'console', message: 'Warning: ' + args.join(' ') }, '*');
+          }
+        };
+
+        // Bridge request ids are crypto-random (not sequential) so they
+        // cannot be predicted by other frames in the tab.
+        let callbacksMap = new Map();
+        let streamControllers = new Map();
+        
+        window.claude = {
+          complete: (prompt) => {
+            return new Promise((resolve, reject) => {
+              const id = newRequestId();
+              callbacksMap.set(id, { resolve, reject });
+              realParent.postMessage({ type: 'claudeComplete', id, prompt }, '*');
+            });
+          }
+        };
+
+        window.storage = {
+          get: (key, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = newRequestId();
+              callbacksMap.set(id, { resolve, reject });
+              realParent.postMessage({ type: 'storageGet', id, key, shared }, '*');
+            });
+          },
+          set: (key, value, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = newRequestId();
+              callbacksMap.set(id, { resolve, reject });
+              realParent.postMessage({ type: 'storageSet', id, key, value, shared }, '*');
+            });
+          },
+          delete: (key, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = newRequestId();
+              callbacksMap.set(id, { resolve, reject });
+              realParent.postMessage({ type: 'storageDelete', id, key, shared }, '*');
+            });
+          },
+          list: (prefix, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = newRequestId();
+              callbacksMap.set(id, { resolve, reject });
+              realParent.postMessage({ type: 'storageList', id, prefix, shared }, '*');
+            });
+          }
+        };
+
+        let pendingBlobs = new Map();
+        URL.createObjectURL = (blob) => {
+          // Store the blob and create an ID and URL for it
+          const blobId = `blob-${Date.now()}-${Math.random()}`;
+          pendingBlobs.set(blobId, blob);
+          return `blob-request://${blobId}`;
+        };
+
+        URL.revokeObjectURL = (url) => {
+          // Remove the blob from our store
+          const blobId = url.replace("blob-request://", "");
+          pendingBlobs.delete(blobId);
+        };
+
+        const getBlobFromURL = (url) => {
+          const blobId = url.replace("blob-request://", "");
+          return pendingBlobs.get(blobId);
+        };
+
+        // Override global fetch with streaming support
+        window.fetch = (url, init = {}) => {
+          return new Promise((resolve, reject) => {
+            const id = newRequestId();
+            const channelId = `fetch-${id}-${Date.now()}`;
+            
+            callbacksMap.set(id, { 
+              resolve: (response) => {
+                // Null-body statuses: Response(stream, {status: 204}) throws
+                // per the Fetch spec, which would escape this resolver and
+                // hang the artifact's await forever.
+                if (response.status === 204 || response.status === 205 || response.status === 304) {
+                  try {
+                    resolve(new Response(null, {
+                      status: response.status,
+                      statusText: response.statusText,
+                      headers: response.headers
+                    }));
+                  } catch (err) {
+                    // Invalid statusText/header bytes can throw here too.
+                    reject(new TypeError(
+                      'Bridge fetch: unconstructable response (status ' + response.status + ')'
+                    ));
+                  }
+                  return;
+                }
+                // Create a ReadableStream for the response body
+                const stream = new ReadableStream({
+                  start(controller) {
+                    streamControllers.set(channelId, controller);
+                  },
+                  cancel() {
+                    streamControllers.delete(channelId);
+                  }
+                });
+                
+                // Create and return the Response with the stream. Response()
+                // requires status in [200, 599]; an opaque/no-cors fetch
+                // forwards status 0, which would throw here and escape the
+                // resolver, hanging the artifact's await. Surface it as a
+                // network-error-shaped rejection instead.
+                try {
+                  resolve(new Response(stream, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: response.headers
+                  }));
+                } catch (err) {
+                  streamControllers.delete(channelId);
+                  reject(new TypeError(
+                    'Bridge fetch: unconstructable response (status ' + response.status + ')'
+                  ));
+                }
+              },
+              reject,
+              channelId
+            });
+            
+            realParent.postMessage({
+              type: 'proxyFetch',
+              id,
+              url,
+              init,
+              channelId
+            }, '*');
+          });
+        };
+
+        window.addEventListener('message', async (event) => {
+          // Only the embedding parent may drive the bridge — sibling and
+          // nested frames can also postMessage into this window.
+          if (event.source !== realParent) return;
+          if (event.data.type === 'takeScreenshot') {
+            // Echo the request's nonce so the requester can correlate the
+            // reply to ITS request — a reply without the expected nonce
+            // (e.g. from a stale pre-remount artifact) is ignored upstream.
+            const screenshotNonce = event.data.nonce;
+            const rootElement = document.getElementById('artifacts-component-root-html');
+            if (!rootElement) {
+              realParent.postMessage({
+                type: 'screenshotError',
+                nonce: screenshotNonce,
+                error: new Error('Root element not found'),
+              }, '*');
+              return;
+            }
+            // Catch CDN load failures and toPng errors so the parent always
+            // gets a response instead of hanging forever.
+            try {
+              const htmlToImage = await loadHtmlToImage();
+              const screenshot = await htmlToImage.toPng(rootElement, {
+                imagePlaceholder:
+                  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjePDgwX8ACOQDoNsk0PMAAAAASUVORK5CYII=",
+              });
+              realParent.postMessage({
+                type: 'screenshotData',
+                nonce: screenshotNonce,
+                data: screenshot,
+              }, '*');
+            } catch (err) {
+              realParent.postMessage({
+                type: 'screenshotError',
+                nonce: screenshotNonce,
+                error: err instanceof Error ? err : new Error(String(err)),
+              }, '*');
+            }
+          } else if (event.data.type === 'claudeComplete') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.completion);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'proxyFetchResponse') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+              callbacksMap.delete(event.data.id);
+            } else {
+              // Initial response with headers, status, etc.
+              callback.resolve({
+                status: event.data.status,
+                statusText: event.data.statusText,
+                headers: event.data.headers
+              });
+              // Don't delete the callback yet if streaming
+              if (!event.data.body) {
+                callbacksMap.delete(event.data.id);
+              }
+            }
+          } else if (event.data.type === 'proxyFetchStream') {
+            // Handle streaming data chunks
+            const controller = streamControllers.get(event.data.channelId);
+            if (controller) {
+              if (event.data.error) {
+                controller.error(new Error(event.data.error));
+                streamControllers.delete(event.data.channelId);
+              } else if (event.data.done) {
+                controller.close();
+                streamControllers.delete(event.data.channelId);
+                // Clean up the callback
+                const callback = Array.from(callbacksMap.entries()).find(
+                  ([_, value]) => value.channelId === event.data.channelId
+                );
+                if (callback) {
+                  callbacksMap.delete(callback[0]);
+                }
+              } else if (event.data.chunk) {
+                controller.enqueue(new Uint8Array(event.data.chunk));
+              }
+            }
+          } else if (event.data.type === 'storageGet') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageSet') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageDelete') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageList') {
+            const callback = callbacksMap.get(event.data.id);
+            if (!callback) return;
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          }
+        });
+
+        window.addEventListener('click', (event) => {
+          const isEl = event.target instanceof HTMLElement;
+          if (!isEl) return;
+    
+          // find ancestor links
+          const linkEl = event.target.closest("a");
+          if (!linkEl || !linkEl.href) return;
+    
+          event.preventDefault();
+          event.stopImmediatePropagation();
+    
+          if (linkEl.href.startsWith("blob-request:")) {
+            const blob = getBlobFromURL(linkEl.href);
+            if (!blob) return;
+            void blob.arrayBuffer().then((data) => {
+              realParent.postMessage({
+                type: "downloadFile",
+                filename: linkEl.download,
+                data,
+                mimeType: blob.type || "application/octet-stream",
+              });
+            });
+          } else if (linkEl.href.startsWith("data:")) {
+            const [header, base64Data] = linkEl.href.split(",");
+            const mimeMatch = header.match(/data:([^;]+)/);
+            const mimeType = mimeMatch ? mimeMatch[1] : "application/octet-stream";
+            const binaryString = atob(base64Data);
+            const data = Uint8Array.from(binaryString, (c) =>
+              c.charCodeAt(0),
+            ).buffer;
+            realParent.postMessage({
+              type: "downloadFile",
+              filename: linkEl.download,
+              data,
+              mimeType,
+            });
+          } else {
+            let linkUrl;
+            try {
+              linkUrl = new URL(linkEl.href);
+            } catch (error) {
+              return;
+            }
+    
+            if (linkUrl.hostname === window.location.hostname) return;
+      
+            realParent.postMessage({
+              type: 'openExternal',
+              href: linkEl.href,
+            }, '*');
+          }
+      });
+
+        const originalOpen = window.open;
+        window.open = function (url) {
+          realParent.postMessage({
+            type: "openExternal",
+            href: url,
+          }, "*");
+        };
+
+        window.addEventListener('error', (event) => {
+          realParent.postMessage({ type: 'console', message: 'Uncaught Error: ' + event.message }, '*');
+        });
+      })();
+    </script>
+  
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Personalization Audit — American Welding Society</title>
@@ -37,6 +435,36 @@
     background:var(--white);
     box-shadow:0 1px 3px rgba(0,43,84,.12);
   }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    padding:10px 16px;
+    background:var(--navy-deep);
+    color:var(--white);
+    font-size:14px;
+  }
+  .toolbar .hint{color:#A9BED2;margin-right:auto;}
+  .btn{
+    font:inherit;
+    padding:7px 14px;
+    border-radius:3px;
+    border:1px solid rgba(255,255,255,.35);
+    background:transparent;
+    color:var(--white);
+    cursor:pointer;
+  }
+  .btn:hover{background:rgba(255,255,255,.12);}
+  .btn-primary{background:var(--orange);border-color:var(--orange);color:#231200;font-weight:600;}
+  .btn-primary:hover{background:#ff8f36;}
+  .btn[aria-pressed="true"]{background:var(--orange);border-color:var(--orange);color:#231200;font-weight:600;}
+  .btn:focus-visible,[contenteditable]:focus-visible{outline:2px solid var(--orange);outline-offset:2px;}
 
   /* ---------- Masthead ---------- */
   header.masthead{
@@ -146,6 +574,11 @@
   .cta .arrow{font-size:17px;line-height:1;}
   .cta-note{font-size:13px;color:var(--gray);margin:0 0 4px;}
 
+  .blank-line{
+    display:inline-block;
+    min-width:220px;
+    border-bottom:1px dashed var(--gray-line);
+  }
 
   /* ---------- Tables ---------- */
   .table-wrap{
@@ -188,6 +621,49 @@
   td.url{word-break:break-word;font-size:13px;}
   tr.total{background:#EAF0F5 !important;font-weight:700;color:var(--navy);}
   tr.total td{border-top:2px solid var(--navy);}
+  .rowctl{width:1%;padding:0 6px;}
+  .del{
+    display:none;
+    border:0;
+    background:transparent;
+    color:var(--gray);
+    cursor:pointer;
+    font-size:16px;
+    line-height:1;
+    padding:4px 6px;
+  }
+  .del:hover{color:var(--orange-deep);}
+  .addrow{
+    display:none;
+    margin:0 0 22px;
+    font-size:13px;
+    padding:6px 12px;
+    border:1px solid var(--gray-line);
+    background:var(--white);
+    color:var(--navy);
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .addrow:hover{border-color:var(--orange);color:var(--orange-deep);}
+
+  /* ---------- Edit mode ---------- */
+  body.editing [contenteditable="true"]{
+    background:#FFF8F2;
+    box-shadow:inset 0 0 0 1px #F6C79B;
+    border-radius:2px;
+  }
+  body.editing thead th[contenteditable="true"],
+  body.editing caption[contenteditable="true"]{
+    background:var(--navy-soft);
+    box-shadow:inset 0 0 0 1px var(--orange);
+  }
+  body.editing caption[contenteditable="true"]{background:var(--navy);}
+  body.editing header.masthead [contenteditable="true"]{
+    background:rgba(255,255,255,.10);
+    box-shadow:inset 0 0 0 1px rgba(245,128,37,.8);
+  }
+  body.editing .del,
+  body.editing .addrow{display:inline-block;}
 
   footer.endnote{
     padding:22px 48px 40px;
@@ -208,6 +684,7 @@
   /* ---------- Print ---------- */
   @media print{
     body{background:var(--white);}
+    .toolbar,.del,.addrow{display:none !important;}
     .sheet{box-shadow:none;max-width:none;}
     .item{break-inside:avoid;}
     .table-wrap{overflow:visible;}
@@ -228,19 +705,25 @@
     *{transition:none !important;animation:none !important;}
   }
 </style>
-</head>
-<body>
+<style></style></head>
+<body id="artifacts-component-root-html" data-new-gr-c-s-check-loaded="14.1149.0" data-gr-ext-installed="" class="" data-gr-agent-presence-bridge-connection-id="1789156840084-0.2121486178588926" data-new-gr-c-s-loaded="14.1149.0">
 
 <div class="sheet">
 
+  <div class="toolbar" role="toolbar" aria-label="Report controls">
+    <span class="hint" id="hint">Read-only view. Select Edit to make changes.</span>
+    <button class="btn" id="toggleEdit" aria-pressed="false">Edit</button>
+    <button class="btn" id="printBtn">Print / Save as PDF</button>
+    <button class="btn btn-primary" id="saveBtn">Download a copy</button>
+  </div>
 
   <header class="masthead">
-    <p class="org">American Welding Society</p>
-    <h1>Personalization Audit</h1>
+    <p class="org" contenteditable="true">American Welding Society</p>
+    <h1 contenteditable="true">Personalization Audit</h1>
     <div class="meta">
-      <span>Prepared for <b>Perficient</b></span>
-      <span>Prepared by <b>Miguel Romero, Director of Digital Experience</b></span>
-      <span>Date <b>September 11, 2026</b></span>
+      <span>Prepared for <b contenteditable="true">Perficient</b></span>
+      <span>Prepared by <b contenteditable="true">AWS Web and Marketing Team</b></span>
+      <span>Date <b contenteditable="true">September 11, 2026</b></span>
     </div>
   </header>
 
@@ -252,7 +735,7 @@
         <div class="num">1</div>
         <div class="ask-body">
           <span class="label">Request</span>
-          <p class="ask-text">Review the deck and select which page types the audit should focus on; add any missing priority pages, journeys, or dedicated landing pages. Owner: Miguel and team.</p>
+          <p class="ask-text" contenteditable="true">Priority pages type, journey and dedicated landing pages the audit should focus on</p>
         </div>
       </div>
       <div class="response">
@@ -260,76 +743,80 @@
 
         <div class="table-wrap">
           <table>
-            <caption>Page Types in Scope</caption>
+            <caption contenteditable="true">Page Types in Scope</caption>
             <thead>
               <tr>
-                <th class="n">#</th>
-                <th>Page Type</th>
-                <th>Priority Page / URL</th>
-                <th>Primary Audit Focus</th>
-                </tr>
+                <th class="n" contenteditable="true">#</th>
+                <th contenteditable="true">Page Type</th>
+                <th contenteditable="true">Priority Page / URL</th>
+                <th contenteditable="true">Primary Audit Focus</th>
+                <th class="rowctl" aria-label="Row controls"></th>
+              </tr>
             </thead>
             <tbody>
-              <tr><td class="n">1</td><td>Homepage</td><td class="url"><a href="https://www.aws.org/">https://www.aws.org/</a></td><td>Audience segmentation, primary navigation, value proposition, key CTAs, discovery and personalization opportunities</td></tr>
-              <tr><td class="n">2</td><td>Certification Detail / Conversion</td><td class="url"><a href="https://www.aws.org/certification-and-education/professional-certification/certified-welding-inspector/">https://www.aws.org/certification-and-education/professional-certification/certified-welding-inspector/</a></td><td>CWI value proposition, requirements, eligibility, preparation and application conversion</td></tr>
-              <tr><td class="n">3</td><td>Certification Landing / Category</td><td class="url"><a href="https://www.aws.org/certification-and-education/professional-certification/">https://www.aws.org/certification-and-education/professional-certification/</a></td><td>Certification discovery, comparison and pathways to individual certifications</td></tr>
-              <tr><td class="n">4</td><td>Certification Application Step / Guided Experience</td><td class="url"><a href="https://www.aws.org/certification-and-education/professional-certification/certified-welding-inspector/?step=1">https://www.aws.org/certification-and-education/professional-certification/certified-welding-inspector/?step=1</a></td><td>Application journey, step clarity, requirements, progression and CTA</td></tr>
-              <tr><td class="n">5</td><td>Education Landing Page</td><td class="url"><a href="https://www.aws.org/certification-and-education/education/">https://www.aws.org/certification-and-education/education/</a></td><td>Training discovery, audience needs and pathways to learning formats</td></tr>
-              <tr><td class="n">6</td><td>Education Format / Category</td><td class="url"><a href="https://www.aws.org/certification-and-education/education/dual-format/">https://www.aws.org/certification-and-education/education/dual-format/</a></td><td>Course discovery, format comprehension and progression toward registration</td></tr>
-              <tr><td class="n">7</td><td>Education Format / Category</td><td class="url"><a href="https://www.aws.org/certification-and-education/education/in-person-training/">https://www.aws.org/certification-and-education/education/in-person-training/</a></td><td>Training discovery, location/date selection and registration pathway</td></tr>
-              <tr><td class="n">8</td><td>Education Format / Category</td><td class="url"><a href="https://www.aws.org/certification-and-education/education/online-instructor-led-learning/">https://www.aws.org/certification-and-education/education/online-instructor-led-learning/</a></td><td>Course discovery, comparison and registration pathway</td></tr>
-              <tr><td class="n">9</td><td>Education Format / Category</td><td class="url"><a href="https://www.aws.org/certification-and-education/education/self-paced-online-learning/">https://www.aws.org/certification-and-education/education/self-paced-online-learning/</a></td><td>Self-paced course discovery, product selection and purchase pathway</td></tr>
-              <tr><td class="n">10</td><td>Membership Landing Page</td><td class="url"><a href="https://www.aws.org/membership/">https://www.aws.org/membership/</a></td><td>Membership discovery, audience segmentation and Individual/Corporate pathways</td></tr>
-              <tr><td class="n">11</td><td>Individual Membership Conversion</td><td class="url"><a href="https://www.aws.org/membership/individuals/">https://www.aws.org/membership/individuals/</a></td><td>Benefits, value proposition, membership options and Join CTA</td></tr>
-              <tr><td class="n">12</td><td>Corporate Membership Conversion</td><td class="url"><a href="https://www.aws.org/membership/corporate/">https://www.aws.org/membership/corporate/</a></td><td>Organizational value proposition, benefits and acquisition/inquiry pathway</td></tr>
-              <tr><td class="n">13</td><td>Corporate Membership – Audience Detail</td><td class="url"><a href="https://www.aws.org/membership/corporate/educational-institution/">https://www.aws.org/membership/corporate/educational-institution/</a></td><td>Audience-specific value proposition, benefits and conversion CTA</td></tr>
-              <tr><td class="n">14</td><td>Educator / Lead Generation</td><td class="url"><a href="https://www.aws.org/educators/welding-curriculum/">https://www.aws.org/educators/welding-curriculum/</a></td><td>Curriculum value proposition, resources, Request More Information CTA and form conversion</td></tr>
-              <tr><td class="n">15</td><td>Business Program / Application</td><td class="url"><a href="https://www.aws.org/businesses/facility-accreditation/">https://www.aws.org/businesses/facility-accreditation/</a></td><td>Accreditation requirements and Initial / Renewal / Reaccreditation pathways</td></tr>
-              <tr><td class="n">16</td><td>Business Audience Landing Page</td><td class="url"><a href="https://www.aws.org/businesses/">https://www.aws.org/businesses/</a></td><td>Business audience segmentation, program discovery and conversion pathways</td></tr>
-              <tr><td class="n">17</td><td>Standards &amp; Publications Landing Page</td><td class="url"><a href="https://www.aws.org/standards-and-publications/">https://www.aws.org/standards-and-publications/</a></td><td>Standards/publication discovery, search/browse and ecommerce pathway</td></tr>
-              <tr><td class="n">18</td><td>Career Resources Landing Page</td><td class="url"><a href="https://www.aws.org/career-resources/">https://www.aws.org/career-resources/</a></td><td>Career discovery, Job Seeker/Employer segmentation and CTA hierarchy</td></tr>
-              <tr><td class="n">19</td><td>Magazines &amp; Media Hub</td><td class="url"><a href="https://www.aws.org/magazines-and-media/">https://www.aws.org/magazines-and-media/</a></td><td>Content discovery, publication navigation, engagement and next actions</td></tr>
-              <tr><td class="n">20</td><td>Community &amp; Events Landing Page</td><td class="url"><a href="https://www.aws.org/community-and-events/">https://www.aws.org/community-and-events/</a></td><td>Community/event discovery, audience pathways and registration opportunities</td></tr>
-              <tr><td class="n">21</td><td>Site Search Results</td><td class="url"><a href="https://www.aws.org/search-results/">https://www.aws.org/search-results/</a></td><td>Search relevance, ranking, filters, result presentation and conversion pathways</td></tr>
-              <tr><td class="n">22</td><td>Contact / Lead Generation</td><td class="url"><a href="https://www.aws.org/contact-us/">https://www.aws.org/contact-us/</a></td><td>Intent routing, form UX, friction and successful submission</td></tr>
-              <tr><td class="n">23</td><td>Pricing / Decision-Support Page</td><td class="url"><a href="https://www.aws.org/certification-and-education/program-price-list/">https://www.aws.org/certification-and-education/program-price-list/</a></td><td>Pricing comprehension, program comparison and next-step CTA</td></tr>
-              <tr><td class="n">24</td><td>Event Detail / Conversion</td><td class="url"><a href="https://www.aws.org/community-and-events/conferences-and-events/fabtech/">https://www.aws.org/community-and-events/conferences-and-events/fabtech/</a></td><td>Event information, CTA visibility and registration journey</td></tr>
-              <tr><td class="n">25</td><td>Business / Advertising Lead Generation</td><td class="url"><a href="https://www.aws.org/businesses/connect-with-our-sales-team/advertise/">https://www.aws.org/businesses/connect-with-our-sales-team/advertise/</a></td><td>Advertising value proposition, audience/reach information, Media Kit discovery, CTA clarity, sales inquiry journey and lead conversion</td></tr>
+              <tr><td class="n">1</td><td contenteditable="true">Homepage</td><td class="url"><a href="https://www.aws.org/">https://www.aws.org/</a></td><td contenteditable="true">Audience segmentation, primary navigation, value proposition, key CTAs, discovery and personalization opportunities</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">2</td><td contenteditable="true">Certification Detail / Conversion</td><td class="url"><a href="https://www.aws.org/certification-and-education/professional-certification/certified-welding-inspector/">https://www.aws.org/certification-and-education/professional-certification/certified-welding-inspector/</a></td><td contenteditable="true">CWI value proposition, requirements, eligibility, preparation and application conversion</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">3</td><td contenteditable="true">Certification Landing / Category</td><td class="url"><a href="https://www.aws.org/certification-and-education/professional-certification/">https://www.aws.org/certification-and-education/professional-certification/</a></td><td contenteditable="true">Certification discovery, comparison and pathways to individual certifications</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">4</td><td contenteditable="true">Certification Application Step / Guided Experience</td><td class="url"><a href="https://www.aws.org/certification-and-education/professional-certification/certified-welding-inspector/?step=1">https://www.aws.org/certification-and-education/professional-certification/certified-welding-inspector/?step=1</a></td><td contenteditable="true">Application journey, step clarity, requirements, progression and CTA</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">5</td><td contenteditable="true">Education Landing Page</td><td class="url"><a href="https://www.aws.org/certification-and-education/education/">https://www.aws.org/certification-and-education/education/</a></td><td contenteditable="true">Training discovery, audience needs and pathways to learning formats</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">6</td><td contenteditable="true">Education Format / Category</td><td class="url"><a href="https://www.aws.org/certification-and-education/education/dual-format/">https://www.aws.org/certification-and-education/education/dual-format/</a></td><td contenteditable="true">Course discovery, format comprehension and progression toward registration</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">7</td><td contenteditable="true">Education Format / Category</td><td class="url"><a href="https://www.aws.org/certification-and-education/education/in-person-training/">https://www.aws.org/certification-and-education/education/in-person-training/</a></td><td contenteditable="true">Training discovery, location/date selection and registration pathway</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">8</td><td contenteditable="true">Education Format / Category</td><td class="url"><a href="https://www.aws.org/certification-and-education/education/online-instructor-led-learning/">https://www.aws.org/certification-and-education/education/online-instructor-led-learning/</a></td><td contenteditable="true">Course discovery, comparison and registration pathway</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">9</td><td contenteditable="true">Education Format / Category</td><td class="url"><a href="https://www.aws.org/certification-and-education/education/self-paced-online-learning/">https://www.aws.org/certification-and-education/education/self-paced-online-learning/</a></td><td contenteditable="true">Self-paced course discovery, product selection and purchase pathway</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">10</td><td contenteditable="true">Membership Landing Page</td><td class="url"><a href="https://www.aws.org/membership/">https://www.aws.org/membership/</a></td><td contenteditable="true">Membership discovery, audience segmentation and Individual/Corporate pathways</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">11</td><td contenteditable="true">Individual Membership Conversion</td><td class="url"><a href="https://www.aws.org/membership/individuals/">https://www.aws.org/membership/individuals/</a></td><td contenteditable="true">Benefits, value proposition, membership options and Join CTA</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">12</td><td contenteditable="true">Corporate Membership Conversion</td><td class="url"><a href="https://www.aws.org/membership/corporate/">https://www.aws.org/membership/corporate/</a></td><td contenteditable="true">Organizational value proposition, benefits and acquisition/inquiry pathway</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">13</td><td contenteditable="true">Corporate Membership – Audience Detail</td><td class="url"><a href="https://www.aws.org/membership/corporate/educational-institution/">https://www.aws.org/membership/corporate/educational-institution/</a></td><td contenteditable="true">Audience-specific value proposition, benefits and conversion CTA</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">14</td><td contenteditable="true">Educator / Lead Generation</td><td class="url"><a href="https://www.aws.org/educators/welding-curriculum/">https://www.aws.org/educators/welding-curriculum/</a></td><td contenteditable="true">Curriculum value proposition, resources, Request More Information CTA and form conversion</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">15</td><td contenteditable="true">Business Program / Application</td><td class="url"><a href="https://www.aws.org/businesses/facility-accreditation/">https://www.aws.org/businesses/facility-accreditation/</a></td><td contenteditable="true">Accreditation requirements and Initial / Renewal / Reaccreditation pathways</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">16</td><td contenteditable="true">Business Audience Landing Page</td><td class="url"><a href="https://www.aws.org/businesses/">https://www.aws.org/businesses/</a></td><td contenteditable="true">Business audience segmentation, program discovery and conversion pathways</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">17</td><td contenteditable="true">Standards &amp; Publications Landing Page</td><td class="url"><a href="https://www.aws.org/standards-and-publications/">https://www.aws.org/standards-and-publications/</a></td><td contenteditable="true">Standards/publication discovery, search/browse and ecommerce pathway</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">18</td><td contenteditable="true">Career Resources Landing Page</td><td class="url"><a href="https://www.aws.org/career-resources/">https://www.aws.org/career-resources/</a></td><td contenteditable="true">Career discovery, Job Seeker/Employer segmentation and CTA hierarchy</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">19</td><td contenteditable="true">Magazines &amp; Media Hub</td><td class="url"><a href="https://www.aws.org/magazines-and-media/">https://www.aws.org/magazines-and-media/</a></td><td contenteditable="true">Content discovery, publication navigation, engagement and next actions</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">20</td><td contenteditable="true">Community &amp; Events Landing Page</td><td class="url"><a href="https://www.aws.org/community-and-events/">https://www.aws.org/community-and-events/</a></td><td contenteditable="true">Community/event discovery, audience pathways and registration opportunities</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">21</td><td contenteditable="true">Site Search Results</td><td class="url"><a href="https://www.aws.org/search-results/">https://www.aws.org/search-results/</a></td><td contenteditable="true">Search relevance, ranking, filters, result presentation and conversion pathways</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">22</td><td contenteditable="true">Contact / Lead Generation</td><td class="url"><a href="https://www.aws.org/contact-us/">https://www.aws.org/contact-us/</a></td><td contenteditable="true">Intent routing, form UX, friction and successful submission</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">23</td><td contenteditable="true">Pricing / Decision-Support Page</td><td class="url"><a href="https://www.aws.org/certification-and-education/program-price-list/">https://www.aws.org/certification-and-education/program-price-list/</a></td><td contenteditable="true">Pricing comprehension, program comparison and next-step CTA</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">24</td><td contenteditable="true">Event Detail / Conversion</td><td class="url"><a href="https://www.aws.org/community-and-events/conferences-and-events/fabtech/">https://www.aws.org/community-and-events/conferences-and-events/fabtech/</a></td><td contenteditable="true">Event information, CTA visibility and registration journey</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">25</td><td contenteditable="true">Business / Advertising Lead Generation</td><td class="url"><a href="https://www.aws.org/businesses/connect-with-our-sales-team/advertise/">https://www.aws.org/businesses/connect-with-our-sales-team/advertise/</a></td><td contenteditable="true">Advertising value proposition, audience/reach information, Media Kit discovery, CTA clarity, sales inquiry journey and lead conversion</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
             </tbody>
           </table>
         </div>
+        <button class="addrow" type="button">+ Add row</button>
 
-        <p class="subhead">Priority User Journeys to Audit</p>
+        <p class="subhead" contenteditable="true">Priority User Journeys to Audit</p>
 
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Journey</th>
-                <th>Key Path</th>
-                <th>Conversion Goal</th>
-                </tr>
+                <th contenteditable="true">Journey</th>
+                <th contenteditable="true">Key Path</th>
+                <th contenteditable="true">Conversion Goal</th>
+                <th class="rowctl" aria-label="Row controls"></th>
+              </tr>
             </thead>
             <tbody>
-              <tr><td>CWI Certification</td><td>Homepage / Search → Professional Certification → CWI → Requirements → ?step=1 → MyAWS</td><td>Start CWI application</td></tr>
-              <tr><td>CWI Education Discovery</td><td>Education → Dual Format / In-Person / Online Instructor-Led / Self-Paced → Course → Registration/Purchase</td><td>Register or purchase training</td></tr>
-              <tr><td>2-Week Online CWI Seminar</td><td>Education → Online Instructor-Led → 2-Week Online CWI Seminar → Register → MyAWS</td><td>Start seminar registration</td></tr>
-              <tr><td>Search → 2-Week Online CWI Seminar &amp; Exam</td><td>Search → /search-results/ → Search “2-Week Online CWI Seminar and Exam” → Result → Registration → <a href="https://my1.aws.org/certification/certprofileupdate">https://my1.aws.org/certification/certprofileupdate</a></td><td>Start registration</td></tr>
-              <tr><td>CWI Pre-Seminar</td><td>Self-Paced Online Learning → CWI Pre-Seminar → Purchase → <a href="https://my1.aws.org/education/onlineclasscheckout?productcode=1000413">https://my1.aws.org/education/onlineclasscheckout?productcode=1000413</a></td><td>Purchase training</td></tr>
-              <tr><td>Individual Membership</td><td>Membership → Individuals → Benefits/Options → Join → MyAWS</td><td>Purchase membership</td></tr>
-              <tr><td>Corporate Membership</td><td>Membership → Corporate → Benefits/Options → Inquiry/Application</td><td>Corporate membership acquisition</td></tr>
-              <tr><td>Educational Institution Membership</td><td>Membership → Corporate → Educational Institution → CTA</td><td>Membership inquiry/application</td></tr>
-              <tr><td>Welding Curriculum</td><td>Educator entry → Welding Curriculum → Review resources → Request More Information → Form</td><td>Lead generation</td></tr>
-              <tr><td>Facility Accreditation</td><td>Businesses → Facility Accreditation → Initial / Renewal / Reaccreditation → Application</td><td>Start accreditation application</td></tr>
-              <tr><td>Standards &amp; Publications</td><td>Standards &amp; Publications → Search/Browse → Product → Pubs → Cart → Checkout</td><td>Purchase publication/standard</td></tr>
-              <tr><td>Career Resources</td><td>Career Resources → Explore Careers / Job Seeker / Employer → Destination CTA</td><td>Career engagement/conversion</td></tr>
-              <tr><td>Events / FABTECH</td><td>Community &amp; Events → FABTECH → Event Details → Register</td><td>Event registration</td></tr>
-              <tr><td>Events / IBSC 2027</td><td>Community &amp; Events → Conferences &amp; Events → IBSC 2027 → Details → Register</td><td>Event registration</td></tr>
-              <tr><td>Program Price Comparison</td><td>Certification/Education → Program Price List → Compare → Select Program → Apply/Register</td><td>Move toward application/registration</td></tr>
-              <tr><td>Contact</td><td>Entry → Contact Us → Select inquiry → Form → Submit</td><td>Form submission</td></tr>
+              <tr><td contenteditable="true">CWI Certification</td><td contenteditable="true">Homepage / Search → Professional Certification → CWI → Requirements → ?step=1 → MyAWS</td><td contenteditable="true">Start CWI application</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">CWI Education Discovery</td><td contenteditable="true">Education → Dual Format / In-Person / Online Instructor-Led / Self-Paced → Course → Registration/Purchase</td><td contenteditable="true">Register or purchase training</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">2-Week Online CWI Seminar</td><td contenteditable="true">Education → Online Instructor-Led → 2-Week Online CWI Seminar → Register → MyAWS</td><td contenteditable="true">Start seminar registration</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Search → 2-Week Online CWI Seminar &amp; Exam</td><td contenteditable="true">Search → /search-results/ → Search “2-Week Online CWI Seminar and Exam” → Result → Registration → <a href="https://my1.aws.org/certification/certprofileupdate">https://my1.aws.org/certification/certprofileupdate</a></td><td contenteditable="true">Start registration</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">CWI Pre-Seminar</td><td contenteditable="true">Self-Paced Online Learning → CWI Pre-Seminar → Purchase → <a href="https://my1.aws.org/education/onlineclasscheckout?productcode=1000413">https://my1.aws.org/education/onlineclasscheckout?productcode=1000413</a></td><td contenteditable="true">Purchase training</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Individual Membership</td><td contenteditable="true">Membership → Individuals → Benefits/Options → Join → MyAWS</td><td contenteditable="true">Purchase membership</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Corporate Membership</td><td contenteditable="true">Membership → Corporate → Benefits/Options → Inquiry/Application</td><td contenteditable="true">Corporate membership acquisition</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Educational Institution Membership</td><td contenteditable="true">Membership → Corporate → Educational Institution → CTA</td><td contenteditable="true">Membership inquiry/application</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Welding Curriculum</td><td contenteditable="true">Educator entry → Welding Curriculum → Review resources → Request More Information → Form</td><td contenteditable="true">Lead generation</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Facility Accreditation</td><td contenteditable="true">Businesses → Facility Accreditation → Initial / Renewal / Reaccreditation → Application</td><td contenteditable="true">Start accreditation application</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Standards &amp; Publications</td><td contenteditable="true">Standards &amp; Publications → Search/Browse → Product → Pubs → Cart → Checkout</td><td contenteditable="true">Purchase publication/standard</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Career Resources</td><td contenteditable="true">Career Resources → Explore Careers / Job Seeker / Employer → Destination CTA</td><td contenteditable="true">Career engagement/conversion</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Events / FABTECH</td><td contenteditable="true">Community &amp; Events → FABTECH → Event Details → Register</td><td contenteditable="true">Event registration</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Events / IBSC 2027</td><td contenteditable="true">Community &amp; Events → Conferences &amp; Events → IBSC 2027 → Details → Register</td><td contenteditable="true">Event registration</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Program Price Comparison</td><td contenteditable="true">Certification/Education → Program Price List → Compare → Select Program → Apply/Register</td><td contenteditable="true">Move toward application/registration</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Contact</td><td contenteditable="true">Entry → Contact Us → Select inquiry → Form → Submit</td><td contenteditable="true">Form submission</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
             </tbody>
           </table>
         </div>
+        <button class="addrow" type="button">+ Add row</button>
       </div>
     </section>
 
@@ -339,12 +826,12 @@
         <div class="num">2</div>
         <div class="ask-body">
           <span class="label">Request</span>
-          <p class="ask-text">Send screenshots or provide access to the most important reports and dashboards you track (the BigQuery to Claude automated reporting, website, and email marketing). Owner: Miguel.</p>
+          <p class="ask-text" contenteditable="true">Marketing Report (BigQuery to Claude automated reporting, website, and email marketing).&nbsp;</p>
         </div>
       </div>
       <div class="response">
         <span class="label">Response</span>
-        <p>Here is the report: <a href="https://aws-reporting-dashboard-534438305391.us-east1.run.app/">Marketing Dashboard | American Welding Society</a></p>
+        <p contenteditable="true">Here is the report: <a href="https://aws-reporting-dashboard-534438305391.us-east1.run.app/">Marketing Dashboard | American Welding Society</a></p>
       </div>
     </section>
 
@@ -354,74 +841,78 @@
         <div class="num">3</div>
         <div class="ask-body">
           <span class="label">Request</span>
-          <p class="ask-text">Send the funnel data showing where purchases leak, starting with the products you flagged: one-year individual membership renewal, the Welding Journal / inspection trends digital subscription, and the domestic student new member product. Owner: Miguel.</p>
+          <p class="ask-text" contenteditable="true">Funnel data showing where purchases leak</p>
         </div>
       </div>
       <div class="response">
         <span class="label">Response</span>
 
-        <h3>Products with the Highest Abandonment</h3>
-        <p>Education seminars are the category that stands out the most. These products have complete, matching funnels, so the rates are reliable:</p>
+        <h3 contenteditable="true">Products with the Highest Abandonment</h3>
+        <p contenteditable="true">Education seminars are the category that stands out the most. These products have complete, matching funnels, so the rates are reliable:</p>
 
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Product</th>
-                <th class="n">Add to Cart</th>
-                <th class="n">Purchases</th>
-                <th class="n">Abandonment</th>
-                </tr>
+                <th contenteditable="true">Product</th>
+                <th class="n" contenteditable="true">Add to Cart</th>
+                <th class="n" contenteditable="true">Purchases</th>
+                <th class="n" contenteditable="true">Abandonment</th>
+                <th class="rowctl" aria-label="Row controls"></th>
+              </tr>
             </thead>
             <tbody>
-              <tr><td>8-Wk Online CWI Seminar (Dec26–Feb27)</td><td class="n">39</td><td class="n">0</td><td class="n">100%</td></tr>
-              <tr><td>Online WPQ1 Seminar (Nov2026)</td><td class="n">42</td><td class="n">1</td><td class="n">98%</td></tr>
-              <tr><td>Online Welding Safety &amp; Health Seminar</td><td class="n">87</td><td class="n">3</td><td class="n">97%</td></tr>
-              <tr><td>REFUNDABLE DEPOSIT</td><td class="n">56</td><td class="n">3</td><td class="n">95%</td></tr>
-              <tr><td>8-Wk Online CWI Seminar (Sep–Nov 2026) D1.1</td><td class="n">37</td><td class="n">2</td><td class="n">95%</td></tr>
-              <tr><td>Nondestructive Exam Online Seminar</td><td class="n">52</td><td class="n">7</td><td class="n">87%</td></tr>
-              <tr><td>Online CWI Pre-Seminar Introduction</td><td class="n">162</td><td class="n">24</td><td class="n">85%</td></tr>
-              <tr><td>Online Welding Fundamental Seminar</td><td class="n">94</td><td class="n">15</td><td class="n">84%</td></tr>
-              <tr><td>Online D1.1 Code Clinic</td><td class="n">34</td><td class="n">9</td><td class="n">74%</td></tr>
+              <tr><td contenteditable="true">8-Wk Online CWI Seminar (Dec26–Feb27)</td><td class="n" contenteditable="true">39</td><td class="n" contenteditable="true">0</td><td class="n" contenteditable="true">100%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Online WPQ1 Seminar (Nov2026)</td><td class="n" contenteditable="true">42</td><td class="n" contenteditable="true">1</td><td class="n" contenteditable="true">98%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Online Welding Safety &amp; Health Seminar</td><td class="n" contenteditable="true">87</td><td class="n" contenteditable="true">3</td><td class="n" contenteditable="true">97%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">REFUNDABLE DEPOSIT</td><td class="n" contenteditable="true">56</td><td class="n" contenteditable="true">3</td><td class="n" contenteditable="true">95%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">8-Wk Online CWI Seminar (Sep–Nov 2026) D1.1</td><td class="n" contenteditable="true">37</td><td class="n" contenteditable="true">2</td><td class="n" contenteditable="true">95%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Nondestructive Exam Online Seminar</td><td class="n" contenteditable="true">52</td><td class="n" contenteditable="true">7</td><td class="n" contenteditable="true">87%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Online CWI Pre-Seminar Introduction</td><td class="n" contenteditable="true">162</td><td class="n" contenteditable="true">24</td><td class="n" contenteditable="true">85%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Online Welding Fundamental Seminar</td><td class="n" contenteditable="true">94</td><td class="n" contenteditable="true">15</td><td class="n" contenteditable="true">84%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td contenteditable="true">Online D1.1 Code Clinic</td><td class="n" contenteditable="true">34</td><td class="n" contenteditable="true">9</td><td class="n" contenteditable="true">74%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
             </tbody>
           </table>
         </div>
+        <button class="addrow" type="button">+ Add row</button>
 
         <ul>
-          <li>Largest absolute losses during checkout</li>
-          <li>These are products that appear only after the cart stage: a single table, sorted by absolute loss at checkout. GA4, last 30 days, item units:</li>
+          <li contenteditable="true">Largest absolute losses during checkout</li>
+          <li contenteditable="true">These are products that appear only after the cart stage: a single table, sorted by absolute loss at checkout. GA4, last 30 days, item units:</li>
         </ul>
 
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th class="n">#</th>
-                <th>Product</th>
-                <th>Journey</th>
-                <th class="n">Cart</th>
-                <th class="n">Checkout</th>
-                <th class="n">Purchases</th>
-                <th class="n">Lost</th>
-                <th class="n">Abandonment</th>
-                </tr>
+                <th class="n" contenteditable="true">#</th>
+                <th contenteditable="true">Product</th>
+                <th contenteditable="true">Journey</th>
+                <th class="n" contenteditable="true">Cart</th>
+                <th class="n" contenteditable="true">Checkout</th>
+                <th class="n" contenteditable="true">Purchases</th>
+                <th class="n" contenteditable="true">Lost</th>
+                <th class="n" contenteditable="true">Abandonment</th>
+                <th class="rowctl" aria-label="Row controls"></th>
+              </tr>
             </thead>
             <tbody>
-              <tr><td class="n">1</td><td>Initiation Fee</td><td>Individual membership</td><td class="n">—</td><td class="n">3,546</td><td class="n">2,234</td><td class="n">1,312</td><td class="n">37%</td></tr>
-              <tr><td class="n">2</td><td>Welding Journal – Digital</td><td>Individual membership</td><td class="n">2,153</td><td class="n">2,305</td><td class="n">1,418</td><td class="n">887</td><td class="n">38%</td></tr>
-              <tr><td class="n">3</td><td>Student New Mbr Product – Domestic</td><td>Individual membership</td><td class="n">1,733</td><td class="n">1,887</td><td class="n">1,217</td><td class="n">670</td><td class="n">36%</td></tr>
-              <tr><td class="n">4</td><td>Inspection Trends – Digital</td><td>Individual membership</td><td class="n">1,487</td><td class="n">1,469</td><td class="n">899</td><td class="n">570</td><td class="n">39%</td></tr>
-              <tr><td class="n">5</td><td>PROMETRIC FEE – 2 PARTS</td><td>Initial certification</td><td class="n">—</td><td class="n">809</td><td class="n">333</td><td class="n">476</td><td class="n">59%</td></tr>
-              <tr><td class="n">6</td><td>Welding Journal – Print, Domestic</td><td>Individual membership</td><td class="n">1,248</td><td class="n">1,240</td><td class="n">814</td><td class="n">426</td><td class="n">34%</td></tr>
-              <tr><td class="n">7</td><td>CWI Renewal</td><td>Certification renewal</td><td class="n">—</td><td class="n">914</td><td class="n">585</td><td class="n">329</td><td class="n">36%</td></tr>
-              <tr><td class="n">8</td><td>FAST TRACKING PROCESSING</td><td>Initial certification</td><td class="n">—</td><td class="n">273</td><td class="n">80</td><td class="n">193</td><td class="n">71%</td></tr>
-              <tr><td class="n">9</td><td>CWI Exam</td><td>Initial certification</td><td class="n">—</td><td class="n">321</td><td class="n">153</td><td class="n">168</td><td class="n">52%</td></tr>
-              <tr><td class="n">10</td><td>9YR RECERT BY 80 PDH</td><td>Certification renewal</td><td class="n">—</td><td class="n">284</td><td class="n">165</td><td class="n">119</td><td class="n">42%</td></tr>
-              <tr><td class="n">11</td><td>Individual Membership Renewal – 1 year</td><td>Individual membership</td><td class="n">814</td><td class="n">266</td><td class="n">208</td><td class="n">58</td><td class="n">22%</td></tr>
-              <tr class="total"><td class="n"></td><td>Total</td><td></td><td class="n">7,435</td><td class="n">13,314</td><td class="n">8,106</td><td class="n">5,208</td><td class="n">39%</td></tr>
+              <tr><td class="n">1</td><td contenteditable="true">Initiation Fee</td><td contenteditable="true">Individual membership</td><td class="n" contenteditable="true">—</td><td class="n" contenteditable="true">3,546</td><td class="n" contenteditable="true">2,234</td><td class="n" contenteditable="true">1,312</td><td class="n" contenteditable="true">37%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">2</td><td contenteditable="true">Welding Journal – Digital</td><td contenteditable="true">Individual membership</td><td class="n" contenteditable="true">2,153</td><td class="n" contenteditable="true">2,305</td><td class="n" contenteditable="true">1,418</td><td class="n" contenteditable="true">887</td><td class="n" contenteditable="true">38%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">3</td><td contenteditable="true">Student New Mbr Product – Domestic</td><td contenteditable="true">Individual membership</td><td class="n" contenteditable="true">1,733</td><td class="n" contenteditable="true">1,887</td><td class="n" contenteditable="true">1,217</td><td class="n" contenteditable="true">670</td><td class="n" contenteditable="true">36%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">4</td><td contenteditable="true">Inspection Trends – Digital</td><td contenteditable="true">Individual membership</td><td class="n" contenteditable="true">1,487</td><td class="n" contenteditable="true">1,469</td><td class="n" contenteditable="true">899</td><td class="n" contenteditable="true">570</td><td class="n" contenteditable="true">39%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">5</td><td contenteditable="true">PROMETRIC FEE – 2 PARTS</td><td contenteditable="true">Initial certification</td><td class="n" contenteditable="true">—</td><td class="n" contenteditable="true">809</td><td class="n" contenteditable="true">333</td><td class="n" contenteditable="true">476</td><td class="n" contenteditable="true">59%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">6</td><td contenteditable="true">Welding Journal – Print, Domestic</td><td contenteditable="true">Individual membership</td><td class="n" contenteditable="true">1,248</td><td class="n" contenteditable="true">1,240</td><td class="n" contenteditable="true">814</td><td class="n" contenteditable="true">426</td><td class="n" contenteditable="true">34%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">7</td><td contenteditable="true">CWI Renewal</td><td contenteditable="true">Certification renewal</td><td class="n" contenteditable="true">—</td><td class="n" contenteditable="true">914</td><td class="n" contenteditable="true">585</td><td class="n" contenteditable="true">329</td><td class="n" contenteditable="true">36%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">8</td><td contenteditable="true">FAST TRACKING PROCESSING</td><td contenteditable="true">Initial certification</td><td class="n" contenteditable="true">—</td><td class="n" contenteditable="true">273</td><td class="n" contenteditable="true">80</td><td class="n" contenteditable="true">193</td><td class="n" contenteditable="true">71%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">9</td><td contenteditable="true">CWI Exam</td><td contenteditable="true">Initial certification</td><td class="n" contenteditable="true">—</td><td class="n" contenteditable="true">321</td><td class="n" contenteditable="true">153</td><td class="n" contenteditable="true">168</td><td class="n" contenteditable="true">52%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">10</td><td contenteditable="true">9YR RECERT BY 80 PDH</td><td contenteditable="true">Certification renewal</td><td class="n" contenteditable="true">—</td><td class="n" contenteditable="true">284</td><td class="n" contenteditable="true">165</td><td class="n" contenteditable="true">119</td><td class="n" contenteditable="true">42%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr><td class="n">11</td><td contenteditable="true">Individual Membership Renewal – 1 year</td><td contenteditable="true">Individual membership</td><td class="n" contenteditable="true">814</td><td class="n" contenteditable="true">266</td><td class="n" contenteditable="true">208</td><td class="n" contenteditable="true">58</td><td class="n" contenteditable="true">22%</td><td class="rowctl"><button class="del" title="Delete row" aria-label="Delete row">×</button></td></tr>
+              <tr class="total"><td class="n"></td><td contenteditable="true">Total</td><td></td><td class="n" contenteditable="true">7,435</td><td class="n" contenteditable="true">13,314</td><td class="n" contenteditable="true">8,106</td><td class="n" contenteditable="true">5,208</td><td class="n" contenteditable="true">39%</td><td class="rowctl"></td></tr>
             </tbody>
           </table>
         </div>
+        <button class="addrow" type="button">+ Add row</button>
       </div>
     </section>
 
@@ -431,14 +922,14 @@
         <div class="num">4</div>
         <div class="ask-body">
           <span class="label">Request</span>
-          <p class="ask-text">Bring the current data layer state to next week's workshop: what is tracked now, where, and specific examples. Owner: Miguel.</p>
+          <p class="ask-text" contenteditable="true">Data layer on my.aws.org</p>
         </div>
       </div>
       <div class="response">
         <span class="label">Response</span>
-        <p>The current data layer state, including what is tracked today and where, is documented in the GA4 tagging plan for my.aws.org. Find the link here:</p>
-        <p><a class="cta" href="https://weld-my.sharepoint.com/my?viewid=be1f6d78%2Dd077%2D41bc%2D8a88%2D4c955c2514d2&amp;id=%2Fpersonal%2Fmromero%5Faws%5Forg%2FDocuments%2FDocuments%2FAWS%20Documents%2FAWS%2F2024%2FGA4%20%2D%20Denny%20%26%20Juan%20Pablo%2FTagging%20Plan%2FGA4%20Planning%20Tag%20Ecommerce%20Events%20%2D%20MY%2EAWS%2EORG%20%281%29%2Epdf&amp;parent=%2Fpersonal%2Fmromero%5Faws%5Forg%2FDocuments%2FDocuments%2FAWS%20Documents%2FAWS%2F2024%2FGA4%20%2D%20Denny%20%26%20Juan%20Pablo%2FTagging%20Plan" target="_blank" rel="noopener"><span>Data Layer</span><span class="arrow" aria-hidden="true">&rarr;</span></a></p>
-        <p class="cta-note">GA4 Planning Tag Ecommerce Events — MY.AWS.ORG (PDF, SharePoint). Access is required to open the file.</p>
+        <p contenteditable="true">The current data layer state, including what is tracked today and where, is documented in the GA4 tagging plan for my.aws.org. Find the link here:</p>
+        <p><a class="cta" href="https://weld-my.sharepoint.com/my?viewid=be1f6d78%2Dd077%2D41bc%2D8a88%2D4c955c2514d2&amp;id=%2Fpersonal%2Fmromero%5Faws%5Forg%2FDocuments%2FDocuments%2FAWS%20Documents%2FAWS%2F2024%2FGA4%20%2D%20Denny%20%26%20Juan%20Pablo%2FTagging%20Plan%2FGA4%20Planning%20Tag%20Ecommerce%20Events%20%2D%20MY%2EAWS%2EORG%20%281%29%2Epdf&amp;parent=%2Fpersonal%2Fmromero%5Faws%5Forg%2FDocuments%2FDocuments%2FAWS%20Documents%2FAWS%2F2024%2FGA4%20%2D%20Denny%20%26%20Juan%20Pablo%2FTagging%20Plan" target="_blank" rel="noopener"><span contenteditable="true">Data Layer</span><span class="arrow" aria-hidden="true">→</span></a></p>
+        <p class="cta-note" contenteditable="true">GA4 Planning Tag Ecommerce Events — MY.AWS.ORG (PDF, SharePoint). Access is required to open the file.</p>
       </div>
     </section>
 
@@ -448,23 +939,117 @@
         <div class="num">5</div>
         <div class="ask-body">
           <span class="label">Request</span>
-          <p class="ask-text">Send documentation of the post-login journeys where you are seeing problems. Owner: Miguel / Jose.</p>
+          <p class="ask-text" contenteditable="true">Documentation of the post-login journeys,</p>
         </div>
       </div>
       <div class="response">
         <span class="label">Response</span>
-        <p>The funnel leakage data above answers this request for post-login documentation. If any additional information is needed, let us know and we will provide it.</p>
+        <p contenteditable="true">The funnel leakage data above answers this request for post-login documentation. If any additional information is needed, let us know and we will provide it.</p>
       </div>
     </section>
 
   </main>
 
   <footer class="endnote">
-    <p style="margin:0;">American Welding Society — Personalization Audit intake. Questions on any item, contact Miguel Romero, Director of Digital Experience.</p>
+    <p contenteditable="true" style="margin:0;">American Welding Society — Personalization Audit intake. Questions on any item, contact Miguel Romero, Director of Digital Experience.</p>
   </footer>
 
 </div>
 
+<script>
+(function(){
+  var body = document.body;
+  var toggle = document.getElementById('toggleEdit');
+  var hint = document.getElementById('hint');
 
-</body>
-</html>
+  function setEditing(on){
+    body.classList.toggle('editing', on);
+    document.querySelectorAll('[contenteditable]').forEach(function(el){
+      el.setAttribute('contenteditable', on ? 'true' : 'false');
+    });
+    toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+    toggle.textContent = on ? 'Done editing' : 'Edit';
+    hint.textContent = on
+      ? 'Editing is on. Click any text to change it. Select Done editing when finished.'
+      : 'Read-only view. Select Edit to make changes.';
+  }
+
+  toggle.addEventListener('click', function(){
+    setEditing(toggle.getAttribute('aria-pressed') !== 'true');
+  });
+
+  document.getElementById('printBtn').addEventListener('click', function(){
+    var was = body.classList.contains('editing');
+    setEditing(false);
+    window.print();
+    if (was) setEditing(true);
+  });
+
+  // Paste as plain text so pasted formatting never breaks the layout
+  document.addEventListener('paste', function(e){
+    var t = e.target;
+    if (!t.closest || !t.closest('[contenteditable="true"]')) return;
+    e.preventDefault();
+    var text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, text);
+  });
+
+  // Delete a row
+  document.addEventListener('click', function(e){
+    var del = e.target.closest('.del');
+    if (del) {
+      del.closest('tr').remove();
+      return;
+    }
+    var add = e.target.closest('.addrow');
+    if (add) {
+      var table = add.previousElementSibling.querySelector('table');
+      var tbody = table.querySelector('tbody');
+      var model = tbody.querySelector('tr:not(.total)');
+      if (!model) return;
+      var row = document.createElement('tr');
+      Array.prototype.forEach.call(model.children, function(cell){
+        var td = document.createElement('td');
+        td.className = cell.className;
+        if (cell.classList.contains('rowctl')) {
+          td.innerHTML = '<button class="del" title="Delete row" aria-label="Delete row">&times;</button>';
+        } else {
+          td.setAttribute('contenteditable', body.classList.contains('editing') ? 'true' : 'false');
+          td.innerHTML = '&nbsp;';
+        }
+        row.appendChild(td);
+      });
+      var total = tbody.querySelector('tr.total');
+      if (total) { tbody.insertBefore(row, total); } else { tbody.appendChild(row); }
+      var first = row.querySelector('[contenteditable]');
+      if (first) first.focus();
+    }
+  });
+
+  // Download the current state of the report as a standalone HTML file
+  document.getElementById('saveBtn').addEventListener('click', function(){
+    var was = body.classList.contains('editing');
+    setEditing(false); // the copy opens read-only, same as this one
+    var clone = document.documentElement.cloneNode(true);
+    clone.querySelectorAll('[contenteditable]').forEach(function(el){
+      el.setAttribute('contenteditable', 'true');
+    });
+    var html = '<!DOCTYPE html>\n' + clone.outerHTML;
+    var blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'AWS-Personalization-Audit.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+    if (was) setEditing(true);
+  });
+
+  setEditing(false);
+})();
+</script>
+
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true" style="visibility: visible !important;"></grammarly-desktop-integration></html>
