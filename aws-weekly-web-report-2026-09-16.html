@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AWS.org Weekly Web Project Report, Sep 16 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF1F4; --surface:#FFFFFF; --surface-2:#F5F7F9; --ink:#15212C; --muted:#55636E; --line:#D3DBE2;
+  --arc:#1D63C0; --arc-soft:#DCE7F6; --spark:#C9731A; --spark-soft:#FBEAD4;
+  --ok:#22744A; --ok-soft:#DCEFE3; --risk:#B03A2E; --risk-soft:#F6DEDA;
+  --hero:#15212C; --hero-ink:#EEF3F7; --hero-muted:#A9B7C3; --hero-spark:#F0A553;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D141B; --surface:#15202A; --surface-2:#1B2733; --ink:#E3E9EF; --muted:#9AA7B3; --line:#2A3946;
+    --arc:#6BA8F4; --arc-soft:#1A3250; --spark:#F0A553; --spark-soft:#3A2A17;
+    --ok:#5CC48B; --ok-soft:#163326; --risk:#EE8072; --risk-soft:#3A1F1B;
+    --hero:#0A1016; --hero-ink:#EEF3F7; --hero-muted:#9AA7B3; --hero-spark:#F0A553;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D141B; --surface:#15202A; --surface-2:#1B2733; --ink:#E3E9EF; --muted:#9AA7B3; --line:#2A3946;
+  --arc:#6BA8F4; --arc-soft:#1A3250; --spark:#F0A553; --spark-soft:#3A2A17;
+  --ok:#5CC48B; --ok-soft:#163326; --risk:#EE8072; --risk-soft:#3A1F1B;
+  --hero:#0A1016; --hero-ink:#EEF3F7; --hero-muted:#9AA7B3; --hero-spark:#F0A553;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;line-height:1.5}
+h1,h2,h3{font-family:"Barlow Condensed","Arial Narrow","Roboto Condensed",Arial,sans-serif;line-height:1.1;margin:0}
+h2{font-size:clamp(1.8rem,3.4vw,2.4rem);font-weight:600}
+h3{font-size:1.35rem;font-weight:600}
+p{margin:0}
+a{color:var(--arc)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--arc);outline-offset:2px}
+img{max-width:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* Hero */
+.hero{background:var(--hero);color:var(--hero-ink);position:relative;padding:40px 0 48px}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:10px;
+  background:radial-gradient(circle at 50% 0,transparent 5px,var(--hero-spark) 5.5px,var(--hero-spark) 6.5px,transparent 7px) 0 0/12px 10px repeat-x;opacity:.85}
+.hero-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:32px;align-items:end}
+.org{color:var(--hero-muted);font-size:.95rem;margin-bottom:10px}
+.hero h1{font-size:clamp(2.6rem,6.5vw,4.4rem);font-weight:700;letter-spacing:-.01em}
+.hero .date{font-size:1.2rem;color:var(--hero-muted);margin-top:8px}
+.deploy{border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:18px 20px;background:rgba(255,255,255,.04)}
+.deploy .big{font-family:"Barlow Condensed",Arial,sans-serif;font-size:3.2rem;font-weight:700;line-height:1;color:var(--hero-spark)}
+.deploy .big small{font-size:1.2rem;color:var(--hero-ink);font-weight:500;margin-left:6px}
+.deploy p{color:var(--hero-muted)}
+.deploy .track{height:6px;background:rgba(255,255,255,.12);border-radius:3px;margin-top:14px;overflow:hidden}
+.deploy .track span{display:block;height:100%;background:var(--hero-spark)}
+
+/* Nav */
+nav.jump{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line)}
+nav.jump .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.jump a{flex:none;padding:14px 12px;text-decoration:none;color:var(--muted);font-weight:600;border-bottom:3px solid transparent}
+nav.jump a:hover{color:var(--ink)}
+nav.jump a.on{color:var(--ink);border-bottom-color:var(--spark)}
+
+section{padding:48px 0 8px}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.sec-head p{color:var(--muted);max-width:60ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px}
+
+/* Performance */
+.perf{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.metric .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.metric .val{font-family:"Barlow Condensed",Arial,sans-serif;font-size:3.4rem;font-weight:700;line-height:1}
+.metric .name{font-weight:600;font-size:1.05rem}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:600;font-size:.88rem;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--spark-soft);color:var(--spark)}
+.pill.risk{background:var(--risk-soft);color:var(--risk)}
+.pill.neutral{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.meter{position:relative;height:18px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;margin:22px 0 30px}
+.meter .fill{position:absolute;inset:0 auto 0 0;background:var(--arc);border-radius:3px 0 0 3px;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+.meter .goal{position:absolute;top:-7px;bottom:-7px;width:3px;background:var(--spark);border-radius:2px}
+.meter .goal span{position:absolute;top:100%;margin-top:4px;left:50%;transform:translateX(-50%);font-size:.8rem;color:var(--muted);white-space:nowrap}
+.metric .sub{color:var(--muted)}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.quick div{padding:16px 18px;border-right:1px solid var(--line)}
+.quick div:last-child{border-right:0}
+.quick b{display:block;font-family:"Barlow Condensed",Arial,sans-serif;font-size:2rem;line-height:1.1}
+.quick span{color:var(--muted);font-size:.95rem}
+.ref{color:var(--muted);font-size:.92rem;margin-top:12px}
+
+/* Goals */
+.goals{display:grid;gap:16px}
+.goal{display:grid;grid-template-columns:220px 1fr;gap:24px}
+.goal .gnum{font-family:"Barlow Condensed",Arial,sans-serif;font-size:1.05rem;color:var(--muted)}
+.goal .gtitle{font-weight:600;margin-top:4px}
+.goal .ms{font-weight:600;margin-bottom:6px}
+.goal .body p+p{margin-top:8px}
+.bar{height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:14px 0 8px}
+.bar span{display:block;height:100%;background:var(--ok);width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:10px}
+.stats div b{font-family:"Barlow Condensed",Arial,sans-serif;font-size:1.6rem;display:block;line-height:1.1}
+.stats div span{color:var(--muted);font-size:.9rem}
+.steps{display:flex;gap:0;margin-top:14px;flex-wrap:wrap}
+.steps div{flex:1 1 150px;padding:10px 12px;border-top:4px solid var(--line);color:var(--muted)}
+.steps div.done{border-top-color:var(--ok);color:var(--ink)}
+.steps div.now{border-top-color:var(--spark);color:var(--ink)}
+.steps b{display:block;font-size:.95rem}
+
+/* Controls */
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.chip{border:1px solid var(--line);background:var(--surface);padding:6px 12px;border-radius:999px;cursor:pointer;font-weight:500;font-size:.93rem}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.search{flex:1 1 220px;max-width:320px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}
+.toggle{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.93rem;cursor:pointer}
+.toggle input{accent-color:var(--arc);width:16px;height:16px}
+
+/* Tickets */
+.tgroups{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.tgroup h3{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+.tgroup h3 .count{font-family:"Barlow",Arial,sans-serif;font-size:.95rem;color:var(--muted);font-weight:500}
+.tgroup .note{color:var(--muted);font-size:.92rem;margin-bottom:12px}
+.tlist{list-style:none;margin:0;padding:0}
+.tlist li{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:start;padding:11px 0;border-top:1px solid var(--line)}
+.tlist li.depr{opacity:.62}
+.tid{font-family:"Barlow Condensed",Arial,sans-serif;font-weight:600;font-size:1.1rem;color:var(--arc)}
+.tid.none{color:var(--line)}
+.ttitle{font-weight:500}
+.ttitle small{display:block;color:var(--muted);font-size:.85rem;font-weight:400}
+.tag{font-size:.8rem;padding:2px 8px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.security{background:var(--risk-soft);color:var(--risk);border-color:transparent}
+.tag.tracking{background:var(--spark-soft);color:var(--spark);border-color:transparent}
+.empty{padding:16px 0;color:var(--muted);border-top:1px solid var(--line)}
+
+/* SEO */
+.segbar{display:flex;height:44px;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin-bottom:14px}
+.segbar button{border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:600;padding:0 8px;min-width:0;white-space:nowrap;overflow:hidden}
+.segbar button[data-s="progress"]{background:var(--arc-soft);color:var(--arc)}
+.segbar button[data-s="done"]{background:var(--ok-soft);color:var(--ok)}
+.segbar button[data-s="pending"]{background:var(--spark-soft);color:var(--spark)}
+.segbar button[aria-pressed="true"]{box-shadow:inset 0 -4px 0 currentColor}
+.seo-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.seo-col h3{font-size:1.2rem;margin-bottom:8px;display:flex;gap:8px;align-items:center}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.seo-item{padding:12px 0;border-top:1px solid var(--line)}
+.seo-item .k{color:var(--muted);font-size:.85rem;margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
+.owner{font-weight:600;color:var(--ink)}
+.seo-col.hide{display:none}
+
+/* Initiatives */
+.init{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.init .panel.wide{grid-column:1/-1}
+.init h3{margin-bottom:8px}
+.init p{color:var(--muted);max-width:70ch}
+.init .file{margin-top:10px;font-size:.92rem;color:var(--muted)}
+.checker{display:grid;grid-template-columns:minmax(260px,1fr) 1.3fr;gap:24px;margin-top:20px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-weight:600;font-size:.93rem}
+.field select,.field input{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.result{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:16px}
+.result .spec{font-size:.95rem;color:var(--muted);margin-bottom:10px}
+.result ul{list-style:none;margin:0;padding:0}
+.result li{display:flex;gap:10px;align-items:flex-start;padding:6px 0}
+.result li .pill{flex:none;min-width:74px;text-align:center}
+.tables{display:grid;grid-template-columns:1fr 1.6fr;gap:20px;margin-top:22px}
+.tscroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:600}
+tbody tr.pick{cursor:pointer}
+tbody tr.pick:hover{background:var(--surface-2)}
+tbody tr.sel{background:var(--arc-soft)}
+caption{text-align:left;font-weight:600;padding-bottom:8px}
+
+/* Highlights */
+.hl{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.hl .site{color:var(--arc);font-weight:600;margin-bottom:6px}
+footer{padding:40px 0 60px;color:var(--muted);font-size:.9rem}
+footer p+p{margin-top:6px}
+
+@media (max-width:900px){
+  .hero-grid,.perf,.tgroups,.init,.checker,.tables,.hl{grid-template-columns:1fr}
+  .seo-cols{grid-template-columns:1fr}
+  .goal{grid-template-columns:1fr;gap:10px}
+  .quick{grid-template-columns:1fr 1fr}
+  .quick div:nth-child(2){border-right:0}
+  .quick div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+}
+@media (max-width:520px){
+  .tlist li{grid-template-columns:48px 1fr}
+  .tlist li .tag{grid-column:2;justify-self:start}
+  .segbar button .lbl{display:none}
+  .row3{grid-template-columns:1fr 1fr}
+}
+@media print{nav.jump{display:none}.hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}section{break-inside:avoid-page}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="org">American Welding Society, Digital Experience</p>
+      <h1>Weekly web project meeting</h1>
+      <p class="date">Wednesday, September 16, 2026</p>
+    </div>
+    <div class="deploy" aria-live="polite">
+      <p>Next deployment</p>
+      <div class="big" id="deployDays">15<small>days</small></div>
+      <p id="deployDate">Thursday, October 1, 2026</p>
+      <div class="track" aria-hidden="true"><span id="deployTrack" style="width:50%"></span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="jump" aria-label="Report sections">
+  <div class="wrap">
+    <a href="#performance">Performance</a>
+    <a href="#goals">2026 goals</a>
+    <a href="#tickets">Web tickets</a>
+    <a href="#seo">SEO deliverables</a>
+    <a href="#initiatives">Key initiatives</a>
+    <a href="#highlights">Highlights</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section id="performance">
+    <div class="sec-head">
+      <h2>Last week on aws.org</h2>
+      <p>September 7 to 13, 2026. Both weekly targets were met.</p>
+    </div>
+    <div class="perf">
+      <div class="panel metric">
+        <div class="top">
+          <span class="name">Sessions</span>
+          <span class="pill ok">142.6% of goal</span>
+        </div>
+        <div class="val">54.9K</div>
+        <div class="meter" role="img" aria-label="54,900 sessions against a goal of 38,500">
+          <div class="fill" data-w="81.9"></div>
+          <div class="goal" style="left:57.5%"><span>Goal 38,500</span></div>
+        </div>
+        <p class="sub">16,400 sessions above the weekly goal.</p>
+      </div>
+      <div class="panel metric">
+        <div class="top">
+          <span class="name">Engagement rate</span>
+          <span class="pill ok">+1 pt over goal</span>
+        </div>
+        <div class="val">76%</div>
+        <div class="meter" role="img" aria-label="76% engagement rate against a goal of 75%">
+          <div class="fill" data-w="76"></div>
+          <div class="goal" style="left:75%"><span>Goal 75%</span></div>
+        </div>
+        <p class="sub">Narrow margin: this supports Goal 1 but has little buffer.</p>
+      </div>
+    </div>
+    <div class="quick" id="quick"></div>
+    <p class="ref">Full trend history lives in the WEB KPIS AWS.ORG 23-24-25-26 workbook.</p>
+  </section>
+
+  <section id="goals">
+    <div class="sec-head">
+      <h2>MR web goals, 2026</h2>
+      <p>Q3 milestone status for each goal.</p>
+    </div>
+    <div class="goals">
+      <div class="panel goal">
+        <div>
+          <div class="gnum">Goal 1</div>
+          <div class="gtitle">Improve website engagement rate to support the organizational target</div>
+          <div style="margin-top:10px"><span class="pill warn" id="g1pill">At risk on timing</span></div>
+        </div>
+        <div class="body">
+          <p class="ms">Q3 milestone 3: Technical quality and SEO performance</p>
+          <p>Eliminate all 404 errors across impacted pages on AWS.org. Remaining redirects are planned for completion before the end of Q3 2026 so the task can be closed.</p>
+          <div class="bar" role="img" aria-label="134 of 434 redirects implemented"><span data-w="30.9"></span></div>
+          <div class="stats">
+            <div><b>134</b><span>Redirects implemented</span></div>
+            <div><b>300</b><span>Remaining</span></div>
+            <div><b id="q3days">15</b><span>Days left in Q3</span></div>
+            <div><b id="pace">~27</b><span>Needed per workday</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel goal">
+        <div>
+          <div class="gnum">Goal 2</div>
+          <div class="gtitle">Improve customer experience by expanding Sitecore Personalize and Coveo A/B testing</div>
+          <div style="margin-top:10px"><span class="pill neutral">Evaluating</span></div>
+        </div>
+        <div class="body">
+          <p class="ms">Q3 milestone 3: A/B testing program activation</p>
+          <p>Three Sitecore Personalize A/B tests are being evaluated for implementation by September, with analysis in Q4.</p>
+          <div class="steps">
+            <div class="now"><b>Evaluate 3 tests</b>In progress</div>
+            <div><b>Implement</b>By end of September</div>
+            <div><b>Analyze results</b>Q4 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel goal">
+        <div>
+          <div class="gnum">Goal 3</div>
+          <div class="gtitle">aws.org user experience optimization</div>
+          <div style="margin-top:10px"><span class="pill ok">Design complete</span></div>
+        </div>
+        <div class="body">
+          <p class="ms">Q3 milestone 3: Menu optimization phase 2 and pain point solution</p>
+          <p>Anthony and Miguel designed a new dropdown menu to improve navigation, accessibility, and content discoverability. See the Menu Navigation 2.0 file for the design.</p>
+          <div class="steps">
+            <div class="done"><b>Design new menu</b>Done</div>
+            <div><b>Build and test</b>Not yet reported</div>
+            <div><b>Launch</b>Not yet reported</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tickets">
+    <div class="sec-head">
+      <h2>Web tickets in progress</h2>
+      <p>Filter by work type or search by number or keyword.</p>
+    </div>
+    <div class="controls" id="ticketChips" role="group" aria-label="Filter tickets by type"></div>
+    <div class="controls">
+      <input class="search" id="ticketSearch" type="search" placeholder="Search tickets" aria-label="Search tickets">
+      <label class="toggle"><input type="checkbox" id="showDepr" checked> Show deprioritized</label>
+    </div>
+    <div class="tgroups">
+      <div class="panel tgroup">
+        <h3>September, numbered <span class="count" id="c-sept"></span></h3>
+        <p class="note">Listed under the next deployment (Oct 1). Repeated entries in the notes are shown once.</p>
+        <ul class="tlist" id="list-sept"></ul>
+      </div>
+      <div class="panel tgroup">
+        <h3>Other tickets in progress <span class="count" id="c-other"></span></h3>
+        <p class="note">No ticket numbers were given for these items.</p>
+        <ul class="tlist" id="list-other"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="seo">
+    <div class="sec-head">
+      <h2>Outerbox SEO strategy deliverables</h2>
+      <p>August status update. Select a status bar segment or an owner to focus the board.</p>
+    </div>
+    <div class="segbar" id="segbar" role="group" aria-label="Filter by status"></div>
+    <div class="controls" id="ownerChips" role="group" aria-label="Filter by owner"></div>
+    <div class="seo-cols" id="seoCols"></div>
+  </section>
+
+  <section id="initiatives">
+    <div class="sec-head">
+      <h2>Key initiatives</h2>
+      <p>Cross-team work beyond the ticket queue.</p>
+    </div>
+    <div class="init">
+      <div class="panel">
+        <h3>Funnel conversion analysis</h3>
+        <p>Working with Roque and the team on BU-level web reports that pinpoint funnel drop-offs and conversion opportunities, to build a strong business case for improvements with IT and CS.</p>
+      </div>
+      <div class="panel">
+        <h3>UX and bug reporting</h3>
+        <p>Using Hotjar and Claude to identify and prioritize key usability issues and bugs across platforms, then sharing actionable reports with IT.</p>
+      </div>
+      <div class="panel">
+        <h3>Improve the price list</h3>
+        <p>Analyze the price list page to identify user experience improvements. Also listed as pending stakeholder action in the SEO deliverables.</p>
+      </div>
+      <div class="panel">
+        <h3>Website-wide hero banner optimization</h3>
+        <p>Optimize size, file weight, image quality, and alt text of every hero banner to improve page performance, SEO, and accessibility.</p>
+        <p class="file">Tracker: Hero Web Banners Optimization - Q3-Q4 2026.xlsx</p>
+      </div>
+
+      <div class="panel wide">
+        <h3>Image size check</h3>
+        <p>Pick a format, enter the image's dimensions and file weight, and see how it compares with the size guide. Selecting a row in the table below also sets the format.</p>
+        <div class="checker">
+          <div>
+            <div class="field">
+              <label for="fmt">Image format</label>
+              <select id="fmt"></select>
+            </div>
+            <div class="row3">
+              <div class="field"><label for="w">Width (px)</label><input id="w" type="number" min="1" inputmode="numeric" placeholder="1920"></div>
+              <div class="field"><label for="h">Height (px)</label><input id="h" type="number" min="1" inputmode="numeric" placeholder="800"></div>
+              <div class="field"><label for="kb">File size (KB)</label><input id="kb" type="number" min="1" inputmode="numeric" placeholder="280"></div>
+            </div>
+          </div>
+          <div class="result" aria-live="polite">
+            <p class="spec" id="spec"></p>
+            <ul id="checks"></ul>
+          </div>
+        </div>
+        <div class="tables">
+          <div class="tscroll">
+            <table>
+              <caption>File size by image type</caption>
+              <thead><tr><th>Image type</th><th>Recommended size</th></tr></thead>
+              <tbody>
+                <tr><td>Icons / small graphics</td><td>&lt; 30–50 KB</td></tr>
+                <tr><td>Thumbnails</td><td>&lt; 50–100 KB</td></tr>
+                <tr><td>Content / article images</td><td>100–200 KB</td></tr>
+                <tr><td>Hero images / banners</td><td>&lt; 200–300 KB</td></tr>
+                <tr><td>Any image &gt; 500 KB</td><td>Review and optimize</td></tr>
+                <tr><td>Images &gt; 1 MB</td><td>Avoid</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="tscroll">
+            <table>
+              <caption>Dimensions by format</caption>
+              <thead><tr><th>Format</th><th>Dimensions</th><th>Ratio</th><th>Ideal size</th></tr></thead>
+              <tbody id="dimBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="highlights">
+    <div class="sec-head">
+      <h2>AWS web project highlights</h2>
+    </div>
+    <div class="hl">
+      <div class="panel">
+        <p class="site">sections.aws.org</p>
+        <p>The Section website was optimized to fix its loading issues.</p>
+      </div>
+      <div class="panel">
+        <p class="site">Safety Resource Page</p>
+        <p>Content structure was updated to match the stakeholder's initial requirements, with further UI/UX enhancements implemented.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>Source: weekly web project meeting notes, September 16, 2026.</p>
+  <p>Data notes: the September ticket list repeats #316, #355 and #500, so each appears once here. "EE Error When Adding Section Container Below 'Basic Text Block Tabbed'" appears in both lists and is linked to #465. Work-type tags are grouped for filtering and are not from the ticketing system.</p>
+</footer>
+
+<script>
+(function(){
+  const REPORT = new Date(2026,8,16);
+  const DAY = 86400000;
+  const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const today = startOfDay(new Date());
+  // Use the later of today or report date so the numbers stay meaningful if opened early
+  const ref = today < REPORT ? REPORT : today;
+
+  // Deployment countdown
+  const deploy = new Date(2026,9,1);
+  const lastDeployWindow = new Date(2026,8,1);
+  const dd = Math.round((deploy - ref)/DAY);
+  const dEl = document.getElementById('deployDays');
+  if (dd > 0) dEl.innerHTML = dd + '<small>' + (dd===1?'day':'days') + '</small>';
+  else if (dd === 0) dEl.innerHTML = 'Today';
+  else dEl.innerHTML = 'Deployed<small>Oct 1</small>';
+  const pct = Math.min(100, Math.max(0, (ref - lastDeployWindow)/(deploy - lastDeployWindow)*100));
+  document.getElementById('deployTrack').style.width = pct + '%';
+
+  // Q3 redirect pace
+  const q3end = new Date(2026,8,30);
+  let daysLeft = Math.round((q3end - ref)/DAY) + 1;
+  let workdays = 0;
+  for (let d = new Date(ref); d <= q3end; d = new Date(d.getTime()+DAY)) { const w = d.getDay(); if (w>0 && w<6) workdays++; }
+  const q3El = document.getElementById('q3days'), paceEl = document.getElementById('pace');
+  if (daysLeft > 0) { q3El.textContent = daysLeft; paceEl.textContent = '~' + Math.ceil(300/Math.max(workdays,1)); }
+  else { q3El.textContent = '0'; paceEl.textContent = '—'; document.getElementById('g1pill').textContent = 'Q3 closed: confirm status'; }
+
+  // Tickets
+  const TYPES = ['UI & navigation','Errors & stability','Authoring','Security','Tracking & consent','Search & filters','Content','Platform'];
+  const sept = [
+    {id:316, t:'Header menu items shift when navigating', y:'UI & navigation'},
+    {id:355, t:'CD System.Web.HttpUnhandledException: an unhandled exception occurred', y:'Errors & stability'},
+    {id:465, t:"EE error when adding Section Container below 'Basic Text Block Tabbed'", y:'Authoring'},
+    {id:498, t:'Add top padding to tab titles in Basic Block Text Tabbed component', y:'UI & navigation'},
+    {id:500, t:'Adjust mobile jump links to prevent header overlap', y:'UI & navigation'},
+    {id:533, t:'Implement automated SSL certificate renewal', y:'Security'},
+    {id:546, t:'Review GTM scripts', y:'Tracking & consent'}
+  ];
+  const other = [
+    {t:'Investigate HubSpot cookie banner consent compliance and tracking behavior', y:'Tracking & consent'},
+    {t:'New security scanning activity triggering HttpRequestValidationException', y:'Security'},
+    {t:'Publication archive filter sorting and add scroll functionality bug', y:'Search & filters'},
+    {t:'Publication search: Popular Topic dropdown does not close', y:'Search & filters'},
+    {t:'WJRS articles display full abstract instead of summary', y:'Content'},
+    {t:'Main menu items may flicker before fully loading', y:'UI & navigation'},
+    {t:'Coveo for Sitecore upgrade request', y:'Platform'},
+    {t:"EE error when adding Section Container below 'Basic Text Block Tabbed'", y:'Authoring', note:'Same issue as #465'},
+    {t:'Adjust URL generation in Sitecore to enforce lowercase', y:'Platform', note:'Would also stop case-split page paths in GA4'},
+    {t:'Sitecore vulnerability KB1003734', y:'Security'},
+    {t:'Optimize dropdown filter behavior', y:'Search & filters'},
+    {t:'UserExtensions are not working properly on DEV and UAT', y:'Platform', depr:true},
+    {t:'Implement SearchAfter API to address Content Hub query API limit', y:'Platform', depr:true}
+  ];
+  let tType = 'All', tQuery = '', showDepr = true;
+  const chipsEl = document.getElementById('ticketChips');
+  ['All', ...TYPES].forEach(name => {
+    const n = name==='All' ? sept.length+other.length : sept.concat(other).filter(x=>x.y===name).length;
+    const b = document.createElement('button');
+    b.className='chip'; b.type='button'; b.textContent = name + ' (' + n + ')';
+    b.setAttribute('aria-pressed', name==='All'); b.dataset.v = name;
+    b.onclick = () => { tType = name; chipsEl.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed', c.dataset.v===name)); renderTickets(); };
+    chipsEl.appendChild(b);
+  });
+  document.getElementById('ticketSearch').addEventListener('input', e => { tQuery = e.target.value.trim().toLowerCase(); renderTickets(); });
+  document.getElementById('showDepr').addEventListener('change', e => { showDepr = e.target.checked; renderTickets(); });
+  const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const tagClass = y => y==='Security' ? 'tag security' : y==='Tracking & consent' ? 'tag tracking' : 'tag';
+  function match(x){
+    if (tType!=='All' && x.y!==tType) return false;
+    if (!showDepr && x.depr) return false;
+    if (tQuery){ const hay = ((x.id?('#'+x.id+' '+x.id):'') + ' ' + x.t + ' ' + x.y + ' ' + (x.note||'')).toLowerCase(); if (!hay.includes(tQuery)) return false; }
+    return true;
+  }
+  function renderList(arr, elId, countId){
+    const list = arr.filter(match);
+    document.getElementById(countId).textContent = list.length + ' of ' + arr.length;
+    const el = document.getElementById(elId);
+    if (!list.length){ el.innerHTML = '<li class="empty" style="display:block">No tickets match these filters.</li>'; return; }
+    el.innerHTML = list.map(x => {
+      const sub = [x.depr?'Deprioritized':'', x.note||''].filter(Boolean).join('. ');
+      return '<li class="'+(x.depr?'depr':'')+'"><span class="tid'+(x.id?'':' none')+'">'+(x.id?'#'+x.id:'—')+'</span>'+
+        '<span class="ttitle">'+esc(x.t)+(sub?'<small>'+esc(sub)+'</small>':'')+'</span>'+
+        '<span class="'+tagClass(x.y)+'">'+esc(x.y)+'</span></li>';
+    }).join('');
+  }
+  function renderTickets(){ renderList(sept,'list-sept','c-sept'); renderList(other,'list-other','c-other'); }
+  renderTickets();
+
+  // SEO deliverables
+  const STATUS = {progress:{label:'In progress', color:'var(--arc)'}, done:{label:'Completed', color:'var(--ok)'}, pending:{label:'Pending stakeholder action', color:'var(--spark)'}};
+  const seo = [
+    {t:'Canonical to non-200', o:['Jose'], s:'progress', k:'Technical SEO'},
+    {t:'Broken pages (4xx errors)', o:['Jose','Miguel'], s:'progress', k:'Technical SEO'},
+    {t:'Internal linking recommendations', o:['Anthony'], s:'progress', k:'Technical SEO'},
+    {t:'Enterprise UX audit: Education page', o:['Miguel'], s:'progress', k:'UX'},
+    {t:'HTML sitemap creation', o:['Jose'], s:'progress', k:'Technical SEO'},
+    {t:'Unique broken links', o:['Miguel'], s:'progress', k:'Technical SEO'},
+    {t:'Enterprise UX audit: Lori Ortiz follow-up', o:[], s:'progress', k:'UX'},
+    {t:'Blog: How to Build a Career in Aerospace Welding in Alabama\u2019s Defense and Space Sector', o:['Trish'], s:'progress', k:'Content'},
+    {t:'Blog: The Future of Fabrication, an Industry Guide to Cobot & Robotic Welding Automation', o:['Trish'], s:'progress', k:'Content'},
+    {t:'SEO performance report (August 2026)', o:[], s:'done', k:'Reporting'},
+    {t:'Enterprise quarterly technical SEO insights', o:[], s:'pending', k:'Reporting'},
+    {t:'Copy refreshes: Where Are the Welders?, Welder Performance Qualification and Welder Certification, Choosing PPE for Welding', o:[], s:'pending', k:'Content'},
+    {t:'Blog: Guide to Oil Rig Welding Jobs in Texas (certifications, pay, and getting started in Houston\u2019s energy sector)', o:[], s:'pending', k:'Content'},
+    {t:'Site speed assessment', o:[], s:'pending', k:'Technical SEO'},
+    {t:'Improve price list: analyze the page for UX improvements', o:[], s:'pending', k:'UX'}
+  ];
+  let sStatus = 'all', sOwner = 'All';
+  const seg = document.getElementById('segbar');
+  Object.keys(STATUS).forEach(key => {
+    const n = seo.filter(x=>x.s===key).length;
+    const b = document.createElement('button'); b.type='button'; b.dataset.s=key; b.style.flex = n;
+    b.innerHTML = '<span>'+n+'</span><span class="lbl">'+STATUS[key].label+'</span>';
+    b.setAttribute('aria-pressed','false'); b.setAttribute('aria-label', n+' '+STATUS[key].label);
+    b.onclick = () => { sStatus = sStatus===key ? 'all' : key; seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x.dataset.s===sStatus)); renderSeo(); };
+    seg.appendChild(b);
+  });
+  const ownersEl = document.getElementById('ownerChips');
+  ['All','Jose','Miguel','Anthony','Trish'].forEach(name => {
+    const n = name==='All' ? seo.length : seo.filter(x=>x.o.includes(name)).length;
+    const b = document.createElement('button'); b.type='button'; b.className='chip'; b.dataset.v=name;
+    b.textContent = name + ' (' + n + ')'; b.setAttribute('aria-pressed', name==='All');
+    b.onclick = () => { sOwner = name; ownersEl.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed', c.dataset.v===name)); renderSeo(); };
+    ownersEl.appendChild(b);
+  });
+  function renderSeo(){
+    const cols = document.getElementById('seoCols');
+    cols.innerHTML = Object.keys(STATUS).map(key => {
+      const items = seo.filter(x => x.s===key && (sOwner==='All' || x.o.includes(sOwner)));
+      const hide = sStatus!=='all' && sStatus!==key;
+      return '<div class="panel seo-col'+(hide?' hide':'')+'"><h3><span class="dot" style="background:'+STATUS[key].color+'"></span>'+STATUS[key].label+'</h3>'+
+        (items.length ? items.map(x => '<div class="seo-item"><div>'+esc(x.t)+'</div><div class="k"><span class="owner">'+(x.o.length?x.o.join(' / '):'No owner listed')+'</span><span>'+x.k+'</span></div></div>').join('')
+          : '<div class="empty">Nothing here for this owner.</div>') + '</div>';
+    }).join('');
+  }
+  renderSeo();
+
+  // Quick stats
+  const numbered = sept.length, otherActive = other.filter(x=>!x.depr).length, depr = other.filter(x=>x.depr).length;
+  document.getElementById('quick').innerHTML =
+    '<div><b>'+numbered+'</b><span>Numbered tickets in September</span></div>'+
+    '<div><b>'+other.length+'</b><span>Other tickets, '+depr+' deprioritized</span></div>'+
+    '<div><b>300</b><span>Redirects left to close 404s</span></div>'+
+    '<div><b>'+seo.filter(x=>x.s==='pending').length+'</b><span>SEO items waiting on stakeholders</span></div>';
+
+  // Image checker
+  const FORMATS = [
+    {n:'Square', w:800, h:800, r:'1:1', size:'100–200 KB', good:200, max:200},
+    {n:'Rectangular / card', w:1200, h:800, r:'3:2', size:'100–200 KB', good:200, max:200},
+    {n:'Horizontal', w:1200, h:675, r:'16:9', size:'100–200 KB', good:200, max:200},
+    {n:'Banner', w:1600, h:600, r:'~8:3', size:'< 200–300 KB', good:200, max:300},
+    {n:'Large hero', w:1920, h:800, r:'~12:5', size:'< 300 KB', good:300, max:300},
+    {n:'Thumbnail', w:600, h:400, r:'3:2', size:'< 100 KB', good:100, max:100},
+    {n:'Logo / simple graphic', w:null, h:null, r:'Variable', size:'< 50–100 KB', good:50, max:100, dimText:'As needed, typically < 800 px'}
+  ];
+  const fmt = document.getElementById('fmt'), dimBody = document.getElementById('dimBody');
+  FORMATS.forEach((f,i) => {
+    const o = document.createElement('option'); o.value=i; o.textContent=f.n; fmt.appendChild(o);
+    const tr = document.createElement('tr'); tr.className='pick'; tr.tabIndex=0; tr.dataset.i=i;
+    tr.innerHTML = '<td>'+f.n+'</td><td>'+(f.w? f.w+' × '+f.h+' px' : f.dimText)+'</td><td>'+f.r+'</td><td>'+esc(f.size)+'</td>';
+    const pick = () => { fmt.value=i; check(); };
+    tr.onclick = pick; tr.onkeydown = e => { if (e.key==='Enter'||e.key===' '){ e.preventDefault(); pick(); } };
+    dimBody.appendChild(tr);
+  });
+  fmt.value = 4;
+  const wIn = document.getElementById('w'), hIn = document.getElementById('h'), kbIn = document.getElementById('kb');
+  [fmt,wIn,hIn,kbIn].forEach(el => el.addEventListener('input', check));
+  function li(cls, label, text){ return '<li><span class="pill '+cls+'">'+label+'</span><span>'+text+'</span></li>'; }
+  function check(){
+    const f = FORMATS[+fmt.value];
+    dimBody.querySelectorAll('tr').forEach(tr => tr.classList.toggle('sel', +tr.dataset.i===+fmt.value));
+    document.getElementById('spec').textContent = f.n + ': ' + (f.w ? f.w+' × '+f.h+' px ('+f.r+')' : f.dimText) + ', ideal file size ' + f.size + '.';
+    const w = +wIn.value, h = +hIn.value, kb = +kbIn.value, out = [];
+    if (kb){
+      if (kb > 1000) out.push(li('risk','Avoid','Over 1 MB. Compress or resize before publishing.'));
+      else if (kb > 500) out.push(li('risk','Review','Over 500 KB. Review and optimize this image.'));
+      else if (kb <= f.good) out.push(li('ok','Pass','File size is within the ideal range for this format.'));
+      else if (kb <= f.max) out.push(li('warn','Close','At the upper end of the range. Aim for '+f.good+' KB or less if quality allows.'));
+      else out.push(li('warn','Over','About '+Math.round(kb - f.max)+' KB above the '+f.max+' KB ceiling for this format.'));
+    }
+    if (w && h){
+      if (f.w){
+        const target = f.w/f.h, actual = w/h, diff = Math.abs(actual-target)/target;
+        if (diff <= 0.03) out.push(li('ok','Pass','Aspect ratio matches '+f.r+'.'));
+        else out.push(li('warn','Ratio','Ratio is '+actual.toFixed(2)+':1; this format expects '+target.toFixed(2)+':1 ('+f.r+'). Crop to avoid distortion.'));
+        if (w > f.w*1.25) out.push(li('warn','Resize','Wider than needed. Resize to '+f.w+' px wide to cut file weight.'));
+        else if (w < f.w*0.9) out.push(li('warn','Small','Narrower than '+f.w+' px, so it may look soft on large screens.'));
+        else out.push(li('ok','Pass','Width is close to the recommended '+f.w+' px.'));
+      } else {
+        if (Math.max(w,h) > 800) out.push(li('warn','Resize','Larger than the typical 800 px for logos and simple graphics.'));
+        else out.push(li('ok','Pass','Dimensions are within the typical range for logos.'));
+      }
+    }
+    if (!out.length) out.push('<li style="color:var(--muted)">Enter a width, height, or file size to run the check.</li>');
+    out.push(li('neutral','Alt text','Confirm the banner has descriptive alt text.'));
+    document.getElementById('checks').innerHTML = out.join('');
+  }
+  check();
+
+  // Animate bars once
+  requestAnimationFrame(() => setTimeout(() => {
+    document.querySelectorAll('[data-w]').forEach(el => el.style.width = el.dataset.w + '%');
+  }, 120));
+
+  // Scrollspy
+  const links = [...document.querySelectorAll('nav.jump a')];
+  const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting){ links.forEach(l=>l.classList.remove('on')); const a = map.get(e.target.id); if (a){ a.classList.add('on'); const bar=a.parentElement; bar.scrollLeft = a.offsetLeft - 20; } } });
+  }, {rootMargin:'-40% 0px -55% 0px'});
+  document.querySelectorAll('main section').forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>
