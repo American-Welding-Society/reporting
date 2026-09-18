@@ -365,6 +365,17 @@
     #pages td:last-child, #pages th:last-child { padding-right:4px; }
     #pages th:last-child::after { position:static; }
   }
+  /* Round R design MUST 1: between the phone and the tablet widths the tables take the phone treatment (wrapping headings,
+     the row label pinned), so no column is cut off unseen at 521 to 799 px. */
+  @media (max-width:799px) {
+    th { white-space:normal; vertical-align:bottom; line-height:1.3; }
+    .tw td:first-child { position:sticky; left:0; z-index:1; background:#fff; max-width:44vw; white-space:normal; }
+    .tw th:first-child { position:sticky; left:0; z-index:2; background:var(--wash); max-width:44vw; }
+    #sources td:first-child { min-width:0; } #sources td:first-child .raw { white-space:normal; }
+    .tw tr.tot td:first-child, .tw tr.subt td:first-child, .tw tr.grp td:first-child { background:#fff; }
+    .tw tbody tr:nth-child(even):not(.tot):not(.subt):not(.grp) td:first-child { background:var(--wash); }
+    #social td:first-child, #twiw td:first-child { white-space:nowrap; }
+  }
   @media (max-width:520px) {
     .wrap { padding:14px 10px 48px; }
     .col { gap:16px; }

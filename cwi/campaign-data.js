@@ -15787,68 +15787,6 @@ window.CAMPAIGN_DATA = {
     "purchases": 0,
     "revenue": 0.0
    }
-  ],
-  "otherSends": [
-   {
-    "id": "194058753651",
-    "sent": "2025-08-06",
-    "group": "a How to Become a CWI event in Chattanooga",
-    "delivered": 289
-   },
-   {
-    "id": "194300775326",
-    "sent": "2025-08-12",
-    "group": "a How to Become a CWI event in Chattanooga",
-    "delivered": 290
-   },
-   {
-    "id": "194572287308",
-    "sent": "2025-08-15",
-    "group": "CWI 101 in Kansas City",
-    "delivered": 459
-   },
-   {
-    "id": "194676918153",
-    "sent": "2025-08-18",
-    "group": "CWI 101 in Kansas City",
-    "delivered": 458
-   },
-   {
-    "id": "195618368044",
-    "sent": "2025-09-09",
-    "group": "CWI 101 in Kansas City",
-    "delivered": 451
-   },
-   {
-    "id": "195761252617",
-    "sent": "2025-09-16",
-    "group": "CWI 101 in Kansas City",
-    "delivered": 456
-   },
-   {
-    "id": "197888549779",
-    "sent": "2025-10-21",
-    "group": "a CWI seminar and Part B exam in Alaska",
-    "delivered": 266
-   },
-   {
-    "id": "201422711338",
-    "sent": "2025-12-01",
-    "group": "a CWI seminar and Part B exam in Alaska",
-    "delivered": 266
-   },
-   {
-    "id": "202128537388",
-    "sent": "2025-12-17",
-    "group": "a CWI seminar and Part B exam in Alaska",
-    "delivered": 268
-   },
-   {
-    "id": "204627318952",
-    "sent": "2026-01-13",
-    "group": "a CWI seminar and Part B exam in Alaska",
-    "delivered": 256
-   }
   ]
  },
  "sms": {
