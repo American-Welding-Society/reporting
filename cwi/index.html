@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>CWI Promotion | American Welding Society</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+  /* CWI promotion dashboard. Built on campaign dashboard template v2: same tokens, cards,
+     tables, tiles and galleries. Additions for an always-on program: a period selector with
+     previous-period comparisons, what sold, the CWI pages, the email series, texts, This Week
+     in Welding, the top posts across platforms, and publications. The shell contains no numbers: every figure comes from
+     campaign-data.js, and a section renders only when its data exists. */
+  :root {
+    --navy:#001527;        /* the navy field, as the real sends use it */
+    --deep:#0A1628;        /* dark band and strong label */
+    --blue:#0074E2;        /* links and the marketing bar */
+    --orange:#F56A00;      /* the one accent: eyebrows, the active period, the rank chip */
+    --orange-soft:#FF8C32;
+    --ink:#393B3B; --mid:#727575; --faint:#ABACAC;   /* --faint is for rules and bar tracks, never for text */
+    --label:#5F6466;       /* every small label: 6.0 to 1 on white, 5.75 on the striped row */
+    --up-ink:#1A7742;      /* the green that carries a figure */
+    --line:#E5E5E5; --hair:#EDEDED; --wash:#FAFAFA; --page:#E5E5E5;
+    --up:#1F8A4C; --down:#C0392B; --hold:#B07A00;
+    --other:#C9CED1; --sky:#8DB9E9; --amber:#F7A865;
+    --p-google:#0074E2; --p-microsoft:#00A3AD; --p-meta:#0A1628; --p-linkedin:#7FA7D6;
+    --p-reddit:#6B5B95; --p-spotify:#9A6B00;
+    --lift:0 1px 2px rgba(0,21,39,0.05), 0 12px 28px -22px rgba(0,21,39,0.45);
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--page); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; font-size:13.5px; line-height:1.5; }
+  body.noscroll { overflow:hidden; }
+  .num { font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }
+  /* Arial Narrow first: it ships on Windows and macOS, so the page is the same on both. The two names
+     that resolved to nothing are gone (design audit, 17 September 2026). */
+  .hdln { font-family:"Arial Narrow",Arial,Helvetica,sans-serif; letter-spacing:0.2px; }
+  a { color:var(--blue); text-decoration:none; }
+  a:hover { color:var(--deep); text-decoration:underline; }
+  a:focus-visible, th:focus-visible, button:focus-visible, select:focus-visible, .tw:focus-visible { outline:2px solid var(--orange); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+
+  .wrap { min-height:100vh; padding:30px 24px 80px; display:flex; justify-content:center; }
+  .col { width:1180px; max-width:100%; display:flex; flex-direction:column; gap:22px; }
+
+  /* masthead */
+  .shell { border-radius:12px; overflow:hidden; box-shadow:var(--lift); }
+  .mast { background:linear-gradient(160deg,#0A2136 0%,var(--navy) 65%); padding:30px 30px 26px; display:flex;
+    align-items:flex-end; justify-content:space-between; gap:28px; border-top:3px solid var(--orange); }
+  .org { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2.6px; color:#8FA0AE; }
+  .ttl { font-size:38px; font-weight:700; text-transform:uppercase; letter-spacing:0.2px; color:#fff; line-height:1.02; margin-top:8px; text-wrap:balance; }
+  .through { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.4px; color:#CBD4DA;
+    white-space:nowrap; border:1px solid rgba(255,255,255,0.22); border-radius:999px; padding:7px 13px; }
+
+  .navbar { position:sticky; top:0; z-index:30; background:#fff; border-radius:10px; box-shadow:var(--lift); }
+  .nav { display:flex; padding:0 22px; flex-wrap:wrap; gap:0 18px; }
+  .nav a { padding:14px 0 11px; font-size:11px; text-transform:uppercase; letter-spacing:0.7px;
+    font-weight:700; color:var(--mid); border-bottom:2px solid transparent; white-space:nowrap; }
+  .nav a:hover { color:var(--navy); text-decoration:none; border-bottom-color:#CBD2D6; }
+  .nav a.on { color:var(--navy); border-bottom-color:var(--orange); }
+  .navbar { display:flex; align-items:center; gap:0; }
+  .navbar > .nav { flex:1 1 auto; min-width:0; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+    -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);
+    mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent); }
+  .navbar > .nav::-webkit-scrollbar { display:none; }
+  .navbar > .nav { scroll-padding-inline:0 32px; }
+  .navbar > .nav::after { content:""; flex:0 0 28px; }
+  .nav a { white-space:nowrap; }
+  .navnow { order:-1; flex:0 0 auto; padding:0 16px 0 22px; font-size:10.5px; font-weight:700; letter-spacing:0.4px;
+    text-transform:uppercase; color:var(--label); white-space:nowrap; }
+  .navnow { display:none; }
+  .navbar.past .navnow { display:block; }
+  @media (max-width:1200px) { .navbar.past .navnow { display:none; } }
+  @media (max-width:1100px) and (min-width:961px) { .strip .sil { min-height:30px; } }
+  @media (max-width:960px) and (min-width:521px) { .kpi .ksub { min-height:32px; } }
+  @media (max-width:1100px) and (min-width:961px) { .nav { gap:0 13px; } .nav a { letter-spacing:0.3px; } }
+  html { scroll-padding-top:56px; }
+  .col > div[id] { scroll-margin-top:40px; }
+
+  /* cards: white, lifted, no outline, so the page is read by weight and space rather than by rules */
+  .card { background:#fff; border-radius:12px; padding:0 24px 24px; display:flex; flex-direction:column; gap:18px;
+    box-shadow:var(--lift); }
+  .chd { display:flex; justify-content:space-between; align-items:center; gap:14px 18px; flex-wrap:wrap;
+    margin:0 -24px; padding:20px 24px 4px; }
+  .ctitle { font-size:19px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--navy);
+    white-space:nowrap; flex:0 0 auto; line-height:1.1; }
+  .cscope { font-size:12px; color:var(--mid); line-height:1.6; max-width:none; text-wrap:pretty; }
+  .cscope.below { max-width:none; margin-top:-6px; }
+  sup.fn { font-size:9px; font-weight:700; color:var(--label); margin-left:2px; letter-spacing:0; vertical-align:super; line-height:0; }
+  ol.fnotes { margin:0; padding:10px 0 0 18px; border-top:1px solid var(--hair); font-size:12px; color:var(--mid); line-height:1.6;
+    display:flex; flex-direction:column; gap:4px; }
+  ol.fnotes li::marker { font-size:10px; font-weight:700; color:var(--label); }
+  .sub { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--deep);
+    display:flex; align-items:center; gap:9px; }
+  .sub::before { content:""; flex:0 0 16px; height:2px; background:var(--orange); }
+  .herolabel { padding:2px 0; margin-bottom:-12px; }
+  .sub .subn { font-size:12px; font-weight:600; text-transform:none; letter-spacing:0; color:var(--label); }
+
+  /* the period selector */
+  .period { background:#fff; padding:14px 30px 16px; display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--hair); }
+  .pbar { display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; }
+  .plab { font-size:9.5px; font-weight:700; letter-spacing:1.3px; text-transform:uppercase; color:var(--label); }
+  .presets { display:flex; flex-wrap:wrap; gap:6px; }
+  .presets button, .seg button { font:inherit; font-size:11.5px; font-weight:600; color:var(--deep); background:var(--wash);
+    border:1px solid transparent; border-radius:999px; padding:5px 13px; cursor:pointer; white-space:nowrap; transition:background .12s, color .12s; }
+  .presets button:hover, .seg button:hover { background:#E8EDF1; }
+  .presets button[aria-pressed="true"], .seg button[aria-pressed="true"] { background:var(--navy); color:#fff; }
+  .custom { display:flex; flex-wrap:wrap; gap:10px; margin-left:auto; }
+  .custom label { font-size:11.5px; font-weight:600; color:var(--mid); display:flex; align-items:center; gap:6px; }
+  .custom select { font:inherit; font-size:11.5px; color:var(--navy); border:1px solid var(--line); border-radius:6px; padding:4px 7px; background:#fff; }
+  .pnow { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px; font-size:12px; color:var(--mid); }
+  .pnow b { color:var(--navy); font-size:13.5px; }
+  .seg { display:inline-flex; gap:6px; flex-wrap:wrap; }
+
+  /* headline tiles */
+  .kpis { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
+  .kpi { background:#fff; border-radius:12px; padding:20px 22px 22px; display:flex; flex-direction:column; gap:6px;
+    min-height:150px; box-shadow:var(--lift); position:relative; overflow:hidden; }
+  .kpi::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--navy); opacity:0.12; }
+  .kpi:first-child::before { background:var(--orange); opacity:1; }
+  .klab { font-size:11.5px; color:var(--mid); font-weight:600; line-height:1.4; letter-spacing:0.2px; }
+  .ksub { font-size:11px; color:var(--label); line-height:1.45; }
+  .kval { font-size:42px; font-weight:700; color:var(--navy); line-height:1; margin-top:auto; padding-top:12px; letter-spacing:-0.8px; }
+  .kcmp { font-size:11.5px; color:var(--mid); padding-top:2px; }
+  .cmp b { font-weight:700; }
+  .cu { color:var(--up-ink); } .cd { color:var(--down); } .cf { color:var(--mid); }
+
+  /* the whole-campaign strip under the tiles */
+  .card.strip { flex-direction:row; flex-wrap:wrap; gap:0; align-items:stretch; padding:0; }
+  .strip .si { padding:14px 24px; display:flex; flex-direction:column; gap:2px; flex:1 1 auto; white-space:nowrap; }
+  .strip .si.head { background:var(--navy); border-radius:12px 0 0 12px; justify-content:center; flex:0 0 auto; }
+  .strip .si.head .sil { color:#fff; }
+  .strip .sil { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.1px; color:var(--label); }
+  .strip .siv { font-size:22px; font-weight:700; color:var(--navy); line-height:1.15; }
+  .strip .sis { font-size:11px; color:var(--label); }
+  .strip .sil, .strip .sis { white-space:normal; }
+  .sic { font-size:11px; color:var(--mid); }
+  #kpis2 { display:grid; grid-template-columns:minmax(150px,auto) repeat(4,minmax(0,1fr)); }
+
+  /* tables: one rule under the head, nothing between rows */
+  .tw { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .tw.scrolls:not(.end) { -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 26px),transparent);
+    mask-image:linear-gradient(to right,#000 calc(100% - 26px),transparent); }
+  table { border-collapse:separate; border-spacing:0; width:100%; font-size:13px; }
+  table.sortable th { cursor:pointer; user-select:none; position:relative; }
+  table.sortable th::after { content:"\2195"; margin-left:3px; color:transparent; font-size:9px; position:absolute; }
+  table.sortable th:hover { color:var(--navy); }
+  table.sortable th:hover::after { color:#C6CBCE; }
+  .tw.scrolls:focus-visible, .tw.scrolls:has(:focus-visible) { -webkit-mask-image:none; mask-image:none; }  /* a keyboard-focused table shows its ring whole */
+  table.sortable th:focus-visible { outline-offset:-2px; background:#fff; }
+  table.sortable th:focus-visible:not(:first-child) { outline:none; z-index:3; box-shadow:-4px 0 0 #fff; }
+  table.sortable th:focus-visible:not(:first-child)::before { content:""; position:absolute; inset:0 0 0 -6px; border:2px solid var(--orange);
+    pointer-events:none; }
+  .navbar > .nav a { padding-left:4px; padding-right:4px; margin:0 -4px; }  /* inside the head, so neither the scroller nor the next head hides it */
+  table.sortable th[data-nosort]:hover { color:var(--label); }
+  table.sortable th[data-nosort]::after { content:none; }
+  table.sortable th.sorted { color:var(--navy); }
+  table.sortable th.sorted::after { color:var(--blue); }
+  table.sortable th.sorted[data-dir="asc"]::after { content:"\2191"; }
+  table.sortable th.sorted[data-dir="desc"]::after { content:"\2193"; }
+  th { text-align:left; font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--label);
+    font-weight:700; padding:9px 14px 9px 0; background:var(--wash); white-space:nowrap; }
+  th:first-child { padding-left:14px; border-radius:7px 0 0 7px; }
+  th:last-child { border-radius:0 7px 7px 0; }
+  td { padding:11px 14px 11px 0; vertical-align:middle; white-space:nowrap; }
+  td:first-child { padding-left:14px; }
+  tbody tr:nth-child(even) td { background:var(--wash); }
+  tbody tr:hover td { background:#F1F5F8; }
+  td.wrapcell { white-space:normal; min-width:220px; max-width:440px; }
+  @media (min-width:521px) { #publications td.name { white-space:normal; min-width:260px; } }
+  td.r, th.r { text-align:right; }
+  tr.tot td { font-weight:700; color:var(--navy); border-top:2px solid var(--navy); background:#fff;
+    padding-top:12px; padding-bottom:12px; }
+  tr.tot:hover td, tbody tr.tot:nth-child(even) td { background:#fff; }
+  tr.subt td { font-weight:700; color:var(--navy); border-top:1px solid var(--line); background:#fff; }
+  tbody tr.subt:nth-child(even) td, tr.subt:hover td { background:#fff; }
+  tr.grp td, tr.grp:hover td, tbody tr.grp:nth-child(even) td { background:#fff; color:var(--navy); font-size:10px; font-weight:700;
+    text-transform:uppercase; letter-spacing:1.4px; padding:18px 14px 6px; }
+  tbody tr:first-child.grp td { padding-top:10px; }
+  .name { font-weight:600; color:var(--navy); }
+  .dim { color:var(--label); font-weight:400; }
+  .raw { display:block; font-size:10.5px; color:var(--label); font-weight:400; margin-top:2px; white-space:normal; }
+  .raw.phoneonly { display:none; }
+  /* the reconciling line under a paid source sits on one line, so the row keeps its height */
+  #sources td:first-child { min-width:240px; }
+  #sources td:first-child .raw { white-space:nowrap; }
+  .unit { display:block; font-size:9.5px; color:var(--label); text-transform:uppercase; letter-spacing:0.7px; font-weight:600; }
+  .up { color:var(--up-ink); font-weight:700; }
+  .down { color:var(--down); font-weight:700; }
+  .note { font-size:11.5px; line-height:1.6; color:var(--label); font-weight:400; text-wrap:pretty; }
+  .callout { display:block; background:var(--wash); border-radius:8px; padding:12px 14px; }
+  .pill { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase;
+    border-radius:999px; padding:3px 9px; border:1px solid currentColor; }
+  .ok { background:#E7F3EC; color:#14663A; }
+  .warn { background:#F6EFDF; color:#7A5500; }
+  .flat { background:#EFF1F2; color:#4E5354; }
+  .tag { display:inline-block; font-size:9px; font-weight:700; letter-spacing:0.7px; text-transform:uppercase;
+    border-radius:999px; padding:3px 8px; background:#E7F1FC; color:var(--deep); margin-right:6px; }
+  .tag.lead { background:#FDEBDD; color:#A8490A; }
+  .twi { display:block; }
+  .twi + .twi { margin-top:4px; }
+  .swatch { display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:8px; }
+
+  /* share bars in the traffic table */
+  td.barcell { width:12%; padding-left:14px; }
+  .sbar { display:block; width:100%; min-width:96px; height:6px; background:transparent; border-radius:3px; }
+  .sbar i { display:block; height:100%; background:var(--sky); border-radius:3px; }
+  .sbar.mk i { background:var(--blue); }
+
+  /* summary tiles above a table */
+  .galsum { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+  .gs { padding:14px 16px; background:var(--wash); border-radius:10px; display:flex; flex-direction:column;
+    justify-content:space-between; gap:6px; }
+  .gs .l { min-height:24px; }
+  .gs .v.zero { color:var(--label); font-weight:600; }
+  .gs .l { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.1px; color:var(--label); }
+  .gs .v { font-size:clamp(17px,1.9vw,23px); font-weight:700; color:var(--navy); padding-top:4px; line-height:1.15;
+    white-space:nowrap; }
+
+  /* galleries: top posts and publications */
+  .gal { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; }
+  .post { border-radius:10px; overflow:hidden; display:flex; flex-direction:column; background:#fff;
+    box-shadow:0 1px 2px rgba(0,21,39,0.06); transition:transform .14s, box-shadow .14s; }
+  .post:hover { transform:translateY(-2px); box-shadow:0 6px 18px -8px rgba(0,21,39,0.35); }
+  .thumb { position:relative; aspect-ratio:1/1; background:var(--wash); display:flex; align-items:center; justify-content:center; }
+  .thumb img { width:100%; height:100%; object-fit:contain; display:block; }
+  .thumb.text { aspect-ratio:auto; min-height:120px; background:var(--wash); }
+  .pmeta { padding:13px 14px 15px; display:flex; flex-direction:column; gap:9px; flex:1; }
+  .pplat { display:flex; justify-content:space-between; align-items:baseline; gap:4px 8px; flex-wrap:wrap;
+    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--label); }
+  .adname { font-size:13px; font-weight:700; color:var(--navy); line-height:1.35; text-wrap:pretty; }
+
+  /* top posts */
+  .top4 { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+  a.toppost { color:inherit; text-decoration:none; }
+  a.toppost:focus-visible { outline:2px solid var(--orange); outline-offset:2px; }
+  .toppost .thumb, .toppost .thumb.text { aspect-ratio:1/1; overflow:hidden; background:var(--navy); min-height:0; }
+  .toppost .thumb img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:var(--navy); }
+  .qcard { position:absolute; inset:0; padding:18px; display:flex; flex-direction:column; justify-content:flex-end; }
+  .toppost .thumb { container-type:inline-size; }
+  .qtext { color:#fff; font-size:clamp(12.5px, 7cqi, 17px); font-weight:600; line-height:1.4; display:-webkit-box; -webkit-line-clamp:10; -webkit-box-orient:vertical;
+    overflow:hidden; text-wrap:pretty; }
+  .picfrom { font-size:10.5px; color:var(--label); margin-top:-2px; }
+  .qcard::before { content:"\201C"; display:block; height:30px; font-size:56px; line-height:1; color:var(--sky); font-family:Georgia, serif; }
+  .tstat { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding-top:4px; margin-top:auto; }
+  .tstat b { display:block; font-size:20px; color:var(--navy); line-height:1.15; }
+  .tstat span { display:block; font-size:10px; font-weight:700; letter-spacing:0.9px; text-transform:uppercase; color:var(--label); padding-top:2px; }
+  .open { font-size:11px; font-weight:700; color:var(--deep); }
+  .toppost:hover .open { text-decoration:underline; }
+  .ext { font-size:10px; color:var(--blue); }
+  a.plink, tbody td a { color:var(--navy); text-decoration:none; text-underline-offset:2px; }
+  td.name .alsos { display:block; margin-top:2px; }
+  td.name a.also { font-weight:400; color:var(--label); margin:0 12px 0 0; white-space:nowrap; }
+  a.plink:hover, tbody td a:hover, a.plink:focus-visible, tbody td a:focus-visible { text-decoration:underline; }
+  a.plink:hover, a.plink:focus-visible { text-decoration:underline; }
+  tr.golink { cursor:pointer; }
+
+  /* paid media creative: the files themselves, each one opens */
+  .crgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:16px; }
+  .cr { margin:0; display:flex; flex-direction:column; gap:8px; }
+  .crb { padding:0; border:0; background:var(--wash); border-radius:10px; overflow:hidden; cursor:zoom-in; display:block;
+    box-shadow:0 1px 2px rgba(0,21,39,0.06); transition:transform .14s, box-shadow .14s; }
+  .crb:hover { transform:translateY(-2px); box-shadow:0 8px 20px -10px rgba(0,21,39,0.4); }
+  .crb { aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; padding:10px; }
+  .crb img { display:block; width:auto; height:auto; max-width:100%; max-height:100%; background:transparent; }
+  .crgrid.prints { grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr)); gap:20px; }
+  .crgrid.prints .crb { aspect-ratio:4/3; }
+  /* a phone-shaped video keeps its own proportions, so the still is as wide as its neighbours */
+  .cr.vtall .crb { aspect-ratio:9/16; }
+  .crgrid.prints .cr.tall .crb { aspect-ratio:4/3; }
+  .cr figcaption { font-size:12.5px; font-weight:700; color:var(--navy); line-height:1.35; }
+  .crk { display:block; font-size:10px; font-weight:600; letter-spacing:0.4px; text-transform:none; color:var(--label); }
+  .crview { position:fixed; inset:0; z-index:60; background:rgba(0,12,22,0.72); display:flex; align-items:center;
+    justify-content:center; padding:32px; }
+  .crview[hidden] { display:none; }
+  .crbox { position:relative; background:#fff; border-radius:14px; max-width:min(1160px,96vw); width:100%; max-height:100%;
+    display:grid; grid-template-columns:minmax(0,1.45fr) minmax(330px,1fr); grid-template-rows:minmax(0,1fr); overflow:hidden;
+    box-shadow:0 30px 70px -30px rgba(0,0,0,0.8); }
+  .crimg { background:var(--wash); display:flex; align-items:center; justify-content:center; padding:22px; min-height:0; }
+  .crimg img { max-width:100%; max-height:calc(100vh - 108px); object-fit:contain; display:block; }
+  .crside { padding:20px 26px 24px; display:flex; flex-direction:column; gap:12px; overflow:auto; }
+  .crtitle { font-size:21px; font-weight:700; color:var(--navy); line-height:1.2; text-wrap:balance; }
+  /* channel sections close under their title (recommendation 9) */
+  .fbody { display:flex; flex-direction:column; gap:18px; }
+  .fbody[hidden] { display:none; }
+  .card.shut { padding-bottom:20px; }
+  button.fold, button.crall { font:inherit; font-size:11.5px; font-weight:600; color:var(--deep); background:var(--wash); border:0;
+    border-radius:999px; padding:7px 14px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+  button.fold::after { content:"\25BE"; font-size:10px; }
+  button.fold[aria-expanded="true"]::after { content:"\25B4"; }
+  button.fold:hover, button.crall:hover { background:#E8EDF1; }
+  button.crall { align-self:flex-start; }
+  a.secl { font-weight:700; }
+  /* paid media creative, one row per platform (recommendation 7) */
+  .crrow { display:flex; flex-direction:column; gap:12px; margin-top:8px; }
+  .crhd { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; }
+  .crname { font-size:13px; font-weight:700; color:var(--navy); display:flex; align-items:center; }
+  .crsub { font-size:12px; color:var(--label); }
+  .crrow .crgrid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .crgrid.crmore[hidden] { display:none; }
+  .crcards { display:flex; flex-wrap:wrap; gap:8px; }
+  .crcards button { width:58px; height:58px; padding:0; border:2px solid transparent; border-radius:7px; overflow:hidden;
+    background:var(--wash); cursor:pointer; }
+  .crcards button[aria-pressed="true"] { border-color:transparent; box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--navy); }
+  .nav a:focus-visible { outline-offset:-2px; }
+  table.sortable th[data-nosort] { cursor:default; }
+  .crkpi[hidden], .crcards[hidden] { display:none; }
+  .col > div:empty { display:none; }
+  .crcards img { width:100%; height:100%; object-fit:cover; display:block; }
+  .crkpi { border-top:1px solid var(--hair); padding-top:14px; display:flex; flex-direction:column; gap:8px; }
+  .crkh { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--label); }
+  .crkpi table { font-size:12.5px; }
+  .crkpi td, .crkpi th { white-space:normal; }
+  .crkpi td:first-child { min-width:132px; }
+  .crkn { font-size:11px; line-height:1.5; color:var(--label); }
+  .crfacts { margin:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px 22px; font-size:12.5px; }
+  .crfacts .fact { min-width:0; }
+  .crfacts dt { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--label); padding-top:2px; }
+  .crfacts dd { margin:2px 0 0; color:var(--ink); overflow-wrap:anywhere; }
+  .crx { position:absolute; right:12px; top:10px; width:32px; height:32px; border-radius:999px; border:0; cursor:pointer;
+    background:rgba(255,255,255,0.9); color:var(--navy); font-size:19px; line-height:1; }
+  .crx:hover { background:#fff; }
+
+  /* print advertisements under publications */
+  .gal.prints { grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); }
+  .thumb.print { aspect-ratio:4/3; background:var(--wash); overflow:hidden; }
+  .thumb.print img { position:absolute; inset:12px; width:calc(100% - 24px); height:calc(100% - 24px); object-fit:contain; }
+
+  .wrap-head th { white-space:normal; vertical-align:bottom; line-height:1.3; }
+  td.top { vertical-align:top; }
+  /* the date column of these two tables reads from the left, like every other first column */
+  #twiw td:first-child, #twiw th:first-child, #social td:first-child, #social th:first-child { text-align:left; }
+
+  .pager { display:flex; align-items:center; justify-content:flex-end; gap:12px; font-size:11.5px; color:var(--mid); }
+  .pager button { font:inherit; font-size:11px; font-weight:700; color:var(--deep); background:var(--wash); border:0;
+    border-radius:999px; padding:6px 13px; cursor:pointer; }
+  .pager button:hover:not(:disabled) { background:#E8EDF1; }
+  .pager button:disabled { color:var(--label); background:transparent; border-color:var(--hair); cursor:default; }
+
+  @media (max-width:990px) { .custom { margin-left:0; } }
+  @media (max-width:1040px) {
+    td.barcell, th.barhead { display:none; }
+    #paid th, #paid td { padding-right:10px; }
+  }
+  @media (max-width:960px) {
+    .nav { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; gap:0 20px; }
+    .nav::-webkit-scrollbar { display:none; }
+    .nav a { white-space:nowrap; }
+
+    .kpis { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .kpis .kpi:first-child { grid-column:1 / -1; }
+    .ttl { font-size:30px; }
+    .top4, .crrow .crgrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    #kpis2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    #kpis2 .si.head { grid-column:1 / -1; border-radius:12px 12px 0 0; }
+    .custom { margin-left:0; }
+    .crbox { grid-template-columns:1fr; grid-template-rows:auto auto; overflow:auto; }
+    .crside { overflow:visible; }
+    .crimg img { max-height:max(min(46vh, 480px), min(320px, calc(100vh - 108px))); }
+    .crx { position:fixed; top:42px; right:42px; z-index:61; }
+    #pages td:last-child, #pages th:last-child { padding-right:4px; }
+    #pages th:last-child::after { position:static; }
+  }
+  @media (max-width:520px) {
+    .wrap { padding:14px 10px 48px; }
+    .col { gap:16px; }
+    .kpis { grid-template-columns:1fr; }
+    .mast { flex-direction:column; align-items:flex-start; gap:14px; padding:22px 18px 20px; }
+    .card { padding:0 16px 18px; }
+    .chd { margin:0 -16px; padding:16px 16px 2px; }
+    .ctitle { white-space:normal; flex:1 1 auto; min-width:0; }
+    .period { padding:12px 16px 14px; }
+    .custom { margin-left:0; }
+    .nav { padding:0 14px; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; gap:0 20px; }
+    .nav::-webkit-scrollbar { display:none; }
+    .nav a { white-space:nowrap; }
+    .card.strip { flex-direction:column; }
+    #kpis2 { grid-template-columns:1fr; }
+    .strip .si { padding:11px 16px; }
+    .strip .si.head { border-radius:12px 12px 0 0; }
+    .gal, .top4, .crgrid, .crrow .crgrid { grid-template-columns:1fr; }
+    .galsum { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    th { white-space:normal; vertical-align:bottom; line-height:1.3; }
+    .crview { padding:0; }
+    .crbox { max-width:100%; max-height:100%; border-radius:0; grid-template-rows:auto auto; overflow:auto; }
+    .crimg { padding:0; }
+    .crimg img { max-height:none; width:100%; height:auto; }
+    .crx { width:40px; height:40px; }
+    .crside { padding:18px; }
+    .crfacts { grid-template-columns:1fr; gap:8px 0; }
+    #sources td:last-child, #sources th:last-child { padding-right:4px; }
+    .presets button, .seg button, .pager button { padding:10px 14px; }
+    .custom select { padding:8px 7px; }
+    .raw.phoneonly { display:block; }
+    #paid td .swatch { display:block; margin:0 0 5px; }
+    #social th:nth-child(3), #social td:nth-child(3) { display:none; }
+    td.name a.also { display:inline-block; padding:6px 0; white-space:normal; }
+    #publications td.name { min-width:180px; }
+    .crbox { grid-template-columns:minmax(0,1fr); }
+    .crkpi td:first-child { min-width:0; }
+    .crkpi th, .crkpi td { padding-right:10px; }
+    #social td:first-child, #twiw td:first-child { white-space:nowrap; }
+    .crx { position:fixed; top:10px; right:10px; z-index:61; }
+    /* the row label stays in view while a wide table is scrolled */
+    .tw td:first-child { position:sticky; left:0; z-index:1; background:#fff; max-width:44vw; white-space:normal; }
+    .tw th:first-child { position:sticky; left:0; z-index:2; background:var(--wash); max-width:44vw; }
+    #sources td:first-child { min-width:0; }
+    #sources td:first-child .raw { white-space:normal; }
+    /* 4. total, subtotal and group rows stay one colour when the first cell is pinned */
+    .tw tr.tot td:first-child, .tw tr.subt td:first-child, .tw tr.grp td:first-child { background:#fff; }
+    .tw tbody tr:nth-child(even):not(.tot):not(.subt):not(.grp) td:first-child { background:var(--wash); }
+  }
+</style>
+</head><body>
+<div class="wrap"><div class="col">
+  <div class="shell">
+    <div class="mast">
+      <div>
+        <div class="org">American Welding Society</div>
+        <div class="ttl hdln" id="title" role="heading" aria-level="1"></div>
+      </div>
+      <div class="through num" id="through"></div>
+    </div>
+    <div class="period" id="period"></div>
+  </div>
+  <div class="navbar" id="navbar"><div class="nav" id="nav" role="navigation" aria-label="Sections"></div><div class="navnow num" id="navnow"></div></div>
+
+  <div class="sub hdln herolabel" id="herolabel" role="heading" aria-level="2">Marketing outcome</div>
+  <div class="kpis" id="kpis"></div>
+  <div class="card strip" id="kpis2"></div>
+  <div id="products"></div>
+  <div id="sources"></div>
+  <div id="pages"></div>
+  <div id="paid"></div>
+  <div id="email"></div>
+  <div id="sms"></div>
+  <div id="twiw"></div>
+  <div id="social"></div>
+  <div id="publications"></div>
+</div></div>
+
+<script src="campaign-data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var DASH = "—";
+  /* Round H and I: under 100 visits an engagement rate or an average time says little, so every table holds it back. */
+  var MIN_N = 100;
+  function erate(e, s) { return s >= MIN_N ? ratio(e, s) : DASH; }
+  function etime(t, s) { return s >= MIN_N ? dur(t, s) : DASH; }
+  var D = window.CAMPAIGN_DATA;
+  if (!D) return;
+
+  /* ------------------------------------------------------------------ format */
+  function has(v) { return v !== undefined && v !== null; }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+  function int(v) { return has(v) ? Math.round(v).toLocaleString("en-US") : DASH; }
+  function money(v) { return has(v) ? "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : DASH; }
+  function money0(v) { return has(v) ? "$" + Math.round(v).toLocaleString("en-US") : DASH; }
+  function pct(v, d) { return has(v) ? v.toFixed(d === undefined ? 1 : d) + "%" : DASH; }
+  function ratio(a, b, d) { return (has(a) && has(b) && b) ? pct(100 * a / b, d) : DASH; }
+  function per(spend, n) { return (has(spend) && has(n) && n) ? money(spend / n) : DASH; }
+  function dur(seconds, sessions) {
+    if (!has(seconds) || !sessions) return DASH;
+    var s = Math.round(seconds / sessions);
+    return s >= 60 ? Math.floor(s / 60) + "m " + String(s % 60).padStart(2, "0") + "s" : s + "s";
+  }
+  var MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var MONTHS_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  function dayShort(iso) {
+    if (!has(iso)) return DASH;
+    var p = String(iso).split("-");
+    return p.length >= 3 ? MO[+p[1] - 1] + " " + (+p[2]) + ", " + p[0] : p.length === 2 ? MO[+p[1] - 1] + " " + p[0] : esc(iso);
+  }
+  function monthName(ym) { var p = ym.split("-"); return MO[+p[1] - 1] + " " + p[0]; }
+  function monthLong(ym) { var p = ym.split("-"); return MONTHS_LONG[+p[1] - 1] + " " + p[0]; }
+  function longDate(iso) { var p = String(iso).split("-"); return MONTHS_LONG[+p[1] - 1].toUpperCase() + " " + (+p[2]) + ", " + p[0]; }
+  function set(id, html) { document.getElementById(id).innerHTML = html; }
+  function card(title, scope, body) {
+    return '<div class="card"><div class="chd"><div class="ctitle hdln" role="heading" aria-level="2">' + esc(title) +
+      '</div><div class="cscope">' + scope + "</div></div>" + body + "</div>";
+  }
+  function tbl(head, rows, foot, sortable, paged) {
+    var cls = [sortable ? "sortable" : "", paged ? "paged" : ""].join(" ").trim();
+    return '<div class="tw"><table' + (cls ? ' class="' + cls + '"' : "") + (paged > 1 ? ' data-page="' + paged + '"' : "") + "><thead><tr>" + head +
+      "</tr></thead><tbody>" + rows + (foot || "") + "</tbody></table></div>";
+  }
+  function galsum(items) {
+    return '<div class="galsum">' + items.map(function (x) {
+      var zero = /^\$?0(\.0+)?%?$/.test(String(x[1]));
+      return '<div class="gs"><div class="l">' + x[0] + '</div><div class="v num' + (zero ? " zero" : "") + '">' + x[1] + "</div></div>";
+    }).join("") + "</div>";
+  }
+  function bar(v, max, mk) {
+    return '<td class="barcell"><span class="sbar' + (mk ? " mk" : "") + '"><i style="width:' + (max ? (100 * v / max).toFixed(1) : 0) + '%"></i></span></td>';
+  }
+  function state(v) {
+    var t = String(v || "").toLowerCase();
+    if (/done|deliver|publish|sent|live|complete/.test(t)) return "Done";
+    if (/progress|review|draft|schedul|working/.test(t)) return "In progress";
+    return "Not started";
+  }
+  function pillFor(st) {
+    return '<span class="pill ' + (st === "Done" ? "ok" : st === "In progress" ? "warn" : "flat") + '">' + st + "</span>";
+  }
+  function toggle(name, cur) {
+    return '<div class="seg" role="group" aria-label="Group rows by">' + [["source", "By source"], ["channel", "By channel"]].map(function (o) {
+      return '<button type="button" data-view="' + name + '" data-val="' + o[0] + '" aria-pressed="' + (cur === o[0]) + '">' + o[1] + "</button>";
+    }).join("") + "</div>";
+  }
+
+  /* ------------------------------------------------------------------ tables: paging and sorting */
+  var PAGE = 10;
+  function pageTables(root) {
+    [].forEach.call(root.querySelectorAll("table.paged"), function (table) {
+      var body = table.tBodies[0];
+      var live = function () {
+        return [].filter.call(body.rows, function (r) { return !r.classList.contains("tot") && !r.classList.contains("grp"); });
+      };
+      var groups = [].filter.call(body.rows, function (r) { return r.classList.contains("grp"); });
+      var size = +table.getAttribute("data-page") || PAGE;
+      if (live().length <= size) return;
+      var pager = document.createElement("div");
+      pager.className = "pager";
+      pager.setAttribute("aria-live", "polite");
+      table.parentNode.parentNode.insertBefore(pager, table.parentNode.nextSibling);
+      table.__repage = function (n) {
+        var rows = live(), pages = Math.ceil(rows.length / size);
+        table.__page = Math.max(0, Math.min(pages - 1, n));
+        rows.forEach(function (r, i) { r.style.display = Math.floor(i / size) === table.__page ? "" : "none"; });
+        groups.forEach(function (g) {
+          var shown = false;
+          for (var n = g.nextElementSibling; n && !n.classList.contains("grp"); n = n.nextElementSibling) {
+            if (!n.classList.contains("tot") && n.style.display !== "none") shown = true;
+          }
+          g.style.display = shown ? "" : "none";
+        });
+        var a = table.__page * size + 1, b = Math.min(rows.length, a + size - 1);
+        pager.innerHTML = '<span class="num">' + a + " to " + b + " of " + rows.length + "</span>" +
+          '<button type="button" data-step="-1"' + (table.__page === 0 ? " disabled" : "") + ">Previous</button>" +
+          '<button type="button" data-step="1"' + (table.__page === pages - 1 ? " disabled" : "") + ">Next</button>";
+      };
+      pager.addEventListener("click", function (ev) {
+        var b = ev.target.closest("button[data-step]");
+        if (b) {
+          var step = b.getAttribute("data-step");
+          table.__repage(table.__page + (+step));
+          var same = pager.querySelector('button[data-step="' + step + '"]');
+          (same && !same.disabled ? same : pager.querySelector("button:not([disabled])") || same).focus();
+        }
+      });
+      table.__repage(0);
+    });
+  }
+  function cellVal(td) {
+    if (td.hasAttribute("data-sort")) { var ds = td.getAttribute("data-sort"); return ds === "" ? -Infinity : +ds; }
+    var raw = td.textContent.replace(/↗/g, "").trim();
+    var tm = /^(?:(\d+)m\s*)?(\d+)s$/.exec(raw);
+    if (tm) return (+(tm[1] || 0)) * 60 + (+tm[2]);  /* an engagement time, in seconds */
+    if (/^[A-Z][a-z]{2} \d{1,2}, \d{4}$/.test(raw)) return Date.parse(raw);  /* a date */
+    var t = td.textContent.replace(/[$,%\s↗]/g, "");
+    if (t === "" || t === DASH) return -Infinity;
+    var n = parseFloat(t);
+    return isNaN(n) || /[a-z]/i.test(t.replace(/^[\d.]+(m|s)?/, "")) ? td.textContent.trim().toLowerCase() : n;
+  }
+  function sortTable(th) {
+    if (th.hasAttribute("data-nosort")) return;
+    var table = th.closest("table"), body = table.tBodies[0];
+    var idx = [].indexOf.call(th.parentNode.children, th);
+    var rows = [].slice.call(body.rows);
+    var pinned = rows.filter(function (r) { return r.classList.contains("tot"); });
+    var live = rows.filter(function (r) { return !r.classList.contains("tot") && r.cells[idx]; });
+    /* dir 1 is smallest first, -1 largest first. Numbers, dates and times open largest first; words open A to Z. */
+    var words = live.some(function (r) { return typeof cellVal(r.cells[idx]) === "string"; });
+    var cur = th.getAttribute("data-dir");
+    var dir = cur ? (cur === "desc" ? 1 : -1) : (words ? 1 : -1);
+    [].forEach.call(th.parentNode.children, function (h) { h.removeAttribute("data-dir"); h.removeAttribute("aria-sort"); h.classList.remove("sorted"); });
+    th.setAttribute("data-dir", dir === 1 ? "asc" : "desc");
+    th.setAttribute("aria-sort", dir === 1 ? "ascending" : "descending");
+    th.classList.add("sorted");
+    live.sort(function (a, b) {
+      var va = cellVal(a.cells[idx]), vb = cellVal(b.cells[idx]);
+      if (va === -Infinity || vb === -Infinity) return va === vb ? 0 : va === -Infinity ? 1 : -1;
+      if (typeof va !== typeof vb) { va = String(va); vb = String(vb); }
+      return (va < vb ? -1 : va > vb ? 1 : 0) * dir;
+    });
+    live.concat(pinned).forEach(function (r) { body.appendChild(r); });
+    if (table.__repage) table.__repage(0);
+  }
+
+  /* ------------------------------------------------------------------ the period */
+  var MONTHS = D.meta.months, FIRST = MONTHS[0], LAST = MONTHS[MONTHS.length - 1];
+  /* Roque, 18 September 2026: the page opens on the latest year to date; the whole window is a preset. */
+  var DEFAULT = { from: MONTHS.indexOf(LAST.slice(0, 4) + "-01") !== -1 ? LAST.slice(0, 4) + "-01" : FIRST, to: LAST };
+  var range = { from: DEFAULT.from, to: DEFAULT.to };
+  var view = { sources: "source" };
+  /* Roque, 18 September 2026 (recommendation 9): each channel's full section is closed until it is opened, from the
+     channels table, the navigation, or its own button; what is open stays open when the period changes. */
+  var FOLD = { paid: 1, email: 1, sms: 1, twiw: 1, social: 1, publications: 1 };
+  var openSec = {}, crOpen = {};
+  (function () {
+    var q = /[?&]from=(\d{4}-\d{2})/.exec(location.search), r = /[?&]to=(\d{4}-\d{2})/.exec(location.search);
+    if (q && MONTHS.indexOf(q[1]) !== -1) range.from = q[1];
+    if (r && MONTHS.indexOf(r[1]) !== -1) range.to = r[1];
+    if (range.from > range.to) range = { from: DEFAULT.from, to: DEFAULT.to };
+  })();
+  function presets() {
+    var last = MONTHS.length - 1, out = [["All months", FIRST, LAST]];
+    var years = {};
+    MONTHS.forEach(function (m) { years[m.slice(0, 4)] = true; });
+    Object.keys(years).sort().forEach(function (y) {
+      var ms = MONTHS.filter(function (m) { return m.slice(0, 4) === y; });
+      out.push([y === LAST.slice(0, 4) && ms.length < 12 ? y + " to date" : y, ms[0], ms[ms.length - 1]]);
+    });
+    [12, 6, 3].forEach(function (n) { if (last + 1 > n) out.push(["Last " + n + " months", MONTHS[last - n + 1], LAST]); });
+    return out;
+  }
+  function inR(m, r) { r = r || range; return m >= r.from && m <= r.to; }
+  function inRd(date, r) { return has(date) && inR(String(date).slice(0, 7), r); }
+  function prevRange(r) {
+    /* The same months a year earlier (Roque, 17 September 2026), so a season is compared with its own season. */
+    function backAYear(m) { return (+m.slice(0, 4) - 1) + m.slice(4); }
+    var from = backAYear(r.from), to = backAYear(r.to);
+    return MONTHS.indexOf(from) === -1 || MONTHS.indexOf(to) === -1 ? null : { from: from, to: to };
+  }
+  function label(r) { return r.from === r.to ? monthName(r.from) : monthName(r.from) + " to " + monthName(r.to); }
+
+  var MK_SOURCE = {}, MK_CHANNEL = {};
+  D.sources.forEach(function (s) { MK_SOURCE[s.name] = s.marketing; });
+  D.channels.forEach(function (c) { MK_CHANNEL[c.name] = c.marketing; });
+  var CAMPAIGN = {};
+  D.paid.campaigns.forEach(function (c) { CAMPAIGN[c.id] = c; });
+
+  function figures(r) {
+    var f = { sessions: 0, mkSessions: 0, units: 0, revenue: 0, mkUnits: 0, mkRevenue: 0, exam: 0, train: 0, trainX: 0, spend: 0, adsU: 0, adsV: 0 };
+    D.traffic.forEach(function (x) { if (inR(x.m, r)) { f.sessions += x.s; if (MK_SOURCE[x.src]) f.mkSessions += x.s; } });
+    D.sales.forEach(function (x) {
+      if (!inR(x.m, r)) return;
+      f.units += x.u; f.revenue += x.v;
+      if (x.p === "CWI Exam") f.exam += x.u; else { f.train += x.u; f.trainX += x.x || 0; }
+      if (MK_SOURCE[x.src]) { f.mkUnits += x.u; f.mkRevenue += x.v; }
+    });
+    D.paid.delivery.forEach(function (x) { if (inR(x.m, r)) f.spend += x.spend; });
+    D.paid.cwiAds.forEach(function (x) { if (inR(x.m, r)) { f.adsU += x.u; f.adsV += x.v; } });
+    f.share = f.units ? 100 * f.mkUnits / f.units : null;
+    f.visitShare = f.sessions ? 100 * f.mkSessions / f.sessions : null;
+    return f;
+  }
+  function change(cur, prev, kind) {
+    if (!has(prev) || !has(cur)) return "";
+    var fmt = kind === "money" ? money0 : kind === "pct" ? function (v) { return pct(v); } : int;
+    var d, txt;
+    if (kind === "pct") {
+      d = Math.round(cur * 10) / 10 - Math.round(prev * 10) / 10;
+      txt = (d > 0 ? "▲ " : d < 0 ? "▼ " : "") + Math.abs(d).toFixed(1) + " pts";
+    } else if (prev) {
+      d = 100 * (cur - prev) / prev;
+      txt = (d > 0 ? "▲ " : d < 0 ? "▼ " : "") + Math.abs(d).toFixed(1) + "%";
+    } else {
+      return '<span class="cmp">from ' + fmt(prev) + "</span>";
+    }
+    var cls = Math.abs(d) < 0.05 ? "cf" : d > 0 ? "cu" : "cd";
+    return '<span class="cmp"><b class="' + cls + '">' + txt + "</b> from " + fmt(prev) + "</span>";
+  }
+
+  function renderPeriod() {
+    var opts = MONTHS.map(function (m) { return '<option value="' + m + '">' + monthName(m) + "</option>"; }).join("");
+    var pv = prevRange(range);
+    set("period",
+      '<div class="pbar"><span class="plab">Period</span><div class="presets">' + presets().map(function (p) {
+        var on = p[1] === range.from && p[2] === range.to;
+        return '<button type="button" data-from="' + p[1] + '" data-to="' + p[2] + '" aria-pressed="' + on + '">' + esc(p[0]) + "</button>";
+      }).join("") + '</div><div class="custom"><label>From <select id="pfrom">' + opts + '</select></label>' +
+      '<label>To <select id="pto">' + opts + "</select></label></div></div>" +
+      '<div class="pnow"><b>' + esc(label(range)) + "</b>" +
+      (pv ? "<span>Compared with " + esc(label(pv)) + ", the same " + (range.from === range.to ? "month" : "months") +
+        " a year earlier</span>"
+        : "<span>No comparison: the data starts " + esc(monthName(FIRST)) + "</span>") + "</div>");
+    set("navnow", esc(label(range)));
+    document.getElementById("pfrom").value = range.from;
+    document.getElementById("pto").value = range.to;
+  }
+
+  function renderKpis() {
+    var f = figures(range), pv = prevRange(range), p = pv ? figures(pv) : {};
+    var tiles = [
+      ["New CWI purchases credited to marketing", int(f.mkUnits), change(f.mkUnits, p.mkUnits), "of " + int(f.units) + " new CWI exam and training purchases"],
+      ["Revenue credited to marketing", money0(f.mkRevenue), change(f.mkRevenue, p.mkRevenue, "money"), "of " + money0(f.revenue) + " from new CWI purchases"],
+      ["Marketing share of new CWI purchases", pct(f.share), change(f.share, p.share, "pct"), pct(f.visitShare) + " of visits to CWI pages came from marketing"]
+    ];
+    set("kpis", tiles.map(function (t) {
+      return '<div class="kpi"><div class="klab">' + esc(t[0]) + '</div><div class="kval num">' + t[1] + "</div>" +
+        (t[2] ? '<div class="kcmp num">' + t[2] + "</div>" : "") + '<div class="ksub">' + t[3] + "</div></div>";
+    }).join(""));
+    var strip = [
+      ["Visits to CWI pages", int(f.sessions), change(f.sessions, p.sessions)],
+      ["CWI exams bought alone", int(f.exam), change(f.exam, p.exam)],
+      ["CWI trainings", int(f.train), change(f.train, p.train), f.trainX ? int(f.trainX) + " of them include the exam" : ""],
+      ["Revenue", money0(f.revenue), change(f.revenue, p.revenue, "money")]
+    ];
+    set("kpis2", '<span class="si head"><span class="sil">Everything, every source</span></span>' + strip.map(function (t) {
+      return '<span class="si"><span class="sil">' + esc(t[0]) + '</span> <span class="siv num">' + t[1] + "</span>" +
+        (t[2] ? ' <span class="sic num">' + t[2] + "</span>" : "") + (t[3] ? '<span class="sis num">' + t[3] + "</span>" : "") + "</span>";
+    }).join(""));
+  }
+
+
+  /* ------------------------------------------------------------------ sections */
+  function products() {
+    var byP = {}, tu = 0, tv = 0, mu = 0, mv = 0;
+    D.sales.forEach(function (x) {
+      if (!inR(x.m)) return;
+      var b = byP[x.p] || (byP[x.p] = { u: 0, v: 0, mu: 0, mv: 0, x: 0 });
+      b.u += x.u; b.v += x.v; tu += x.u; tv += x.v; b.x += x.x || 0;
+      if (MK_SOURCE[x.src]) { b.mu += x.u; b.mv += x.v; mu += x.u; mv += x.v; }
+    });
+    var rows = D.products.filter(function (p) { return byP[p.key] && (byP[p.key].u || byP[p.key].v); });
+    if (!rows.length) return "";
+    var mx = rows.reduce(function (m, p) { return Math.max(m, byP[p.key].u); }, 0);
+    var body = rows.map(function (p) {
+      var b = byP[p.key];
+      return '<tr><td class="name">' + esc(p.key === "CWI Exam" ? "CWI Exam (bought alone)" : p.key) + (p.key !== "CWI Exam" && b.x ? '<span class="raw">' + int(b.x) + " of " + int(b.u) +
+        " include the exam</span>" : "") + '</td><td class="dim">' + esc(p.category) + "</td>" +
+        '<td class="r num">' + int(b.u) + '</td><td class="r num">' + ratio(b.u, tu) + "</td>" + bar(b.u, mx) +
+        '<td class="r num">' + money0(b.v) + '</td><td class="r num">' + int(b.mu) + '</td><td class="r num">' + money0(b.mv) + "</td></tr>";
+    }).join("");
+    var foot = '<tr class="tot"><td>All new CWI purchases</td><td></td><td class="r num">' + int(tu) + '</td><td class="r num">' + pct(100) +
+      '</td><td class="barcell"></td><td class="r num">' + money0(tv) + '</td><td class="r num">' + int(mu) + '</td><td class="r num">' + money0(mv) + "</td></tr>";
+    return card("What Sold", "", tbl('<th>Product</th><th>Type</th><th class="r">Purchases</th><th class="r">Share</th><th class="barhead"></th>' +
+      '<th class="r">Revenue</th><th class="r">Credited to marketing</th><th class="r">Marketing revenue</th>', body, foot, true));
+  }
+
+  function grouped(kind) {
+    var key = kind === "source" ? "src" : "ch", mkOf = kind === "source" ? MK_SOURCE : MK_CHANNEL;
+    var g = {};
+    function get(n) { return g[n] || (g[n] = { name: n, mk: !!mkOf[n], s: 0, e: 0, t: 0, u: 0, v: 0 }); }
+    D.traffic.forEach(function (x) { if (inR(x.m)) { var b = get(x[key]); b.s += x.s; b.e += x.e; b.t += x.t; } });
+    D.sales.forEach(function (x) { if (inR(x.m)) { var b = get(x[key]); b.u += x.u; b.v += x.v; } });
+    var order = (kind === "source" ? D.sources : []).map(function (s) { return s.name; });
+    return Object.keys(g).map(function (k) { return g[k]; }).sort(function (a, b) {
+      if (kind === "source") return order.indexOf(a.name) - order.indexOf(b.name);
+      return (b.mk - a.mk) || (b.s - a.s);
+    });
+  }
+
+  /* One platform, one name (17 September 2026): the platform in the paid data IS the source name. */
+  function SOURCE_OF(platform) { return platform; }
+  var LAST_CLICK = "Purchase credit goes to the source with the last click before the purchase. For example, if someone sees a CWI ad, " +
+    "then comes back later through a Google search and buys, search gets the credit, not the ad. So each source below shows only the " +
+    "purchases it closed. A source may also have helped purchases that ended up credited to another source, and there is currently no " +
+    "way to measure that.";
+
+  /* Roque, 18 September 2026 (recommendation 9): the traffic table and the purchase-source table listed the same
+     sources, so they are one table: visits, engagement, purchases and revenue side by side, marketing first. */
+  function sources() {
+    var rows = grouped(view.sources);
+    if (!rows.length) return "";
+    var mk = rows.filter(function (r) { return r.mk; }), er = rows.filter(function (r) { return !r.mk; });
+    var noun = view.sources === "source" ? "Source" : "Channel";
+    var t = { s: 0, e: 0, t: 0, u: 0, v: 0 };
+    rows.forEach(function (r) { t.s += r.s; t.e += r.e; t.t += r.t; t.u += r.u; t.v += r.v; });
+    function cells(o) {
+      return '<td class="r num">' + int(o.s) + '</td><td class="r num">' +
+        (o.s && t.s && 100 * o.s / t.s < 0.05 ? "under 0.1%" : ratio(o.s, t.s)) + '</td><td class="r num">' + erate(o.e, o.s) +
+        '</td><td class="r num">' + etime(o.t, o.s) + '</td><td class="r num">' + int(o.u) + '</td><td class="r num">' + money0(o.v) + "</td>";
+    }
+    function sum(list) {
+      var o = { s: 0, e: 0, t: 0, u: 0, v: 0 };
+      list.forEach(function (r) { o.s += r.s; o.e += r.e; o.t += r.t; o.u += r.u; o.v += r.v; });
+      return o;
+    }
+    function line(r) { return '<tr><td class="name">' + esc(r.name) + "</td>" + cells(r) + "</tr>"; }
+    var body = (mk.length ? '<tr class="grp"><td colspan="7">Marketing ' + (view.sources === "channel" ? "channels" : "sources") + "</td></tr>" +
+      mk.map(line).join("") + '<tr class="subt"><td>Marketing subtotal</td>' + cells(sum(mk)) + "</tr>" : "") +
+      (er.length ? '<tr class="grp"><td colspan="7">Not marketing</td></tr>' + er.map(line).join("") +
+        '<tr class="subt"><td>Not marketing subtotal</td>' + cells(sum(er)) + "</tr>" : "");
+    var foot = '<tr class="tot"><td>All ' + (view.sources === "source" ? "sources" : "channels") + "</td>" + cells(t) + "</tr>";
+    return card("Where CWI Visits and Purchases Came From", toggle("sources", view.sources),
+      '<div class="wrap-head">' + tbl("<th>" + noun + '</th><th class="r">Visits to CWI pages</th><th class="r">Share of visits</th>' +
+        '<th class="r">Engagement rate</th><th class="r">Average engagement time</th><th class="r">Purchases credited<sup class="fn">1</sup></th>' +
+        '<th class="r">Revenue</th>', body, foot) + "</div>" +
+      '<ol class="fnotes"><li>' + LAST_CLICK + "</li></ol>");
+  }
+
+  function pages() {
+    var byK = {};
+    D.pages.forEach(function (x) {
+      if (!inR(x.m)) return;
+      var b = byK[x.k] || (byK[x.k] = { s: 0, e: 0, t: 0 });
+      b.s += x.s; b.e += x.e; b.t += x.t;
+    });
+    var list = D.pageList.filter(function (p) { return byK[p.key] && byK[p.key].s; });
+    if (!list.length) return "";
+    var body = list.sort(function (a, b) { return byK[b.key].s - byK[a.key].s; }).map(function (p) {
+      var b = byK[p.key];
+      return '<tr><td class="name"><a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.label) + "</a></td>" +
+        '<td class="r num">' + int(b.s) + '</td><td class="r num">' + erate(b.e, b.s) + '</td><td class="r num">' + etime(b.t, b.s) + "</td></tr>";
+    }).join("");
+    var any = { s: 0, e: 0, t: 0 };
+    D.traffic.forEach(function (x) { if (inR(x.m)) { any.s += x.s; any.e += x.e; any.t += x.t; } });
+    var foot = '<tr class="tot"><td>Any CWI page, each visit counted once</td><td class="r num">' + int(any.s) +
+      '</td><td class="r num">' + erate(any.e, any.s) + '</td><td class="r num">' + etime(any.t, any.s) + "</td></tr>";
+    var pageSum = list.reduce(function (a, p) { return a + byK[p.key].s; }, 0);
+    return card("Visits by CWI Page", "",
+      '<div class="cscope below">A visit that saw two of these pages is counted on both rows, so the rows add to ' +
+      int(pageSum) + ' where the visits themselves are ' + int(any.s) + ".</div>" +
+      tbl('<th>Page</th><th class="r">Visits</th><th class="r">Engagement rate</th><th class="r">Average engagement time</th>', body, foot, true));
+  }
+
+  var PCOLOR = { "Google Ads": "var(--p-google)", "Microsoft Ads": "var(--p-microsoft)", "Meta Ads": "var(--p-meta)",
+    "LinkedIn Ads": "var(--p-linkedin)", "Reddit Ads": "var(--p-reddit)", "Spotify Ads": "var(--p-spotify)" };
+  function span(ms) {
+    ms = ms.slice().sort();
+    if (!ms.length) return "";
+    var nx = function (m) { var y = +m.slice(0, 4), mo = +m.slice(5) + 1; if (mo > 12) { y++; mo = 1; } return y + "-" + (mo < 10 ? "0" : "") + mo; };
+    var runs = [[ms[0], ms[0]]];
+    for (var i = 1; i < ms.length; i++) {
+      var last = runs[runs.length - 1];
+      if (ms[i] === nx(last[1])) last[1] = ms[i]; else runs.push([ms[i], ms[i]]);
+    }
+    var txt = runs.map(function (r) { return r[0] === r[1] ? monthName(r[0]) : monthName(r[0]) + " to " + monthName(r[1]); });
+    return txt.length < 2 ? txt[0] : txt.slice(0, -1).join(", ") + " and " + txt[txt.length - 1];
+  }
+
+  /* The CWI campaigns' figures by platform for the period: the Paid Media table and the channels table read the same. */
+  function paidPl() {
+    var P = D.paid;
+    var pl = {}, cp = {};
+    P.delivery.forEach(function (x) {
+      if (!inR(x.m)) return;
+      var c = CAMPAIGN[x.c];
+      var a = pl[c.platform] || (pl[c.platform] = { spend: 0, imp: 0, lpc: 0, s: 0, e: 0, t: 0, u: 0, v: 0, months: {} });
+      a.spend += x.spend; a.imp += x.imp; a.lpc += x.lpc;
+      if (x.spend > 0) a.months[x.m] = true;
+      var b = cp[x.c] || (cp[x.c] = { spend: 0, imp: 0, lpc: 0, months: {} });
+      b.spend += x.spend; b.imp += x.imp; b.lpc += x.lpc;
+      if (x.spend > 0) b.months[x.m] = true;
+    });
+    P.cwiAds.forEach(function (x) {
+      if (!inR(x.m) || !pl[x.platform]) return;
+      pl[x.platform].s += x.s; pl[x.platform].e += x.e; pl[x.platform].t += x.t || 0; pl[x.platform].u += x.u; pl[x.platform].v += x.v;
+    });
+    P.cwiAds.forEach(function (x) {
+      if (!inR(x.m) || pl[x.platform]) return;
+      pl[x.platform] = { spend: 0, imp: 0, lpc: 0, s: 0, e: 0, t: 0, u: 0, v: 0, months: {}, visitsOnly: true };
+    });
+    P.cwiAds.forEach(function (x) {
+      if (!inR(x.m) || !pl[x.platform].visitsOnly) return;
+      pl[x.platform].s += x.s; pl[x.platform].e += x.e; pl[x.platform].t += x.t || 0; pl[x.platform].u += x.u; pl[x.platform].v += x.v;
+      if (x.s) pl[x.platform].months[x.m] = true;
+    });
+    var names = P.platforms.filter(function (p) { return pl[p] && (pl[p].spend > 0 || pl[p].s > 0); });
+    var t = { spend: 0, imp: 0, s: 0, e: 0, t: 0, u: 0, v: 0 };
+    names.forEach(function (n) { var r = pl[n]; t.spend += r.spend; t.imp += r.imp; t.s += r.s; t.e += r.e; t.t += r.t; t.u += r.u; t.v += r.v; });
+    return { pl: pl, names: names, t: t };
+  }
+
+  function paid() {
+    var P = D.paid, LPC = {};
+    P.clickPlatforms.forEach(function (p) { LPC[p] = true; });
+    var F = paidPl(), pl = F.pl, names = F.names;
+    if (!names.length) return "";
+    var t = { spend: 0, imp: 0, s: 0, e: 0, t: 0, u: 0, v: 0 };
+    /* Roque, 18 September 2026: no months under a platform's name, no impressions, no clicks per impression; sessions and
+       average engagement time. */
+    var rows = names.map(function (n) {
+      var r = pl[n], lpc = LPC[n] ? r.lpc : null;
+      t.spend += r.spend; t.imp += r.imp; t.s += r.s; t.e += r.e; t.t += r.t; t.u += r.u; t.v += r.v;
+      return '<tr><td class="name"><i class="swatch" style="background:' + (PCOLOR[n] || "var(--mid)") + '"></i>' + esc(n) + "</td>" +
+        '<td class="r num">' + money(r.spend) + '</td><td class="r num">' + int(lpc) + "</td>" +
+        '<td class="r num">' + per(r.spend, lpc) + "</td>" +
+        '<td class="r num">' + int(r.s) + '</td><td class="r num">' + etime(r.t, r.s) + "</td>" +
+        '<td class="r num">' + int(r.u) + '</td><td class="r num">' + money0(r.v) + "</td>" +
+        '<td class="r num">' + (r.spend ? "$" + (r.v / r.spend).toFixed(2) : DASH) + "</td></tr>";
+    }).join("");
+    /* Each platform's return stands alone; a return across platforms is never printed. */
+    /* Clicks are counted differently by each platform, so no total adds them across platforms. */
+    var tl = null;
+    var foot = '<tr class="tot"><td>All CWI ads<span class="raw">clicks are counted differently by each ' +
+      'platform, so they are not added</span></td><td class="r num">' + money(t.spend) +
+      '</td><td class="r num">' + int(tl) + '</td><td class="r num">' + per(t.spend, tl) +
+      '</td><td class="r num">' + int(t.s) + '</td><td class="r num">' + etime(t.t, t.s) + '</td><td class="r num">' + int(t.u) +
+      '</td><td class="r num">' + money0(t.v) + '</td><td class="r num">' + (t.spend ? "$" + (t.v / t.spend).toFixed(2) : DASH) + "</td></tr>";
+    var otherVisits = 0, otherUnits = 0, otherRevenue = 0;
+
+    var bySrcAll = {};
+    D.traffic.forEach(function (x) { if (inR(x.m)) bySrcAll[x.src] = (bySrcAll[x.src] || 0) + x.s; });
+    var salesAll = {};
+    D.sales.forEach(function (x) { if (inR(x.m)) { salesAll[x.src] = salesAll[x.src] || { u: 0, v: 0 }; salesAll[x.src].u += x.u; salesAll[x.src].v += x.v; } });
+    names.forEach(function (n) {
+      var src = SOURCE_OF(n);
+      otherVisits += (bySrcAll[src] || 0) - pl[n].s;
+      otherUnits += ((salesAll[src] || {}).u || 0) - pl[n].u;
+      otherRevenue += ((salesAll[src] || {}).v || 0) - pl[n].v;
+    });
+    /* Roque, 18 September 2026: a return card for the CWI campaigns together. The playbook would keep each platform's
+       return on its own row (last click favours search); his instruction stands, and the rows still show each platform. */
+    var body = galsum([["Spend", money(t.spend)], ["Sessions", int(t.s)],
+      ["Purchases credited", int(t.u)], ["Revenue per ad dollar", t.spend ? "$" + (t.v / t.spend).toFixed(2) : DASH]]) +
+      '<div class="sub hdln" role="heading" aria-level="3">By platform<sup class="fn">1</sup></div><div class="wrap-head">' +
+      tbl('<th>Platform</th><th class="r">Spend</th><th class="r">Clicks<sup class="fn">2</sup></th>' +
+        '<th class="r">Cost per click</th><th class="r">Sessions</th><th class="r">Average engagement time</th>' +
+        '<th class="r">Purchases credited<sup class="fn">3</sup></th><th class="r">Revenue</th><th class="r">Revenue per ad dollar</th>', rows, foot, true) + "</div>";
+    var fnotes = ['This table counts only the CWI campaigns. The same ad platforms also brought ' + int(otherVisits) +
+      " sessions to CWI pages and closed " + int(otherUnits) + (otherUnits === 1 ? " purchase" : " purchases") + " worth " + money0(otherRevenue) +
+      " through the Society's other campaigns, or through ads that recorded no campaign; those are in the sources table above.",
+      "Purchases and revenue are credited to the last click before the purchase, so a platform that started someone off but did not " +
+      "close the sale reads zero here."];
+    /* Roque, 17 September 2026: the page says which clicks reached the landing page and which only count a click on the ad. */
+    var basis = { "landing page": [], "ad": [], "image tap": [] }, bsum = { "landing page": 0, "ad": 0, "image tap": 0 };
+    names.forEach(function (n) { var b = P.clickBasis[n]; if (b && pl[n].spend > 0) { basis[b].push(n); bsum[b] += pl[n].lpc; } });
+    function andList(a) { return a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1]; }
+    var parts = [];
+    if (basis["landing page"].length) parts.push(andList(basis["landing page"]) + (basis["landing page"].length > 1 ? " count" : " counts") +
+      " clicks on the link to the landing page (" + int(bsum["landing page"]) + ")");
+    if (basis.ad.length) parts.push(andList(basis.ad) + (basis.ad.length > 1 ? " count" : " counts") +
+      " every click anywhere on the ad (" + int(bsum.ad) + ")");
+    if (basis["image tap"].length) parts.push(andList(basis["image tap"]) + " counts taps on the image beside its audio ad (" + int(bsum["image tap"]) + ")");
+    if (parts.length) fnotes.splice(1, 0, "Clicks: " + parts.join("; ") + ".");  /* numbered in the order the columns read */
+    body += '<ol class="fnotes">' + fnotes.map(function (n) { return "<li>" + n + "</li>"; }).join("") + "</ol>";
+    /* Paid Media Creative (Roque, 17 September 2026: "We need to show actual creative"). Every file here was
+       downloaded from the campaign's own folders (SharePoint and Monday). A file says where it ran only where the
+       platform's own ad preview or the project record shows it, and then the viewer shows what that ad drove. */
+    var cr = (P.creative || []).filter(function (c) { return !c.from || (c.from <= range.to && c.to >= range.from); });
+    if (cr.length) {
+      /* Roque, 18 September 2026 (recommendation 7): one row per platform, from the platform's own ad record; a file that
+         ran on two platforms is in both rows; artwork no record ties to an ad closes into one row at the end. */
+      var byPlat = {}, other = [];
+      cr.forEach(function (c) {
+        var ps = [];
+        (c.ran || []).forEach(function (x) { if (ps.indexOf(x.platform) === -1) ps.push(x.platform); });
+        if (!ps.length) other.push(c);
+        ps.forEach(function (p) { (byPlat[p] = byPlat[p] || []).push(c); });
+      });
+      var withArt = P.platforms.filter(function (p) { return byPlat[p]; });
+      var without = names.filter(function (n) { return !byPlat[n] && pl[n].spend > 0; });
+      var orList = function (a) { return a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " or " + a[a.length - 1]; };
+      body += '<div class="sub hdln" role="heading" aria-level="3">Paid Media Creative</div>' +
+        '<div class="cscope below">Artwork sits under the platform whose own ad record shows it running, and a file that ran on two ' +
+        "platforms is under both. Open one to see it larger, with what that ad drove in these months.</div>" +
+        withArt.map(function (p) {
+          var r = pl[p] || { spend: 0, s: 0, u: 0 };
+          return crRow(p, p, '<i class="swatch" style="background:' + (PCOLOR[p] || "var(--mid)") + '"></i>' + esc(p),
+            money(r.spend) + " spend, " + int(r.s) + " sessions, " + int(r.u) + (r.u === 1 ? " purchase" : " purchases") + " credited",
+            byPlat[p], 4);
+        }).join("") +
+        (without.length ? '<div class="cscope below">No file is tied to a ' + orList(without) + " ad by that platform's own record.</div>" : "");
+    }
+    return card("Paid Media", "", body);
+  }
+
+  /* One platform's row of artwork: up to four shown, the rest behind one button. */
+  function crRow(key, plat, labelHtml, sub, list, show) {
+    var open = !!(crOpen[key] || window.__cwiOpenAll), mid = "crm-" + key.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+    var first = list.slice(0, show), rest = list.slice(show);
+    var tile = function (c) { return creativeTile(c, plat); };
+    return '<div class="crrow"><div class="crhd"><div class="crname">' + labelHtml + '</div><div class="crsub">' + sub + "</div></div>" +
+      (first.length ? '<div class="crgrid">' + first.map(tile).join("") + "</div>" : "") +
+      (rest.length ? '<div class="crgrid crmore" id="' + mid + '"' + (open ? "" : " hidden") + ">" + rest.map(tile).join("") + "</div>" +
+        '<button type="button" class="crall" data-cr="' + esc(key) + '" data-n="' + list.length + '" data-first="' + first.length +
+        '" aria-expanded="' + open + '" aria-controls="' + mid + '">' + crLabel(open, list.length, first.length) + "</button>" : "") + "</div>";
+  }
+  function crLabel(open, n, first) { return open ? "Show fewer" : first ? "Show all " + n : "Show " + n; }
+
+  /* One tile for one file, or for one carousel (a carousel is one ad and opens on all its cards). */
+  function creativeTile(c, plat) {
+    var n = (c.cards || []).length;
+    var made = c.shape === "Carousel" ? "Carousel of " + n + " cards" :
+      c.kind === "video" ? (c.versions > 1 ? c.versions + " videos that open on the same frame; a still from them is shown"
+        : "Video; a still made from it is shown") : "Image";
+    /* A still that is not the video's shape says so (the square video's still is a landscape frame). */
+    var wh = (c.size || "").split(" x ").map(Number), sh = (c.shown || "").split(" x ").map(Number);
+    if (c.kind === "video" && wh[1] && sh[1] && Math.abs(wh[0] / wh[1] - sh[0] / sh[1]) > 0.05) made += ", in a different shape from the video";
+    var facts = [["Campaign", c.campaign || DASH], ["Artwork made", c.made ? monthLong(c.made) : DASH],
+      ["The campaign's Meta and LinkedIn ads ran", c.from ? monthLong(c.from) + " to " + monthLong(c.to) : DASH],
+      ["Made as", made], ["Size", c.size ? c.size + " pixels" + (c.shown && c.shown !== c.size ? " (shown here at " + c.shown + ")" : "") : DASH]];
+    /* One fact for where it ran, read from the data's own record of each reading. */
+    if ((c.ran || []).length) {
+      var places = [], when = "";
+      c.ran.forEach(function (x) {
+        var m = /^seen in (.+), (\d+ \w+ \d{4})$/.exec(x.basis);
+        if (m) { if (places.indexOf(m[1]) === -1) places.push(m[1]); when = m[2]; }
+      });
+      facts.push(["Seen running as", c.ran.map(function (x) { return x.platform + ": " + x.name; }).join("; ") +
+        (places.length ? ". Read in " + places.join(" and ") + ", " + when + "." : "")]);
+    }
+    var platforms = [];
+    (c.ran || []).forEach(function (x) { if (platforms.indexOf(x.platform) === -1) platforms.push(x.platform); });
+    var others = platforms.filter(function (p) { return p !== plat; });
+    var ranOn = others.length ? ", also on " + others.join(" and ") : "";
+    var vshape = wh[0] === wh[1] ? "Square" : wh[1] > wh[0] ? "Portrait" : "Landscape";
+    var who = (c.ran || []).length ? c.ran[0].name.replace(/^the /, "") : "";
+    return viewTile({ image: c.image, cards: c.cards, ads: c.ran || [], label: c.campaign + ", " + (who ? who + ", " : "") + (c.size || ""),
+      title: c.shape === "Carousel" ? "Carousel, " + n + " cards" :
+        c.kind === "video" ? vshape + " video" + (c.versions > 1 ? ", " + c.versions + " versions" : "") : c.shape + " image",
+      caption: c.campaign + " campaign",
+      note: (c.shape === "Carousel" ? "Carousel, " + n + " cards, " + c.size :
+        c.kind === "video" ? "Video, " + (c.size || "") + (c.versions > 1 ? ", " + c.versions + " versions" : "") + ", a still from the video" :
+        c.shape + " image, " + (c.size || "")) + ranOn,
+      facts: facts }, /^\d+ x \d+$/.test(c.size || "") && +c.size.split(" x ")[1] > 1.5 * +c.size.split(" x ")[0] ? "vtall" : "");
+  }
+
+  /* What an ad drove in the chosen months: the platform's own ad tags in Google Analytics, for the whole ad. */
+  function adFigures(x) {
+    var o = { s: 0, e: 0, t: 0, u: 0, v: 0 };
+    if (x.family) D.paid.adRows.forEach(function (r) { if (r.f === x.family && inR(r.m)) { o.s += r.s; o.e += r.e; o.t += r.t || 0; o.u += r.u; o.v += r.v; } });
+    else if (x.labels) (D.paid.labelRows || []).forEach(function (r) {
+      if (r.platform === x.platform && x.labels.indexOf(r.label) !== -1 && inR(r.m)) { o.s += r.s; o.e += r.e; o.t += r.t || 0; o.u += r.u; o.v += r.v; }
+    });
+    return o;
+  }
+
+  function email() {
+    var E = D.email.sends.filter(function (e) { return inRd(e.sent); });
+    if (!E.length) return "";
+    var t = { d: 0, o: 0, c: 0, k: 0 };
+    E.forEach(function (e) { t.d += e.delivered; t.o += e.opens; t.c += e.clicks; t.k += e.totalClicks; });
+    var rows = E.map(function (e) {
+      return '<tr><td class="name"><a href="' + esc(e.url) + '" target="_blank" rel="noopener">' + esc(e.name) + "</a></td>" +
+        '<td class="r num">' + dayShort(e.sent) + '</td><td class="r num">' + int(e.delivered) + "</td>" +
+        '<td class="r num">' + ratio(e.opens, e.delivered, 1) + '</td><td class="r num">' + ratio(e.clicks, e.delivered, 2) + "</td>" +
+        '<td class="r num">' + int(e.totalClicks) + "</td></tr>";
+    }).join("");
+    var foot = E.length < 2 ? "" : '<tr class="tot"><td>' + (E.length === 2 ? "Both sends" : "All " + E.length + " sends") + '</td><td></td><td class="r num">' + int(t.d) +
+      '</td><td class="r num">' + ratio(t.o, t.d, 1) + '</td><td class="r num">' + ratio(t.c, t.d, 2) + '</td><td class="r num">' + int(t.k) + "</td></tr>";
+    /* Completeness round A, 17 September 2026: the Sections and districts sent their own CWI mail in the same
+       window. It is not the campaign's series, so it is named here rather than counted in the figures. */
+    var clickLine = '<div class="cscope below">Counting each person once per send, ' + int(t.c) + ' people ' +
+      'clicked, which is the click rate of ' + ratio(t.c, t.d, 2) + '; between them they made ' + int(t.k) +
+      ' clicks.</div>';
+    /* The Section and district sends that promoted the credential in these months, from the data. */
+    var O = (D.email.otherSends || []).filter(function (e) { return inRd(e.sent); });
+    var groups = [];
+    O.forEach(function (e) { if (groups.indexOf(e.group) === -1) groups.push(e.group); });
+    var otherSends = O.length ? '<div class="cscope below">In ' + (range.from === range.to ? "this month " : "these months ") + int(O.length) + (O.length === 1 ? " more send" : " more sends") +
+      " from Sections and districts promoted the credential (" + int(O.reduce(function (a, e) { return a + e.delivered; }, 0)) +
+      " delivered): " + (groups.length > 1 ? groups.slice(0, -1).join(", ") + " and " + groups[groups.length - 1] : groups[0]) +
+      (O.length === 1 ? ". It is its own send, not the campaign series, so it is not counted above.</div>" :
+        ". They are their own sends, not the campaign series, so they are not counted above.</div>") : "";
+    return card("Email Marketing", "",
+      (E.length < 2 ? "" : galsum([["Sends", int(E.length)], ["Delivered", int(t.d)], ["Open rate", ratio(t.o, t.d, 1)], ["Click rate", ratio(t.c, t.d, 2)], ["Total clicks", int(t.k)]])) +
+      tbl('<th>Send</th><th class="r">Sent</th><th class="r">Delivered</th><th class="r">Open rate</th><th class="r">Click rate</th><th class="r">Total clicks</th>',
+        rows, foot, true, 10));
+  }
+
+  /* Visits and purchases from the CWI texts themselves, not from every text the organization sent. */
+  function smsChannel() {
+    var n = 0;
+    D.traffic.forEach(function (x) { if (inR(x.m) && x.src === "Text Messages") n += x.s; });
+    return n;
+  }
+
+  function smsResults() {
+    var o = { s: 0, u: 0, v: 0 };
+    (D.sms.byMonth || []).forEach(function (x) { if (inR(x.m)) { o.s += x.s; o.u += x.u; o.v += x.v; } });
+    return o;
+  }
+
+  function sms() {
+    var S = D.sms.sends.filter(function (s) { return inRd(s.sent); });
+    if (!S.length) {
+      var late = smsResults();
+      if (!late.s) return "";
+      return card("Text Messages", "", galsum([["Visits from the CWI texts", int(late.s)], ["Purchases credited", int(late.u)],
+        ["Revenue", money0(late.v)]]) + '<div class="cscope below">No CWI text went out in ' +
+        (range.from === range.to ? monthLong(range.from) : "these months") + "; these " + int(late.s) + (late.s === 1 ? " visit" : " visits") +
+        " came from the CWI texts sent earlier, through their own links.</div>");
+    }
+    var td = 0, tc = 0;
+    var rows = S.map(function (s) {
+      td += s.delivered; tc += s.clicked;
+      return '<tr><td class="name">' + esc(s.name) + '</td><td class="r num">' + dayShort(s.sent) + '</td><td class="r num">' + int(s.delivered) +
+        '</td><td class="r num">' + int(s.clicked) + '</td><td class="r num">' + ratio(s.clicked, s.delivered, 1) + "</td></tr>";
+    }).join("");
+    var foot = S.length > 1 ? '<tr class="tot"><td>' + (S.length === 2 ? "Both texts" : "All " + S.length + " texts") + '</td><td></td><td class="r num">' + int(td) + '</td><td class="r num">' + int(tc) +
+      '</td><td class="r num">' + ratio(tc, td, 1) + "</td></tr>" : "";
+    var sr = smsResults();
+    return card("Text Messages", "",
+      galsum([["Delivered", int(td)], ["People who clicked", int(tc)], ["Visits from the CWI texts", int(sr.s)],
+        ["Purchases credited", int(sr.u)], ["Revenue", money0(sr.v)]]) +
+      tbl('<th>Text</th><th class="r">Sent</th><th class="r">Delivered</th><th class="r">People who clicked</th><th class="r">Share who clicked</th>', rows, foot));
+  }
+
+  function twiw() {
+    /* Visits are counted under the issue that sent them, including those in the weeks after it (Round G). */
+    var I = D.twiw.issues.filter(function (i) { return inRd(i.date); });
+    if (!I.length) return "";
+    var rowVisits = I.reduce(function (a, i) { return a + i.sessions; }, 0);
+    var rows = I.map(function (i) {
+      var items = i.items.map(function (x) { return '<div class="twi">' + esc(x.headline) + "</div>"; }).join("");
+      var when = i.url ? '<a href="' + esc(i.url) + '" target="_blank" rel="noopener">' + dayShort(i.date) + " " + OPEN + "</a>" : dayShort(i.date);
+      return '<tr><td class="r num top name">' + when + '</td><td class="wrapcell">' + items + "</td>" +
+        '<td class="r num top">' + int(i.sessions) + "</td></tr>";
+    }).join("");
+    return card("This Week in Welding", "",
+      galsum([["Issues with a CWI item", int(I.length)], ["Visits from those issues", int(rowVisits)]]) +
+      tbl('<th class="r">Issue</th><th>What ran about CWI</th><th class="r">Visits to CWI pages</th>', rows, "", false, true));
+  }
+
+  /* Post figures are lifetime totals as each export read them; a post read soon after it went out has had less time. */
+  function readOnNote(list) {
+    /* Only the July and August exports carry a reading date (Round N): the earlier sheet was built month by month. */
+    var R = (D.organic.readOn || [])[0];
+    if (!R || !list.some(function (x) { return x.e.date >= R.from && x.e.date <= R.through; })) return "";
+    return '<div class="cscope below">July and August 2026 post figures are lifetime totals as read on ' + dayLong(R.read) +
+      ", so a post read soon after it went out has had less time to be seen.</div>";
+  }
+  function dayLong(iso) { var p = iso.split("-"); return +p[2] + " " + MONTHS_LONG[+p[1] - 1] + " " + p[0]; }
+  function fig(e) {
+    if (has(e.impressions)) return [e.impressions, "impressions"];
+    if (has(e.reach)) return [e.reach, "reach"];
+    if (has(e.views)) return [e.views, "views"];
+    return [null, ""];
+  }
+  var OPEN = '<span class="ext" aria-hidden="true">↗</span>';
+  var PLATFORM_ORDER = ["Facebook", "Instagram", "LinkedIn", "YouTube"];
+  function topPosts(list) {
+    var ranked = list.filter(function (x) { return has(x.e.engagements); }).sort(function (a, b) {
+      return (b.e.engagements - a.e.engagements) || (a.e.date < b.e.date ? -1 : a.e.date > b.e.date ? 1 : 0);
+    });
+    var best = {};
+    ranked.forEach(function (x) { if (!best[x.e.platform]) best[x.e.platform] = x; });
+    var names = Object.keys(best).sort(function (a, b) {
+      var i = PLATFORM_ORDER.indexOf(a), j = PLATFORM_ORDER.indexOf(b);
+      return (i === -1 ? 99 : i) - (j === -1 ? 99 : j);
+    });
+    return names.map(function (n) { return best[n]; });
+  }
+  function social() {
+    var list = [], plats = {}, concepts = {};
+    D.organic.concepts.forEach(function (c) {
+      c.entries.forEach(function (e) {
+        if (!inRd(e.date)) return;
+        list.push({ c: c, e: e }); plats[e.platform] = true; concepts[c.title] = true;
+      });
+    });
+    if (!list.length) return "";
+    var top = topPosts(list);
+    var tiles = top.map(function (x) {
+      var t = x.e, f = fig(t);
+      /* One creative is one piece of artwork, so a tile shows it even when the ranking post is the
+         platform whose copy was not archived. */
+      var donor = t.image ? null : x.c.entries.filter(function (e) { return e.image; })[0];
+      var img = t.image || (donor || {}).image;
+      var picFrom = donor ? '<div class="picfrom">Picture from the ' + esc(donor.platform) + " post of " + dayShort(donor.date) +
+        ", the same creative</div>" : "";
+      var art = img ? '<img src="' + esc(img) + '" alt="' + esc(x.c.title) + '">'
+        : '<div class="qcard"><div class="qtext">' + esc(x.c.hook || x.c.title) + "</div></div>";
+      return '<a class="post toppost" href="' + esc(t.url) + '" target="_blank" rel="noopener" aria-label="' + esc("Open " + x.c.title + " on " + t.platform) + '">' +
+        '<div class="thumb' + (img ? "" : " text") + '">' + art + "</div>" +
+        '<div class="pmeta"><div class="pplat"><span>' + esc(t.platform) + "</span><span>" + dayShort(t.date) + "</span></div>" +
+        '<div class="adname">' + esc(x.c.title) + (t.story ? " (story)" : "") + "</div>" + picFrom +
+        '<div class="tstat"><div><b class="num">' + int(t.engagements) + "</b><span>" + (t.engagedUsers ? "people engaged" : "engagements") + "</span></div>" +
+        '<div><b class="num">' + int(f[0]) + "</b><span>" + f[1] + "</span></div></div>" +
+        '<div class="open">Open post ' + OPEN + "</div></div></a>";
+    }).join("");
+    var twins = {};
+    list.forEach(function (x) { var k = x.c.title + "|" + x.e.platform + "|" + x.e.date; twins[k] = (twins[k] || 0) + 1; });
+    var seenTwin = {};
+    var rows = list.slice().sort(function (a, b) { return a.e.date < b.e.date ? 1 : a.e.date > b.e.date ? -1 : 0; }).map(function (x) {
+      var f = fig(x.e), k = x.c.title + "|" + x.e.platform + "|" + x.e.date;
+      var twin = twins[k] > 1 ? '<span class="raw">post ' + (seenTwin[k] = (seenTwin[k] || 0) + 1) + " of " + twins[k] + " that day</span>" : "";
+      return '<tr class="golink" data-href="' + esc(x.e.url) + '"><td class="r num">' + dayShort(x.e.date) + "</td>" +
+        '<td class="name wrapcell"><a class="plink" href="' + esc(x.e.url) + '" target="_blank" rel="noopener">' + esc(x.c.title) + " " + OPEN + "</a>" + twin + (x.e.story ? '<span class="raw">an Instagram story</span>' : "") +
+          '<span class="raw phoneonly">' + esc(x.e.platform) + "</span></td>" +
+        "<td>" + esc(x.e.platform) + '</td><td class="r num" data-sort="' + (has(f[0]) ? f[0] : "") + '">' + int(f[0]) + '<span class="unit">' + (f[1] || "") + "</span>" +
+        '</td><td class="r num">' + int(x.e.engagements) + (x.e.engagedUsers ? '<span class="unit">people</span>' : "") + "</td></tr>";
+    }).join("");
+    var one = list.length === 1;
+    /* Does any platform in this period count "times seen" in more than one way? */
+    var measures = {};
+    list.forEach(function (x) { var u = fig(x.e)[1]; (measures[x.e.platform] = measures[x.e.platform] || {})[u] = true; });
+    var mixed = Object.keys(measures).some(function (p) { return Object.keys(measures[p]).length > 1; });
+    return card("Organic Social", "",
+      (one ? "" : galsum([["CWI posts", int(Object.keys(concepts).length)], ["Times posted", int(list.length)], ["Platforms", int(Object.keys(plats).length)]])) +
+      (tiles ? '<div class="sub hdln" role="heading" aria-level="3">' + (one ? "The one CWI post" : 'Top Performing Posts <span class="subn">(the best post on each platform)</span>') + '</div><div class="top4">' + tiles + "</div>" : "") +
+      (one ? "" : '<div class="sub hdln" role="heading" aria-level="3">Every CWI post</div>' +
+      tbl('<th class="r">Date</th><th>Post</th><th>Platform</th><th class="r"' + (mixed ? ' data-nosort="1"' : "") + '>Times seen</th><th class="r">Engagements</th>', rows, "", true, true)));
+  }
+
+  /* A placement counts in a period when it ran in it, or when it was still drawing visits during it. */
+  function pubInPeriod(p) {
+    if (inRd(p.date)) return true;
+    if (!p.byMonth) return false;
+    return Object.keys(p.byMonth).some(function (m) { return inR(m) && p.byMonth[m][0] > 0; });
+  }
+
+  function publications() {
+    var G = ["Ads in Publications", "Sponsored Editorial", "Articles"];
+    var list = D.publications.filter(pubInPeriod);
+    if (!list.length) return "";
+    var done = list.filter(function (r) { return state(r.status) === "Done"; }).length;
+    var body = G.map(function (g) {
+      var rs = list.filter(function (r) { return r.group === g; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+      if (!rs.length) return "";
+      return '<tr class="grp"><td colspan="5">' + g + "</td></tr>" + rs.map(function (r) {
+        var s = null, sec = null;
+        if (r.byMonth) {
+          s = 0; sec = 0;
+          Object.keys(r.byMonth).forEach(function (m) { if (inR(m)) { s += r.byMonth[m][0]; sec += r.byMonth[m][1]; } });
+        }
+        var st = state(r.status);
+        var also = function (u, l) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener" class="also">' + esc(l) + " " + OPEN + "</a>"; };
+        var item = r.urlAlso ? esc(r.item) + '<span class="alsos">' + (r.url ? also(r.url, r.urlLabel || "first issue") : "") +
+          also(r.urlAlso, r.urlAlsoLabel || "second issue") + "</span>"
+          : r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.item) + " " + OPEN + "</a>" : esc(r.item);
+        return '<tr><td class="name">' + item + '<span class="raw">' + esc(r.placement || "") + "</span></td>" +
+          '<td class="r num">' + dayShort(r.date) + "</td><td>" + pillFor(st).replace(">Done<", ">Published<") + "</td>" +
+          '<td class="r num">' + int(s) + (r.byMonth ? '<span class="unit">' + (r.measure === "article" ? "to the article" : "to CWI pages") +
+          "</span>" : "") + '</td><td class="r num">' + etime(sec, s) + "</td></tr>";
+      }).join("");
+    }).join("");
+    var ads = list.filter(function (r) { return r.image; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    var gallery = ads.length ? '<div class="sub hdln" role="heading" aria-level="3">The print ads</div><div class="crgrid prints">' + ads.map(function (r) {
+      var v = 0, sec = 0;
+      if (r.byMonth) Object.keys(r.byMonth).forEach(function (m) { if (inR(m)) { v += r.byMonth[m][0]; sec += r.byMonth[m][1]; } });
+      var st = state(r.status) === "Done" ? "Published" : state(r.status);
+      var facts = [["Placement", r.placement || DASH], ["Ran", r.ranLabel || dayShort(r.date)], ["Status", st]];
+      if (r.leads) facts.push(["Leads the publisher reported", int(r.leads.count) + " from the " + r.leads.issue +
+        " issue, in TechGen Media's own lead report"]);
+      var routes = "";
+      if (r.via && v) routes = " (" + Object.keys(r.via).map(function (k) {
+        var n = 0; Object.keys(r.via[k]).forEach(function (m) { if (inR(m)) n += r.via[k][m][0]; });
+        return int(n) + " from " + k;
+      }).join(", ") + ")";
+      else if (v) routes = " (from the QR code on the ad)";
+      if (r.byMonth) facts.push(["Visits to CWI pages", int(v) + routes], ["Average engagement time", etime(sec, v)]);
+      return viewTile({ image: r.image, title: r.item, caption: r.item, note: r.placement || "", facts: facts }, "tall");
+    }).join("") + "</div>" : "";
+    var qr = 0, web = 0;
+    ads.forEach(function (r) {
+      if (!r.byMonth) return;
+      if (r.via) Object.keys(r.via).forEach(function (k) {
+        Object.keys(r.via[k]).forEach(function (m) { if (inR(m)) { if (/online edition/.test(k)) web += r.via[k][m][0]; else qr += r.via[k][m][0]; } });
+      });
+      else Object.keys(r.byMonth).forEach(function (m) { if (inR(m)) qr += r.byMonth[m][0]; });
+    });
+    var printNote = qr + web ? '<div class="cscope below">The ' + int(qr + web) + (qr + web === 1 ? " visit" : " visits") +
+      " credited to the print ads here sit in the sources table above as well" +
+      (qr ? ": " + int(qr) + " from a scan of an ad's code under Other and Not Recorded" : "") +
+      (web ? (qr ? " and " : ": ") + int(web) + " from a magazine's online edition under Referral" : "") +
+      ", because Google Analytics cannot tell them from other links.</div>" : "";
+    return card("Publications and Articles", done + " of " + list.length + " published",
+      tbl('<th>Item</th><th class="r">Date</th><th>Status</th><th class="r">Visits</th><th class="r">Average engagement time</th>', body, "") + gallery + printNote);
+  }
+
+  /* The creative viewer: click a file to see it at the size it was made, with what its own record proves. */
+  var VIEW = [];
+  function viewTile(entry, extraClass) {
+    var n = VIEW.push(entry) - 1;
+    return '<figure class="cr' + (extraClass ? " " + extraClass : "") + '">' +
+      '<button type="button" class="crb" data-view="' + n + '" aria-label="' + esc("Open " + entry.title + (entry.label ? ", " + entry.label : "")) + '">' +
+      '<img src="' + esc(entry.image) + '" alt="' + esc(entry.title + (entry.label ? ", " + entry.label : "")) + '"></button>' +
+      "<figcaption>" + esc(entry.caption || entry.title) +
+      (entry.note ? '<span class="crk">' + esc(entry.note) + "</span>" : "") + "</figcaption></figure>";
+  }
+
+  function creativeViewer(root) {
+    var dlg = document.getElementById("crview");
+    if (!dlg) {
+      dlg = document.createElement("div");
+      dlg.id = "crview";
+      dlg.className = "crview";
+      dlg.setAttribute("role", "dialog");
+      dlg.setAttribute("aria-modal", "true");
+      dlg.setAttribute("aria-labelledby", "crtitle");
+      dlg.hidden = true;
+      dlg.innerHTML = '<div class="crbox"><button type="button" class="crx" aria-label="Close">\u00D7</button>' +
+        '<div class="crimg"><img alt=""></div><div class="crside"><div class="crtitle hdln" id="crtitle"></div><div class="crcards" hidden></div>' +
+        '<dl class="crfacts"></dl><div class="crkpi" hidden></div></div></div>';
+      document.body.appendChild(dlg);
+      dlg.addEventListener("click", function (ev) {
+        if (ev.target === dlg || ev.target.closest(".crx")) closeCreative();
+        var card = ev.target.closest(".crcards button");
+        if (card) {
+          dlg.querySelector(".crimg img").src = card.getAttribute("data-src");
+          [].forEach.call(dlg.querySelectorAll(".crcards button"), function (b) { b.setAttribute("aria-pressed", String(b === card)); });
+        }
+      });
+      document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") closeCreative(); });
+      dlg.addEventListener("keydown", function (ev) {
+        if (ev.key === "Tab") {
+          var f = [].filter.call(dlg.querySelectorAll("button"), function (b) { return b.offsetParent !== null || b.classList.contains("crx"); });
+          var i = f.indexOf(document.activeElement);
+          (f[(i + (ev.shiftKey ? -1 : 1) + f.length) % f.length] || f[0]).focus();
+          ev.preventDefault();
+          return;
+        }
+        var k = { ArrowDown: 40, ArrowUp: -40, PageDown: 0.9, PageUp: -0.9, End: 1e6, Home: -1e6 }[ev.key];
+        if (k === undefined) return;
+        var bx = dlg.querySelector(".crbox"), sd = dlg.querySelector(".crside");
+        var s = bx.scrollHeight > bx.clientHeight + 1 ? bx : sd;
+        s.scrollTop += Math.abs(k) < 1 ? k * s.clientHeight : k;
+        ev.preventDefault();
+      });
+    }
+    [].forEach.call(root.querySelectorAll(".crb"), function (b) {
+      b.addEventListener("click", function () { openCreative(+b.getAttribute("data-view"), b); });
+    });
+  }
+  var crLast = null;
+  function openCreative(n, from) {
+    var c = VIEW[n];
+    if (!c) return;
+    var dlg = document.getElementById("crview");
+    crLast = from || null;
+    dlg.querySelector(".crimg img").src = c.image;
+    dlg.querySelector(".crimg img").alt = c.title;
+    dlg.querySelector(".crtitle").textContent = c.title;
+    dlg.querySelector(".crfacts").innerHTML = c.facts.map(function (f) {
+      return '<div class="fact"><dt>' + esc(f[0]) + "</dt><dd>" + (f[2] ? f[1] : esc(f[1])) + "</dd></div>";
+    }).join("");
+    /* A carousel opens on all its cards; a card clicked below takes the large frame. */
+    var cardsEl = dlg.querySelector(".crcards");
+    cardsEl.innerHTML = (c.cards && c.cards.length > 1) ? c.cards.map(function (src, i) {
+      return '<button type="button" data-src="' + esc(src) + '" aria-pressed="' + (i === 0) + '" aria-label="Card ' + (i + 1) +
+        '"><img src="' + esc(src) + '" alt=""></button>';
+    }).join("") : "";
+    cardsEl.hidden = !(c.cards && c.cards.length > 1);
+    /* What the ad drove, for the months chosen at the top of the page. */
+    var kpi = dlg.querySelector(".crkpi");
+    if (c.ads && c.ads.length) {
+      var several = c.ads.length > 1 || /\bads\b/.test(c.ads[0].name);
+      var pair = c.ads.some(function (x) { return /two ads/.test(x.name); });
+      kpi.innerHTML = '<div class="crkh">What ' + (several ? "these ads" : "the ad") + " drove, " + esc(label(range)) + "</div>" +
+        '<table><thead><tr><th>Ad</th><th class="r">Sessions</th><th class="r">Average engagement time</th>' +
+        '<th class="r">Purchases credited</th></tr></thead><tbody>' + c.ads.map(function (x) {
+          var f = adFigures(x);
+          return '<tr><td>' + esc(x.platform) + '<span class="raw">' + esc(x.row || x.name) + '</span></td><td class="r num">' + int(f.s) +
+            '</td><td class="r num">' + etime(f.t, f.s) + '</td><td class="r num">' + int(f.u) + "</td></tr>";
+        }).join("") + "</tbody></table>" +
+        '<div class="crkn">Google Analytics records visits and purchases by ad, not by picture, so these are the whole ' +
+        "ad's figures, shared by every picture it carried." + (pair ? " Where two ads share a name, the figure is the pair's." : "") + "</div>";
+      kpi.hidden = false;
+    } else { kpi.innerHTML = ""; kpi.hidden = true; }
+    dlg.hidden = false;
+    document.body.classList.add("noscroll");
+    [].forEach.call(document.querySelectorAll(".wrap"), function (w) { w.inert = true; });  /* Tab stays in the viewer */
+    dlg.querySelector(".crbox").scrollTop = 0;
+    dlg.querySelector(".crside").scrollTop = 0;
+    dlg.querySelector(".crx").focus();
+  }
+  function closeCreative() {
+    var dlg = document.getElementById("crview");
+    if (!dlg || dlg.hidden) return;
+    dlg.hidden = true;
+    document.body.classList.remove("noscroll");
+    [].forEach.call(document.querySelectorAll(".wrap"), function (w) { w.inert = false; });
+    if (crLast) crLast.focus();
+  }
+
+  /* ------------------------------------------------------------------ render */
+  var SECTIONS = [["products", "What sold", products], ["sources", "Sources", sources], ["pages", "CWI pages", pages],
+    ["paid", "Paid media", paid], ["email", "Email", email],
+    ["sms", "Texts", sms], ["twiw", "This Week in Welding", twiw], ["social", "Organic social", social],
+    ["publications", "Publications", publications]];
+
+  function renderSection(id) {
+    SECTIONS.forEach(function (s) { if (s[0] === id) set(id, s[2]()); });
+    var el = document.getElementById(id);
+    applyFold(id, el);
+    [].forEach.call(el.querySelectorAll("table.sortable th"), function (th) {
+      if (!th.textContent.trim()) th.setAttribute("data-nosort", "1");
+      if (!th.hasAttribute("data-nosort")) th.setAttribute("tabindex", "0");
+    });
+    pageTables(el);
+    creativeViewer(el);
+    var names = {};
+    [].forEach.call(el.querySelectorAll(".crb"), function (b) { var k = b.getAttribute("aria-label"); (names[k] = names[k] || []).push(b); });
+    Object.keys(names).forEach(function (k) {
+      if (names[k].length > 1) names[k].forEach(function (b, i) { b.setAttribute("aria-label", k + ", " + (i + 1) + " of " + names[k].length); });
+    });
+    /* A table that runs wider than its card says so, with a fade at the edge it scrolls towards. */
+    [].forEach.call(el.querySelectorAll(".tw"), fitTable);
+  }
+  /* A channel section closes under its title; the button says what it does. */
+  function applyFold(id, el) {
+    var c = FOLD[id] && el.querySelector(".card");
+    if (!c) return;
+    var hd = c.querySelector(".chd"), body = document.createElement("div");
+    body.className = "fbody";
+    body.id = id + "-body";
+    while (hd.nextSibling) body.appendChild(hd.nextSibling);
+    c.appendChild(body);
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "fold";
+    b.setAttribute("data-fold", id);
+    b.setAttribute("aria-controls", body.id);
+    hd.appendChild(b);
+    showFold(id, !!(openSec[id] || window.__cwiOpenAll));
+  }
+  function showFold(id, open) {
+    var el = document.getElementById(id), b = el && el.querySelector("button.fold"), body = el && el.querySelector(".fbody");
+    if (!b || !body) return;
+    openSec[id] = open;
+    body.hidden = !open;
+    b.setAttribute("aria-expanded", String(open));
+    b.textContent = open ? "Hide details" : "Show details";
+    el.querySelector(".card").classList.toggle("shut", !open);
+    if (open) [].forEach.call(body.querySelectorAll(".tw"), fitTable);
+  }
+  function fitTable(w) {
+      var more = function () { w.classList.toggle("end", w.scrollLeft + w.clientWidth >= w.scrollWidth - 4); };
+      w.classList.toggle("scrolls", w.scrollWidth > w.clientWidth + 1);
+      if (w.scrollWidth > w.clientWidth + 1 && !w.querySelector("a, button, [tabindex]")) {
+        var ct = w.closest(".card") && w.closest(".card").querySelector(".ctitle");
+        w.setAttribute("role", "region"); w.setAttribute("tabindex", "0");
+        w.setAttribute("aria-label", (ct ? ct.textContent : "Table") + " table");
+      } else if (w.getAttribute("role") === "region") { w.removeAttribute("role"); w.removeAttribute("tabindex"); w.removeAttribute("aria-label"); }
+      more();
+      if (!w.__fade) { w.__fade = true; w.addEventListener("scroll", function () { w.classList.toggle("end", w.scrollLeft + w.clientWidth >= w.scrollWidth - 4); }, { passive: true }); }
+  }
+  window.addEventListener("resize", function () { [].forEach.call(document.querySelectorAll(".tw"), fitTable); }, { passive: true });
+  /* A control focused inside a scrolling table is brought fully into view, clear of the pinned first column. */
+  document.addEventListener("focusin", function (e) {
+    var w = e.target.closest && e.target.closest(".tw");
+    if (!w || e.target === w || w.scrollWidth <= w.clientWidth + 1 || !e.target.matches(":focus-visible")) return;
+    var cell = e.target.closest("th, td") || e.target, wr = w.getBoundingClientRect(), r = e.target.getBoundingClientRect();
+    var pin = cell.parentNode.firstElementChild, pinW = pin !== cell && getComputedStyle(pin).position === "sticky" ? pin.getBoundingClientRect().width : 0;
+    /* A control wider than the room beside the pinned column shows its start; any other shows whole. */
+    if (r.width > wr.right - wr.left - pinW - 12) w.scrollLeft += r.left - (wr.left + pinW) - 4;
+    else if (r.right > wr.right - 4) w.scrollLeft += r.right - wr.right + 8;
+    else if (r.left < wr.left + pinW) w.scrollLeft -= wr.left + pinW - r.left + 8;
+  });
+  function renderAll() {
+    VIEW.length = 0;
+    renderPeriod();
+    renderKpis();
+    SECTIONS.forEach(function (s) { renderSection(s[0]); });
+    set("nav", SECTIONS.filter(function (s) { return document.getElementById(s[0]).innerHTML; }).map(function (s) {
+      return '<a href="#' + s[0] + '">' + s[1] + "</a>";
+    }).join(""));
+    spy();
+  }
+  function setRange(from, to) {
+    if (MONTHS.indexOf(from) === -1 || MONTHS.indexOf(to) === -1) return;
+    if (from > to) { var x = from; from = to; to = x; }
+    range = { from: from, to: to };
+    try {
+      var q = from === DEFAULT.from && to === DEFAULT.to ? location.pathname : location.pathname + "?from=" + from + "&to=" + to;
+      history.replaceState(null, "", q + location.hash);
+    } catch (e) { /* a local file may refuse; the page still works */ }
+    renderAll();
+  }
+
+  document.addEventListener("click", function (ev) {
+    var th = ev.target.closest("table.sortable th");
+    if (th) { sortTable(th); return; }
+    var fb = ev.target.closest("button[data-fold]");
+    if (fb) { showFold(fb.getAttribute("data-fold"), fb.getAttribute("aria-expanded") !== "true"); spy(); return; }
+    var ca = ev.target.closest("button.crall");
+    if (ca) {
+      var ck = ca.getAttribute("data-cr"), co = ca.getAttribute("aria-expanded") !== "true", more = document.getElementById(ca.getAttribute("aria-controls"));
+      crOpen[ck] = co;
+      if (more) more.hidden = !co;
+      ca.setAttribute("aria-expanded", String(co));
+      ca.textContent = crLabel(co, +ca.getAttribute("data-n"), +ca.getAttribute("data-first"));
+      return;
+    }
+    /* A link to a closed section (the channels table, the navigation) opens it before the page moves to it. */
+    var sl = ev.target.closest('a[href^="#"]');
+    if (sl && FOLD[sl.getAttribute("href").slice(1)]) showFold(sl.getAttribute("href").slice(1), true);
+    var pb = ev.target.closest("#period button[data-from]");
+    if (pb) {
+      var pf = pb.getAttribute("data-from"), pt = pb.getAttribute("data-to");
+      setRange(pf, pt);
+      var again = document.querySelector('#period button[data-from="' + pf + '"][data-to="' + pt + '"]');
+      if (again) again.focus();
+      return;
+    }
+    /* Only the By source / By channel toggles carry data-val; a creative tile's data-view is its viewer index. */
+    var vb = ev.target.closest("button[data-view][data-val]");
+    if (vb) {
+      var vk = vb.getAttribute("data-view"), vv = vb.getAttribute("data-val");
+      view[vk] = vv; renderSection(vk);
+      var back = document.querySelector("#" + vk + ' button[data-view="' + vk + '"][data-val="' + vv + '"]');
+      if (back) back.focus();
+      return;
+    }
+    /* A whole row opens its post; the title inside it is the keyboard and screen reader link. */
+    var tr = ev.target.closest("tr.golink");
+    if (tr && !ev.target.closest("a, button, th")) window.open(tr.getAttribute("data-href"), "_blank", "noopener");
+  });
+  document.addEventListener("keydown", function (ev) {
+    var th = ev.target.closest && ev.target.closest("table.sortable th");
+    if (th && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); sortTable(th); }
+  });
+  document.addEventListener("change", function (ev) {
+    if (ev.target.id === "pfrom" || ev.target.id === "pto") {
+      /* The month just picked wins: a From after To moves To up to it, and a To before From moves From. */
+      var from = document.getElementById("pfrom").value, to = document.getElementById("pto").value;
+      if (from > to) { if (ev.target.id === "pfrom") to = from; else from = to; }
+      var which = ev.target.id;
+      setRange(from, to);
+      var sel = document.getElementById(which);
+      if (sel) sel.focus();
+    }
+  });
+
+  var navLinks = [];
+  function spy() {
+    navLinks = [].slice.call(document.querySelectorAll(".nav a"));
+    var cur = null;
+    navLinks.forEach(function (a) {
+      var el = document.getElementById(a.getAttribute("href").slice(1));
+      if (el && el.getBoundingClientRect().top <= 100) cur = a;
+    });
+    navLinks.forEach(function (a) { a.classList.toggle("on", a === cur); });
+  }
+  window.addEventListener("scroll", spy, { passive: true });
+  /* A mouse wheel over the navigation scrolls the bar sideways when the links run past its edge. */
+  (function () {
+    var navEl = document.getElementById("nav");
+    navEl.addEventListener("focusin", function (e) {
+      if (e.target.closest("a")) e.target.scrollIntoView({ block: "nearest", inline: "nearest" });
+    });
+    navEl.addEventListener("wheel", function (e) {
+      if (navEl.scrollWidth > navEl.clientWidth + 1 && Math.abs(e.deltaY) > Math.abs(e.deltaX)) { navEl.scrollLeft += e.deltaY; e.preventDefault(); }
+    }, { passive: false });
+  })();
+  /* The period chip in the navigation appears once the period bar itself has scrolled away. */
+  (function () {
+    var bar = document.getElementById("navbar"), per = document.getElementById("period");
+    if (!bar || !per) return;
+    /* the period bar sits above the navigation, so it has gone once it slides under the pinned bar */
+    function past() { bar.classList.toggle("past", per.getBoundingClientRect().bottom < bar.offsetHeight); }
+    window.addEventListener("scroll", past, { passive: true });
+    past();
+  })();
+
+  set("title", esc(D.meta.campaign));
+  set("through", "DATA THROUGH " + longDate(D.meta.dataThrough));
+  renderAll();
+  if (FOLD[location.hash.slice(1)]) {
+    showFold(location.hash.slice(1), true);
+    document.getElementById(location.hash.slice(1)).scrollIntoView();
+  }
+  window.__cwiSetRange = setRange;  /* for the render gate */
+})();
+</script>
+</body></html>
