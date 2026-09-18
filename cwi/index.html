@@ -328,7 +328,9 @@
   .thumb.print { aspect-ratio:4/3; background:var(--wash); overflow:hidden; }
   .thumb.print img { position:absolute; inset:12px; width:calc(100% - 24px); height:calc(100% - 24px); object-fit:contain; }
 
-  .wrap-head th { white-space:normal; vertical-align:bottom; line-height:1.3; }
+  .wrap-head th, #products th, #publications th { white-space:normal; vertical-align:bottom; line-height:1.3; }
+  /* Round Q design MUST 1: at tablet width the sources table's first column gives way so Revenue stays in view. */
+  @media (max-width:959px) { #sources td:first-child { min-width:0; } }
   td.top { vertical-align:top; }
   /* the date column of these two tables reads from the left, like every other first column */
   #twiw td:first-child, #twiw th:first-child, #social td:first-child, #social th:first-child { text-align:left; }
@@ -748,7 +750,7 @@
   /* One platform, one name (17 September 2026): the platform in the paid data IS the source name. */
   function SOURCE_OF(platform) { return platform; }
   var LAST_CLICK = "Purchase credit goes to the source with the last click before the purchase. For example, if someone sees a CWI ad, " +
-    "then comes back later through a Google search and buys, search gets the credit, not the ad. So each source above shows only the " +
+    "then comes back later through a Google search and buys, search gets the credit, not the ad. So each row above shows only the " +
     "purchases it closed. A source may also have helped purchases that ended up credited to another source, and there is currently no " +
     "way to measure that.";
 
@@ -1025,20 +1027,7 @@
     }).join("");
     var foot = E.length < 2 ? "" : '<tr class="tot"><td>' + (E.length === 2 ? "Both sends" : "All " + E.length + " sends") + '</td><td></td><td class="r num">' + int(t.d) +
       '</td><td class="r num">' + ratio(t.o, t.d, 1) + '</td><td class="r num">' + ratio(t.c, t.d, 2) + '</td><td class="r num">' + int(t.k) + "</td></tr>";
-    /* Completeness round A, 17 September 2026: the Sections and districts sent their own CWI mail in the same
-       window. It is not the campaign's series, so it is named here rather than counted in the figures. */
-    var clickLine = '<div class="cscope below">Counting each person once per send, ' + int(t.c) + ' people ' +
-      'clicked, which is the click rate of ' + ratio(t.c, t.d, 2) + '; between them they made ' + int(t.k) +
-      ' clicks.</div>';
-    /* The Section and district sends that promoted the credential in these months, from the data. */
-    var O = (D.email.otherSends || []).filter(function (e) { return inRd(e.sent); });
-    var groups = [];
-    O.forEach(function (e) { if (groups.indexOf(e.group) === -1) groups.push(e.group); });
-    var otherSends = O.length ? '<div class="cscope below">In ' + (range.from === range.to ? "this month " : "these months ") + int(O.length) + (O.length === 1 ? " more send" : " more sends") +
-      " from Sections and districts promoted the credential (" + int(O.reduce(function (a, e) { return a + e.delivered; }, 0)) +
-      " delivered): " + (groups.length > 1 ? groups.slice(0, -1).join(", ") + " and " + groups[groups.length - 1] : groups[0]) +
-      (O.length === 1 ? ". It is its own send, not the campaign series, so it is not counted above.</div>" :
-        ". They are their own sends, not the campaign series, so they are not counted above.</div>") : "";
+    /* Roque, 18 September 2026: the click line and the Section sends line are removed, and so is the code that built them. */
     return card("Email Marketing", "",
       (E.length < 2 ? "" : galsum([["Sends", int(E.length)], ["Delivered", int(t.d)], ["Open rate", ratio(t.o, t.d, 1)], ["Click rate", ratio(t.c, t.d, 2)], ["Total clicks", int(t.k)]])) +
       tbl('<th>Send</th><th class="r">Sent</th><th class="r">Delivered</th><th class="r">Open rate</th><th class="r">Click rate</th><th class="r">Total clicks</th>',
@@ -1331,7 +1320,7 @@
           return '<tr><td>' + esc(x.platform) + '<span class="raw">' + esc(x.row || x.name) + '</span></td><td class="r num">' + int(f.s) +
             '</td><td class="r num">' + etime(f.t, f.s) + '</td><td class="r num">' + int(f.u) + "</td></tr>";
         }).join("") + "</tbody></table>" +
-        '<div class="crkn">Google Analytics records visits and purchases by ad, not by picture, so these are the whole ' +
+        '<div class="crkn">Google Analytics records sessions and purchases by ad, not by picture, so these are the whole ' +
         "ad's figures, shared by every picture it carried." + (pair ? " Where two ads share a name, the figure is the pair's." : "") + "</div>";
       kpi.hidden = false;
     } else { kpi.innerHTML = ""; kpi.hidden = true; }
