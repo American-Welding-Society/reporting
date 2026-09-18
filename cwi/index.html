@@ -367,6 +367,8 @@
   }
   /* Round R design MUST 1: between the phone and the tablet widths the tables take the phone treatment (wrapping headings,
      the row label pinned), so no column is cut off unseen at 521 to 799 px. */
+  /* Round S design MUST: the viewer's side panel is wide enough for its ad table from 961 px up. */
+  @media (min-width:961px) { .crbox { grid-template-columns:minmax(0,1.45fr) minmax(416px,1fr); } }
   @media (max-width:799px) {
     th { white-space:normal; vertical-align:bottom; line-height:1.3; }
     .tw td:first-child { position:sticky; left:0; z-index:1; background:#fff; max-width:44vw; white-space:normal; }
@@ -891,7 +893,7 @@
     /* Each platform's return stands alone; a return across platforms is never printed. */
     /* Clicks are counted differently by each platform, so no total adds them across platforms. */
     var tl = null;
-    var foot = '<tr class="tot"><td>All CWI ads<span class="raw">clicks are counted differently by each ' +
+    var foot = '<tr class="tot"><td>All CWI ads<span class="raw">Clicks are counted differently by each ' +
       'platform, so they are not added</span></td><td class="r num">' + money(t.spend) +
       '</td><td class="r num">' + int(tl) + '</td><td class="r num">' + per(t.spend, tl) +
       '</td><td class="r num">' + int(t.s) + '</td><td class="r num">' + etime(t.t, t.s) + '</td><td class="r num">' + int(t.u) +
