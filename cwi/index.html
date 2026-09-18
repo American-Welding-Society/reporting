@@ -748,7 +748,7 @@
   /* One platform, one name (17 September 2026): the platform in the paid data IS the source name. */
   function SOURCE_OF(platform) { return platform; }
   var LAST_CLICK = "Purchase credit goes to the source with the last click before the purchase. For example, if someone sees a CWI ad, " +
-    "then comes back later through a Google search and buys, search gets the credit, not the ad. So each source below shows only the " +
+    "then comes back later through a Google search and buys, search gets the credit, not the ad. So each source above shows only the " +
     "purchases it closed. A source may also have helped purchases that ended up credited to another source, and there is currently no " +
     "way to measure that.";
 
@@ -1175,7 +1175,7 @@
     var mixed = Object.keys(measures).some(function (p) { return Object.keys(measures[p]).length > 1; });
     return card("Organic Social", "",
       (one ? "" : galsum([["CWI posts", int(Object.keys(concepts).length)], ["Times posted", int(list.length)], ["Platforms", int(Object.keys(plats).length)]])) +
-      (tiles ? '<div class="sub hdln" role="heading" aria-level="3">' + (one ? "The one CWI post" : 'Top Performing Posts <span class="subn">(the best post on each platform)</span>') + '</div><div class="top4">' + tiles + "</div>" : "") +
+      (tiles ? '<div class="sub hdln" role="heading" aria-level="3">' + (one ? "The one CWI post" : '<span>Top Performing Posts <span class="subn">(the best post on each platform)</span></span>') + '</div><div class="top4">' + tiles + "</div>" : "") +
       (one ? "" : '<div class="sub hdln" role="heading" aria-level="3">Every CWI post</div>' +
       tbl('<th class="r">Date</th><th>Post</th><th>Platform</th><th class="r"' + (mixed ? ' data-nosort="1"' : "") + '>Times seen</th><th class="r">Engagements</th>', rows, "", true, true)));
   }
@@ -1241,7 +1241,7 @@
       " credited to the print ads here sit in the sources table above as well" +
       (qr ? ": " + int(qr) + " from a scan of an ad's code under Other and Not Recorded" : "") +
       (web ? (qr ? " and " : ": ") + int(web) + " from a magazine's online edition under Referral" : "") +
-      ", because Google Analytics cannot tell them from other links.</div>" : "";
+      ", because Google Analytics does not recognise a print code or a magazine's online edition as a channel of its own.</div>" : "";
     return card("Publications and Articles", done + " of " + list.length + " published",
       tbl('<th>Item</th><th class="r">Date</th><th>Status</th><th class="r">Visits</th><th class="r">Average engagement time</th>', body, "") + gallery + printNote);
   }
